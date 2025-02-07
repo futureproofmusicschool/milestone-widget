@@ -15,6 +15,9 @@ export type Database = {
           description: string | null
           id: string
           image: string | null
+          last_synced_at: string | null
+          learnworlds_id: string | null
+          learnworlds_url: string | null
           progress: number | null
           stage_id: string | null
           title: string
@@ -25,6 +28,9 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          last_synced_at?: string | null
+          learnworlds_id?: string | null
+          learnworlds_url?: string | null
           progress?: number | null
           stage_id?: string | null
           title: string
@@ -35,6 +41,9 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          last_synced_at?: string | null
+          learnworlds_id?: string | null
+          learnworlds_url?: string | null
           progress?: number | null
           stage_id?: string | null
           title?: string
@@ -74,6 +83,33 @@ export type Database = {
           order?: number
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          completed_at: string | null
+          courses_synced: number | null
+          id: string
+          message: string | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          courses_synced?: number | null
+          id?: string
+          message?: string | null
+          started_at?: string
+          status: string
+        }
+        Update: {
+          completed_at?: string | null
+          courses_synced?: number | null
+          id?: string
+          message?: string | null
+          started_at?: string
+          status?: string
         }
         Relationships: []
       }
