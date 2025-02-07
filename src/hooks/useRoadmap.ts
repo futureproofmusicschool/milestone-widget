@@ -38,9 +38,17 @@ export const useRoadmap = () => {
 
   const addCourse = useMutation({
     mutationFn: async (course: Course) => {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      if (!user) {
+        throw new Error("User must be logged in to add courses");
+      }
+
       const { error } = await supabase.from("user_courses").insert({
         course_id: course.id,
         stage_id: course.stage_id,
+        user_id: user.id,
       });
 
       if (error) throw error;
