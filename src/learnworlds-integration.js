@@ -10,24 +10,12 @@
     return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   };
 
-  // Add Roadmap Button
-  const addRoadmapButton = async () => {
-    // Make sure we're on a course page
-    if (!window.lw || !window.lw.courses || !window.lw.courses.current) {
-      console.log('Not on a course page or LearnWorlds data not loaded yet');
-      return;
-    }
-
-    const supabase = await initSupabase();
-    
-    // Get current course ID from LearnWorlds
-    const courseId = window.lw.courses.current.id;
-    console.log('Current course ID:', courseId);
-    
-    // Check if user is logged in
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('User not authenticated');
+  // Add Roadmap Button to a single course card
+  const addButtonToCourseCard = async (courseCard, supabase, user) => {
+    // Extract course ID from the card (you might need to adjust this selector based on LearnWorlds' structure)
+    const courseId = courseCard.getAttribute('data-course-id');
+    if (!courseId) {
+      console.log('No course ID found for card');
       return;
     }
 
@@ -41,19 +29,20 @@
 
     // Create button container
     const buttonContainer = document.createElement('div');
-    buttonContainer.style.cssText = 'margin: 20px 0; text-align: center;';
+    buttonContainer.style.cssText = 'margin: 10px 0; text-align: left;';
     
     // Create button
     const button = document.createElement('button');
     button.style.cssText = `
-      padding: 10px 20px;
-      border-radius: 6px;
+      padding: 8px 16px;
+      border-radius: 4px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
       border: none;
       color: white;
       background-color: ${existingCourse ? '#ef4444' : '#3b82f6'};
+      font-size: 14px;
     `;
     
     button.textContent = existingCourse ? 'Remove from Roadmap' : 'Add to Roadmap';
@@ -95,21 +84,38 @@
     
     buttonContainer.appendChild(button);
     
-    // Insert button into the page
-    // Note: Adjust this selector based on where you want the button to appear in LearnWorlds
-    const targetElement = document.querySelector('.course-content-header');
-    if (targetElement) {
-      targetElement.appendChild(buttonContainer);
-    } else {
-      console.log('Target element not found');
-    }
+    // Add button to the course card (adjust the selector as needed)
+    const buttonTarget = courseCard.querySelector('.course-card-actions') || courseCard;
+    buttonTarget.appendChild(buttonContainer);
   };
 
-  // Initialize when the page loads and also when the URL changes (for SPA navigation)
+  // Add Roadmap Buttons to all course cards
+  const addRoadmapButtons = async () => {
+    // Make sure we're on the course library page
+    const courseCards = document.querySelectorAll('.course-card');
+    if (courseCards.length === 0) {
+      console.log('No course cards found, might not be on the course library page');
+      return;
+    }
+
+    const supabase = await initSupabase();
+    
+    // Check if user is logged in
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    // Add button to each course card
+    courseCards.forEach(card => addButtonToCourseCard(card, supabase, user));
+  };
+
+  // Initialize when the page loads
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addRoadmapButton);
+    document.addEventListener('DOMContentLoaded', addRoadmapButtons);
   } else {
-    addRoadmapButton();
+    addRoadmapButtons();
   }
 
   // Also listen for URL changes since LearnWorlds is a SPA
@@ -118,7 +124,7 @@
     const url = location.href;
     if (url !== lastUrl) {
       lastUrl = url;
-      setTimeout(addRoadmapButton, 1000); // Wait a bit for LearnWorlds to load the data
+      setTimeout(addRoadmapButtons, 1000); // Wait a bit for LearnWorlds to load the data
     }
   }).observe(document, {subtree: true, childList: true});
 })();
