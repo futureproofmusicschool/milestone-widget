@@ -10,8 +10,26 @@
     return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   };
 
+  let supabaseClient = null;
+  let currentUser = null;
+
+  // Initialize Supabase and get user session
+  const initializeAuth = async () => {
+    if (!supabaseClient) {
+      supabaseClient = await initSupabase();
+    }
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
+    if (error) {
+      console.error('Auth error:', error);
+      return null;
+    }
+    currentUser = user;
+    console.log('Auth state initialized:', user ? 'logged in' : 'not logged in');
+    return user;
+  };
+
   // Add Roadmap Button to a single course card
-  const addButtonToCourseCard = async (courseCard, supabase, user) => {
+  const addButtonToCourseCard = async (courseCard) => {
     // Find the course link (LearnWorlds uses a stretched link pattern)
     const courseLink = courseCard.querySelector('.lw-course-card--stretched-link');
     if (!courseLink) {
@@ -19,7 +37,7 @@
       return;
     }
 
-    // Extract course ID from the URL (format is /course?courseid=course-name)
+    // Extract course ID from the URL
     const courseUrl = courseLink.getAttribute('href');
     const courseIdMatch = courseUrl.match(/courseid=([^&]+)/);
     if (!courseIdMatch) {
@@ -47,7 +65,7 @@
       font-size: 14px;
     `;
 
-    if (!user) {
+    if (!currentUser) {
       button.textContent = 'Login to Add to Roadmap';
       button.onclick = (e) => {
         e.preventDefault();
@@ -56,11 +74,11 @@
       };
     } else {
       // Check if course is already in user's roadmap
-      const { data: existingCourse, error: checkError } = await supabase
+      const { data: existingCourse, error: checkError } = await supabaseClient
         .from('user_courses')
         .select('*')
         .eq('course_id', courseId)
-        .eq('user_id', user.id)
+        .eq('user_id', currentUser.id)
         .single();
       
       button.textContent = existingCourse ? 'Remove from Roadmap' : 'Add to Roadmap';
@@ -72,11 +90,11 @@
         
         if (existingCourse) {
           // Remove from roadmap
-          const { error: removeError } = await supabase
+          const { error: removeError } = await supabaseClient
             .from('user_courses')
             .delete()
             .eq('course_id', courseId)
-            .eq('user_id', user.id);
+            .eq('user_id', currentUser.id);
             
           if (removeError) {
             console.error('Error removing course:', removeError);
@@ -87,11 +105,11 @@
           button.style.backgroundColor = '#3b82f6';
         } else {
           // Add to roadmap
-          const { error: addError } = await supabase
+          const { error: addError } = await supabaseClient
             .from('user_courses')
             .insert({
               course_id: courseId,
-              user_id: user.id
+              user_id: currentUser.id
             });
             
           if (addError) {
@@ -114,11 +132,8 @@
 
   // Add Roadmap Buttons to all course cards
   const addRoadmapButtons = async () => {
-    const supabase = await initSupabase();
-    
-    // Check if user is logged in first
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    console.log('Auth state:', user ? 'logged in' : 'not logged in');
+    // Initialize auth first
+    await initializeAuth();
     
     // Wait for LearnWorlds to load the cards
     const waitForCards = async (retries = 0, maxRetries = 10) => {
@@ -135,7 +150,9 @@
       }
 
       console.log(`Found ${courseCards.length} course cards`);
-      courseCards.forEach(card => addButtonToCourseCard(card, supabase, user));
+      for (const card of courseCards) {
+        await addButtonToCourseCard(card);
+      }
     };
 
     await waitForCards();
