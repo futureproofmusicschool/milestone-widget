@@ -13,7 +13,7 @@
   // Add Roadmap Button to a single course card
   const addButtonToCourseCard = async (courseCard, supabase, user) => {
     // Find the course link (LearnWorlds uses a stretched link pattern)
-    const courseLink = courseCard.querySelector('a[href*="/course?courseid="]');
+    const courseLink = courseCard.querySelector('.lw-course-card--stretched-link');
     if (!courseLink) {
       console.log('No course link found in card');
       return;
@@ -31,7 +31,7 @@
 
     // Create button container
     const buttonContainer = document.createElement('div');
-    buttonContainer.style.cssText = 'margin: 10px 0; text-align: left;';
+    buttonContainer.style.cssText = 'margin: 10px 0; text-align: left; position: relative; z-index: 100;';
     
     // Create button
     const button = document.createElement('button');
@@ -114,26 +114,31 @@
 
   // Add Roadmap Buttons to all course cards
   const addRoadmapButtons = async () => {
-    // Wait a bit for LearnWorlds to fully load the page
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Look for course cards
-    const courseCards = document.querySelectorAll('.lw-course-card, [data-href*="/course?courseid="]');
-    console.log('Found course cards:', courseCards.length);
-    
-    if (courseCards.length === 0) {
-      console.log('No course cards found with any selector');
-      console.log('Page structure:', document.body.innerHTML);
-      return;
-    }
-
     const supabase = await initSupabase();
     
-    // Check if user is logged in
+    // Check if user is logged in first
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log('Auth state:', user ? 'logged in' : 'not logged in');
     
-    // Add button to each course card, passing the user object which might be null
-    courseCards.forEach(card => addButtonToCourseCard(card, supabase, user));
+    // Wait for LearnWorlds to load the cards
+    const waitForCards = async (retries = 0, maxRetries = 10) => {
+      if (retries >= maxRetries) {
+        console.log('Max retries reached waiting for course cards');
+        return;
+      }
+      
+      const courseCards = document.querySelectorAll('.lw-course-card, [data-href*="/course?courseid="]');
+      if (courseCards.length === 0) {
+        console.log('No cards found, retrying in 500ms...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return waitForCards(retries + 1);
+      }
+
+      console.log(`Found ${courseCards.length} course cards`);
+      courseCards.forEach(card => addButtonToCourseCard(card, supabase, user));
+    };
+
+    await waitForCards();
   };
 
   // Initialize when the page loads
