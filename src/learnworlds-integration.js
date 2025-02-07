@@ -12,16 +12,23 @@
 
   // Add Roadmap Button to a single course card
   const addButtonToCourseCard = async (courseCard, supabase, user) => {
-    // In LearnWorlds, courses are often wrapped in elements with data-course attribute
-    const courseLink = courseCard.querySelector('a[href*="/courses/"]');
+    // In LearnWorlds, courses are often wrapped in a link that points to the course
+    const courseContainer = courseCard.closest('.course-card, .lw-course-item, .catalog-item');
+    if (!courseContainer) {
+      console.log('No course container found for card');
+      return;
+    }
+
+    // Find the link to the course within the container
+    const courseLink = courseContainer.querySelector('a[href*="/courses/"], a[href*="/content/"]');
     if (!courseLink) {
-      console.log('No course link found in card');
+      console.log('No course link found in container');
       return;
     }
 
     // Extract course ID from the URL
     const courseUrl = courseLink.getAttribute('href');
-    const courseId = courseUrl.split('/courses/')[1].split('/')[0];
+    const courseId = courseUrl.split(/[\/\?]/)[2]; // This will get the ID regardless of URL format
     if (!courseId) {
       console.log('Could not extract course ID from URL:', courseUrl);
       return;
@@ -95,27 +102,24 @@
     buttonContainer.appendChild(button);
     
     // Add button to the course card
-    const titleElement = courseCard.querySelector('h1, h2, h3, h4, h5, h6') || courseCard;
-    titleElement.parentNode.insertBefore(buttonContainer, titleElement.nextSibling);
+    const buttonPlacement = courseContainer.querySelector('.course-title, .course-name, h1, h2, h3, h4, h5, h6') || courseContainer;
+    buttonPlacement.parentNode.insertBefore(buttonContainer, buttonPlacement.nextSibling);
   };
 
   // Add Roadmap Buttons to all course cards
   const addRoadmapButtons = async () => {
-    // Looking at your site's structure, these courses appear in article elements
-    const courseCards = document.querySelectorAll('article');
+    // Wait a bit for LearnWorlds to fully load the page
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Try multiple selectors to find course cards
+    const courseCards = document.querySelectorAll('.course-cards .course-card, .lw-course-item, .catalog-item, [data-school-course]');
     console.log('Found course cards:', courseCards.length);
     
     if (courseCards.length === 0) {
-      // Try alternative selectors if no articles found
-      const altCourseCards = document.querySelectorAll('.course-card, .course-item, [data-course]');
-      console.log('Found alternative course cards:', altCourseCards.length);
-      
-      if (altCourseCards.length === 0) {
-        console.log('No course cards found with any selector');
-        return;
-      }
-      
-      courseCards = altCourseCards;
+      console.log('No course cards found with any selector');
+      // Log the HTML structure to help debug
+      console.log('Page structure:', document.body.innerHTML);
+      return;
     }
 
     const supabase = await initSupabase();
