@@ -1,55 +1,32 @@
 
 import React from "react";
 import { RoadmapStage } from "./RoadmapStage";
-
-const sampleData = {
-  stages: [
-    {
-      id: "stage-1",
-      title: "Stage 0: Find Your Passion",
-      description: "Discover what drives you and find your direction",
-      courses: [
-        {
-          id: "course-1",
-          title: "Discovering Your Path",
-          description: "Learn how to identify your strengths and passions",
-          progress: 75,
-          image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300&q=80",
-        },
-        {
-          id: "course-2",
-          title: "Goal Setting Workshop",
-          description: "Set achievable goals and create action plans",
-          progress: 30,
-          image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=300&q=80",
-        },
-      ],
-    },
-    {
-      id: "stage-2",
-      title: "Stage 1: Test Your Ideas",
-      description: "Validate your concepts and refine your approach",
-      courses: [
-        {
-          id: "course-3",
-          title: "Idea Validation",
-          description: "Learn how to test and validate your ideas",
-          progress: 0,
-          image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300&q=80",
-        },
-        {
-          id: "course-4",
-          title: "Market Research",
-          description: "Understand your target market and competition",
-          progress: 15,
-          image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&w=300&q=80",
-        },
-      ],
-    },
-  ],
-};
+import { useRoadmap } from "@/hooks/useRoadmap";
 
 export const Roadmap: React.FC = () => {
+  const { stages, userCourses, isLoading, removeCourse } = useRoadmap();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 p-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-48 rounded bg-gray-800" />
+            <div className="h-4 w-96 rounded bg-gray-800" />
+            <div className="space-y-8">
+              {[1, 2].map((i) => (
+                <div key={i} className="space-y-4">
+                  <div className="h-16 rounded bg-gray-800" />
+                  <div className="h-32 rounded bg-gray-800" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 p-8">
       <div className="mx-auto max-w-3xl">
@@ -61,14 +38,27 @@ export const Roadmap: React.FC = () => {
         </p>
 
         <div className="space-y-8">
-          {sampleData.stages.map((stage) => (
-            <RoadmapStage
-              key={stage.id}
-              title={stage.title}
-              description={stage.description}
-              courses={stage.courses}
-            />
-          ))}
+          {stages?.map((stage) => {
+            const stageCourses = userCourses
+              ?.filter((uc) => uc.stage_id === stage.id)
+              .map((uc) => ({
+                id: uc.course_id,
+                title: uc.courses.title,
+                description: uc.courses.description,
+                progress: uc.courses.progress,
+                image: uc.courses.image,
+              }));
+
+            return (
+              <RoadmapStage
+                key={stage.id}
+                title={stage.title}
+                description={stage.description}
+                courses={stageCourses || []}
+                onRemoveCourse={(courseId) => removeCourse.mutate(courseId)}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

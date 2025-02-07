@@ -16,12 +16,14 @@ interface RoadmapStageProps {
   title: string;
   description: string;
   courses: Course[];
+  onRemoveCourse: (courseId: string) => void;
 }
 
 export const RoadmapStage: React.FC<RoadmapStageProps> = ({
   title,
   description,
   courses,
+  onRemoveCourse,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -57,7 +59,11 @@ export const RoadmapStage: React.FC<RoadmapStageProps> = ({
             )}
           >
             {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                onRemove={onRemoveCourse}
+              />
             ))}
           </div>
         </div>

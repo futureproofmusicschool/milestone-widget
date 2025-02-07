@@ -12,9 +12,10 @@ interface Course {
 
 interface CourseCardProps {
   course: Course;
+  onRemove: (courseId: string) => void;
 }
 
-export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
+export const CourseCard: React.FC<CourseCardProps> = ({ course, onRemove }) => {
   return (
     <div className="group relative overflow-hidden rounded-lg border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm transition-all hover:bg-gray-900/70">
       <div className="flex items-start gap-4">
@@ -29,7 +30,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
               <h4 className="font-medium text-white">{course.title}</h4>
               <p className="mt-1 text-sm text-gray-400">{course.description}</p>
             </div>
-            <button className="rounded-full p-1 opacity-0 transition-opacity hover:bg-gray-800 group-hover:opacity-100">
+            <button
+              onClick={() => onRemove(course.id)}
+              className="rounded-full p-1 opacity-0 transition-opacity hover:bg-gray-800 group-hover:opacity-100"
+            >
               <X className="h-4 w-4 text-gray-400" />
             </button>
           </div>
