@@ -4,40 +4,48 @@
   const SUPABASE_URL = "https://duhedfsjirpkzckqmgzf.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGVkZnNqaXJwa3pja3FtZ3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5NjQ4NDYsImV4cCI6MjA1NDU0MDg0Nn0.gvrxZc1O67LecA666BdrsgeYQGVvDmPbTYyAkmqiNRM";
 
+  let supabaseInstance = null;
+  let currentUserSession = null;
+
   // Initialize Supabase Client
-  const initSupabase = async () => {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const getSupabase = async () => {
+    if (!supabaseInstance) {
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+      supabaseInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      // Set up auth state change listener
+      supabaseInstance.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, session ? 'has session' : 'no session');
+        currentUserSession = session;
+        // Refresh buttons when auth state changes
+        addRoadmapButtons();
+      });
+    }
+    return supabaseInstance;
   };
 
-  let supabaseClient = null;
-  let currentUser = null;
-
-  // Initialize Supabase and get user session
-  const initializeAuth = async () => {
-    if (!supabaseClient) {
-      supabaseClient = await initSupabase();
+  // Get current session
+  const getCurrentSession = async () => {
+    const supabase = await getSupabase();
+    if (!currentUserSession) {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error getting session:', error);
+        return null;
+      }
+      currentUserSession = session;
     }
-    const { data: { user }, error } = await supabaseClient.auth.getUser();
-    if (error) {
-      console.error('Auth error:', error);
-      return null;
-    }
-    currentUser = user;
-    console.log('Auth state initialized:', user ? 'logged in' : 'not logged in');
-    return user;
+    return currentUserSession;
   };
 
   // Add Roadmap Button to a single course card
   const addButtonToCourseCard = async (courseCard) => {
-    // Find the course link (LearnWorlds uses a stretched link pattern)
     const courseLink = courseCard.querySelector('.lw-course-card--stretched-link');
     if (!courseLink) {
       console.log('No course link found in card');
       return;
     }
 
-    // Extract course ID from the URL
     const courseUrl = courseLink.getAttribute('href');
     const courseIdMatch = courseUrl.match(/courseid=([^&]+)/);
     if (!courseIdMatch) {
@@ -47,8 +55,15 @@
     const courseId = courseIdMatch[1];
     console.log('Found course ID:', courseId);
 
+    // Remove existing roadmap button if any
+    const existingButton = courseCard.querySelector('.roadmap-button-container');
+    if (existingButton) {
+      existingButton.remove();
+    }
+
     // Create button container
     const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'roadmap-button-container';
     buttonContainer.style.cssText = 'margin: 10px 0; text-align: left; position: relative; z-index: 100;';
     
     // Create button
@@ -65,7 +80,9 @@
       font-size: 14px;
     `;
 
-    if (!currentUser) {
+    const session = await getCurrentSession();
+    
+    if (!session) {
       button.textContent = 'Login to Add to Roadmap';
       button.onclick = (e) => {
         e.preventDefault();
@@ -73,13 +90,19 @@
         window.location.href = '/login';
       };
     } else {
+      const supabase = await getSupabase();
       // Check if course is already in user's roadmap
-      const { data: existingCourse, error: checkError } = await supabaseClient
+      const { data: existingCourse, error: checkError } = await supabase
         .from('user_courses')
         .select('*')
         .eq('course_id', courseId)
-        .eq('user_id', currentUser.id)
+        .eq('user_id', session.user.id)
         .single();
+      
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking course:', checkError);
+        return;
+      }
       
       button.textContent = existingCourse ? 'Remove from Roadmap' : 'Add to Roadmap';
       button.style.backgroundColor = existingCourse ? '#ef4444' : '#3b82f6';
@@ -90,11 +113,11 @@
         
         if (existingCourse) {
           // Remove from roadmap
-          const { error: removeError } = await supabaseClient
+          const { error: removeError } = await supabase
             .from('user_courses')
             .delete()
             .eq('course_id', courseId)
-            .eq('user_id', currentUser.id);
+            .eq('user_id', session.user.id);
             
           if (removeError) {
             console.error('Error removing course:', removeError);
@@ -105,11 +128,11 @@
           button.style.backgroundColor = '#3b82f6';
         } else {
           // Add to roadmap
-          const { error: addError } = await supabaseClient
+          const { error: addError } = await supabase
             .from('user_courses')
             .insert({
               course_id: courseId,
-              user_id: currentUser.id
+              user_id: session.user.id
             });
             
           if (addError) {
@@ -132,9 +155,6 @@
 
   // Add Roadmap Buttons to all course cards
   const addRoadmapButtons = async () => {
-    // Initialize auth first
-    await initializeAuth();
-    
     // Wait for LearnWorlds to load the cards
     const waitForCards = async (retries = 0, maxRetries = 10) => {
       if (retries >= maxRetries) {
@@ -158,11 +178,13 @@
     await waitForCards();
   };
 
-  // Initialize when the page loads
+  // Initialize Supabase and auth listener when the page loads
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addRoadmapButtons);
+    document.addEventListener('DOMContentLoaded', () => {
+      getSupabase().then(() => addRoadmapButtons());
+    });
   } else {
-    addRoadmapButtons();
+    getSupabase().then(() => addRoadmapButtons());
   }
 
   // Also listen for URL changes since LearnWorlds is a SPA
