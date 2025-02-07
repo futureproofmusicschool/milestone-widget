@@ -12,12 +12,22 @@
 
   // Add Roadmap Button to a single course card
   const addButtonToCourseCard = async (courseCard, supabase, user) => {
-    // Extract course ID from the card (you might need to adjust this selector based on LearnWorlds' structure)
-    const courseId = courseCard.getAttribute('data-course-id');
-    if (!courseId) {
-      console.log('No course ID found for card');
+    // In LearnWorlds, courses are often wrapped in elements with data-course attribute
+    const courseLink = courseCard.querySelector('a[href*="/courses/"]');
+    if (!courseLink) {
+      console.log('No course link found in card');
       return;
     }
+
+    // Extract course ID from the URL
+    const courseUrl = courseLink.getAttribute('href');
+    const courseId = courseUrl.split('/courses/')[1].split('/')[0];
+    if (!courseId) {
+      console.log('Could not extract course ID from URL:', courseUrl);
+      return;
+    }
+
+    console.log('Found course ID:', courseId);
 
     // Check if course is already in user's roadmap
     const { data: existingCourse, error: checkError } = await supabase
@@ -84,18 +94,28 @@
     
     buttonContainer.appendChild(button);
     
-    // Add button to the course card (adjust the selector as needed)
-    const buttonTarget = courseCard.querySelector('.course-card-actions') || courseCard;
-    buttonTarget.appendChild(buttonContainer);
+    // Add button to the course card
+    const titleElement = courseCard.querySelector('h1, h2, h3, h4, h5, h6') || courseCard;
+    titleElement.parentNode.insertBefore(buttonContainer, titleElement.nextSibling);
   };
 
   // Add Roadmap Buttons to all course cards
   const addRoadmapButtons = async () => {
-    // Make sure we're on the course library page
-    const courseCards = document.querySelectorAll('.course-card');
+    // Looking at your site's structure, these courses appear in article elements
+    const courseCards = document.querySelectorAll('article');
+    console.log('Found course cards:', courseCards.length);
+    
     if (courseCards.length === 0) {
-      console.log('No course cards found, might not be on the course library page');
-      return;
+      // Try alternative selectors if no articles found
+      const altCourseCards = document.querySelectorAll('.course-card, .course-item, [data-course]');
+      console.log('Found alternative course cards:', altCourseCards.length);
+      
+      if (altCourseCards.length === 0) {
+        console.log('No course cards found with any selector');
+        return;
+      }
+      
+      courseCards = altCourseCards;
     }
 
     const supabase = await initSupabase();
