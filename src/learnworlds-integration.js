@@ -12,10 +12,17 @@
 
   // Add Roadmap Button
   const addRoadmapButton = async () => {
+    // Make sure we're on a course page
+    if (!window.lw || !window.lw.courses || !window.lw.courses.current) {
+      console.log('Not on a course page or LearnWorlds data not loaded yet');
+      return;
+    }
+
     const supabase = await initSupabase();
     
     // Get current course ID from LearnWorlds
-    const courseId = window.course.id;
+    const courseId = window.lw.courses.current.id;
+    console.log('Current course ID:', courseId);
     
     // Check if user is logged in
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -93,13 +100,25 @@
     const targetElement = document.querySelector('.course-content-header');
     if (targetElement) {
       targetElement.appendChild(buttonContainer);
+    } else {
+      console.log('Target element not found');
     }
   };
 
-  // Initialize when the page loads
+  // Initialize when the page loads and also when the URL changes (for SPA navigation)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', addRoadmapButton);
   } else {
     addRoadmapButton();
   }
+
+  // Also listen for URL changes since LearnWorlds is a SPA
+  let lastUrl = location.href; 
+  new MutationObserver(() => {
+    const url = location.href;
+    if (url !== lastUrl) {
+      lastUrl = url;
+      setTimeout(addRoadmapButton, 1000); // Wait a bit for LearnWorlds to load the data
+    }
+  }).observe(document, {subtree: true, childList: true});
 })();
