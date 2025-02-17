@@ -8,16 +8,16 @@ export const Roadmap: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 p-8">
+      <div className="min-h-screen bg-[#0A0A0A] p-8">
         <div className="mx-auto max-w-3xl">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 w-48 rounded bg-gray-800" />
-            <div className="h-4 w-96 rounded bg-gray-800" />
+            <div className="h-8 w-48 rounded bg-[#111111]" />
+            <div className="h-4 w-96 rounded bg-[#111111]" />
             <div className="space-y-8">
               {[1, 2].map((i) => (
                 <div key={i} className="space-y-4">
-                  <div className="h-16 rounded bg-gray-800" />
-                  <div className="h-32 rounded bg-gray-800" />
+                  <div className="h-16 rounded bg-[#111111]" />
+                  <div className="h-32 rounded bg-[#111111]" />
                 </div>
               ))}
             </div>
@@ -28,9 +28,9 @@ export const Roadmap: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 p-8">
+    <div className="min-h-screen bg-[#0A0A0A] p-8">
       <div className="mx-auto max-w-3xl">
-        <p className="mb-12 text-center text-gray-400">
+        <p className="mb-12 text-center text-[#BBBDC5]">
           Track your progress and customize your learning journey
         </p>
 

@@ -29,26 +29,26 @@ export const RoadmapStage: React.FC<RoadmapStageProps> = ({
 
   return (
     <div className="relative mb-8 animate-fade-in">
-      <div className="absolute left-8 h-full w-0.5 bg-gray-200/10" />
+      <div className="absolute left-8 h-full w-0.5 bg-[#BBBDC5]/10" />
       
       <div className="flex items-start">
-        <div className="relative z-10 mr-4 h-16 w-16 flex-shrink-0 rounded-full bg-gray-900 p-2 shadow-lg">
-          <div className="h-full w-full rounded-full border-2 border-gray-700 bg-gray-800" />
+        <div className="relative z-10 mr-4 h-16 w-16 flex-shrink-0 rounded-full bg-[#111111] p-2 shadow-lg">
+          <div className="h-full w-full rounded-full border-2 border-[#BBBDC5]/20 bg-[#0A0A0A]" />
         </div>
         
         <div className="flex-1">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex w-full items-center justify-between rounded-lg bg-gray-900/50 p-4 backdrop-blur-sm transition-all hover:bg-gray-900/70"
+            className="flex w-full items-center justify-between rounded-lg bg-[#111111]/50 p-4 backdrop-blur-sm transition-all hover:bg-[#111111]/70"
           >
             <div>
-              <h3 className="text-lg font-semibold text-white">{title}</h3>
-              <p className="text-sm text-gray-400">{description}</p>
+              <h3 className="text-lg font-semibold text-[#F6F8FF]">{title}</h3>
+              <p className="text-sm text-[#BBBDC5]">{description}</p>
             </div>
             {isExpanded ? (
-              <ChevronUp className="h-5 w-5 text-gray-400" />
+              <ChevronUp className="h-5 w-5 text-[#BBBDC5]" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-gray-400" />
+              <ChevronDown className="h-5 w-5 text-[#BBBDC5]" />
             )}
           </button>
 
