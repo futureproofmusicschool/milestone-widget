@@ -8,7 +8,7 @@ export const Roadmap: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] p-8">
+      <div className="min-h-screen bg-[#000000] p-8">
         <div className="mx-auto max-w-3xl">
           <div className="animate-pulse space-y-4">
             <div className="h-8 w-48 rounded bg-[#111111]" />
@@ -28,12 +28,8 @@ export const Roadmap: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] p-8">
+    <div className="min-h-screen bg-[#000000] p-8">
       <div className="mx-auto max-w-3xl">
-        <p className="mb-12 text-center text-[#BBBDC5]">
-          Track your progress and customize your learning journey
-        </p>
-
         <div className="space-y-8">
           {stages?.map((stage) => {
             const stageCourses = userCourses

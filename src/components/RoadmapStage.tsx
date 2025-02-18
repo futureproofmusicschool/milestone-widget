@@ -41,8 +41,8 @@ export const RoadmapStage: React.FC<RoadmapStageProps> = ({
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex w-full items-center justify-between rounded-lg bg-[#111111]/50 p-4 backdrop-blur-sm transition-all hover:bg-[#111111]/70"
           >
-            <div className="w-full">
-              <h3 className="text-lg font-semibold text-[#F6F8FF] pl-0">{title}</h3>
+            <div className="w-full text-left">
+              <h3 className="text-lg font-semibold text-[#F6F8FF]">{title}</h3>
               <p className="text-sm text-[#BBBDC5]">{description}</p>
             </div>
             {isExpanded ? (
