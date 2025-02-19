@@ -8,6 +8,14 @@ export const Roadmap: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const sendHeight = () => {
+    if (containerRef.current) {
+      const height = Math.ceil(containerRef.current.getBoundingClientRect().height);
+      console.log("Sending height:", height);
+      window.parent.postMessage({ type: "RESIZE", height }, "*");
+    }
+  };
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // You can add origin verification if needed
@@ -21,42 +29,35 @@ export const Roadmap: React.FC = () => {
       }
     };
 
-    const sendHeight = () => {
-      if (containerRef.current) {
-        // Add extra padding to ensure we capture everything
-        const height = containerRef.current.scrollHeight + 32;
-        console.log("Sending height:", height);
-        window.parent.postMessage({ type: "RESIZE", height }, "*");
-      }
-    };
-
     // Send height whenever content changes
     const observer = new ResizeObserver(() => {
-      sendHeight();
+      // Add a small delay to ensure content is fully rendered
+      setTimeout(sendHeight, 100);
     });
 
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
 
-    // Send initial height after a short delay to ensure content is rendered
-    setTimeout(sendHeight, 100);
-
     window.addEventListener("message", handleMessage);
+    window.addEventListener("load", sendHeight);
     
     // Let the parent know we're ready to receive data
     window.parent.postMessage({ type: "READY" }, "*");
 
-    // Set up periodic height checks for the first few seconds
-    const intervalId = setInterval(sendHeight, 500);
-    setTimeout(() => clearInterval(intervalId), 5000);
-
     return () => {
       window.removeEventListener("message", handleMessage);
+      window.removeEventListener("load", sendHeight);
       observer.disconnect();
-      clearInterval(intervalId);
     };
   }, []);
+
+  // Trigger height recalculation when stages or courses change
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(sendHeight, 100);
+    }
+  }, [stages, userCourses, isLoading]);
 
   if (isLoading) {
     return (
