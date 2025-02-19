@@ -1,10 +1,34 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { RoadmapStage } from "./RoadmapStage";
 import { useRoadmap } from "@/hooks/useRoadmap";
 
 export const Roadmap: React.FC = () => {
   const { stages, userCourses, isLoading, removeCourse } = useRoadmap();
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // You can add origin verification if needed
+      // if (event.origin !== "https://yourlearnworldsdomain.com") return;
+      
+      const { type, data } = event.data;
+      
+      if (type === "USER_DATA") {
+        console.log("Received user data from Learnworlds:", data);
+        // Here you can handle the user data
+        // For example, store it in state or pass it to your Supabase client
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    
+    // Let the parent know we're ready to receive data
+    window.parent.postMessage({ type: "READY" }, "*");
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
 
   if (isLoading) {
     return (
