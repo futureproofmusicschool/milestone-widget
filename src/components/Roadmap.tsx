@@ -26,32 +26,40 @@ export const Roadmap: React.FC = () => {
         console.log("Received user data from Learnworlds:", data);
         setUsername(data.username || "");
         
-        // Check if user exists in Supabase
-        const { data: existingUser } = await supabase
-          .from('user_courses')
-          .select('user_id')
-          .limit(1);
-
-        if (!existingUser || existingUser.length === 0) {
-          // Create new user in Supabase without email
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: null,
-            password: crypto.randomUUID(), // Generate a random password
-            options: {
-              data: {
-                learnworlds_id: data.id,
-                username: data.username
-              }
-            }
+        try {
+          // First try to sign in anonymously
+          const { data: session, error: signInError } = await supabase.auth.signInWithPassword({
+            email: `${data.id}@anonymous.user`,
+            password: 'anonymous' // We'll use a fixed password for anonymous users
           });
 
-          if (signUpError) {
-            console.error("Error creating user:", signUpError);
-            toast.error("Failed to initialize user data");
+          if (signInError) {
+            console.log("User doesn't exist yet, creating new anonymous user");
+            // If sign in fails, create a new anonymous user
+            const { error: signUpError } = await supabase.auth.signUp({
+              email: `${data.id}@anonymous.user`,
+              password: 'anonymous',
+              options: {
+                data: {
+                  learnworlds_id: data.id,
+                  username: data.username
+                }
+              }
+            });
+
+            if (signUpError) {
+              console.error("Error creating user:", signUpError);
+              toast.error("Failed to initialize user data");
+            } else {
+              console.log("Created new anonymous user account in Supabase");
+              toast.success("User data initialized successfully");
+            }
           } else {
-            console.log("Created new user account in Supabase");
-            toast.success("User data initialized successfully");
+            console.log("Successfully signed in existing user");
           }
+        } catch (error) {
+          console.error("Error in authentication flow:", error);
+          toast.error("Failed to authenticate");
         }
       }
     };
