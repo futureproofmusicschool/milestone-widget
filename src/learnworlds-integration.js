@@ -20,20 +20,41 @@
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Get the user's JWT from LearnWorlds
-    const jwt = "{{USER.JWT}}";
-    if (!jwt) {
-      console.error('No JWT found');
+    // Get user ID and authenticate first
+    const userId = "{{USER.ID}}";
+    const username = "{{USER.USERNAME}}";
+    if (!userId) {
+      console.error('No user ID available');
       return;
     }
 
-    // Sign in to Supabase with the JWT
-    const { error: signInError } = await supabaseClient.auth.signInWithJwt({
-      jwt: jwt
-    });
+    try {
+      console.log('Authenticating with Learnworlds user ID:', userId);
+      
+      // Call the Edge Function to authenticate
+      const { data: authData, error: authError } = await supabaseClient.functions.invoke('learnworlds-auth', {
+        body: { token: userId }
+      });
 
-    if (signInError) {
-      console.error('Error signing in:', signInError);
+      if (authError || !authData?.token) {
+        console.error('Authentication failed:', authError || 'No token received');
+        return;
+      }
+
+      // Sign in with the returned JWT
+      const { error: signInError } = await supabaseClient.auth.signInWithIdToken({
+        provider: 'jwt',
+        token: authData.token
+      });
+
+      if (signInError) {
+        console.error('Error signing in with JWT:', signInError);
+        return;
+      }
+
+      console.log('Successfully authenticated with Supabase');
+    } catch (error) {
+      console.error('Error in authentication flow:', error);
       return;
     }
 
@@ -81,7 +102,6 @@
 
     // Function to get course ID from card
     function getCourseIdFromCard(courseCard) {
-      // Try different selectors to find the course ID
       const possibleElements = [
         courseCard.querySelector('a[href*="courseid="]'),
         courseCard.querySelector('[data-course-id]'),
@@ -92,11 +112,9 @@
       for (const element of possibleElements) {
         if (!element) continue;
 
-        // Try data attribute first
         const dataId = element.getAttribute('data-course-id');
         if (dataId) return dataId;
 
-        // Try href attribute
         const href = element.getAttribute('href');
         if (href) {
           const match = href.match(/courseid=([^&]+)/);
@@ -110,12 +128,10 @@
     async function addButtonToCourseCard(courseCard) {
       console.log('Processing course card:', courseCard);
 
-      // Check if button already exists
       if (courseCard.querySelector('.roadmap-button-container')) {
         return;
       }
 
-      // Make sure the course card has relative positioning
       courseCard.style.position = 'relative';
 
       const courseId = getCourseIdFromCard(courseCard);
@@ -126,13 +142,7 @@
 
       console.log('Found course ID:', courseId);
 
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        console.log('No user found');
-        return;
-      }
-
-      // Create button container that overlays the entire card
+      // Create button container
       const buttonContainer = document.createElement('div');
       buttonContainer.className = 'roadmap-button-container';
 
@@ -147,7 +157,7 @@
           .from('user_courses')
           .select('id')
           .eq('learnworlds_id', courseId)
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .maybeSingle();
 
         if (!error && existingCourse) {
@@ -157,7 +167,7 @@
         console.error('Error checking course status:', error);
       }
 
-      // Handle all possible click events
+      // Handle click events
       const handleClick = async (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -173,9 +183,9 @@
               .from('user_courses')
               .delete()
               .eq('learnworlds_id', courseId)
-              .eq('user_id', user.id);
+              .eq('user_id', userId);
           } else {
-            // First, get the course details
+            // Check if course exists
             const { data: courseData, error: courseError } = await supabaseClient
               .from('courses')
               .select('id')
@@ -187,18 +197,17 @@
               return;
             }
 
-            // Get categories from LearnWorlds (you'll need to implement this based on LearnWorlds' structure)
+            // Get categories
             const categories = Array.from(courseCard.querySelectorAll('.course-category'))
               .map(el => el.textContent?.trim())
               .filter(Boolean);
 
             if (!courseData) {
-              // Get course details from the page
+              // Create new course
               const courseTitle = courseCard.querySelector('.course-title')?.textContent?.trim() || 'Untitled Course';
               const courseDesc = courseCard.querySelector('.course-description')?.textContent?.trim() || '';
               const courseImg = courseCard.querySelector('img')?.src || '';
 
-              // Create the course with auto-generated UUID
               const { data: newCourse, error: insertError } = await supabaseClient
                 .from('courses')
                 .insert({
@@ -216,21 +225,21 @@
                 return;
               }
 
-              // Add course to user's roadmap using the generated UUID
+              // Add to user's roadmap
               await supabaseClient
                 .from('user_courses')
                 .insert({
                   course_id: newCourse.id,
-                  user_id: user.id,
+                  user_id: userId,
                   learnworlds_id: courseId
                 });
             } else {
-              // Add existing course to user's roadmap
+              // Add existing course to roadmap
               await supabaseClient
                 .from('user_courses')
                 .insert({
                   course_id: courseData.id,
-                  user_id: user.id,
+                  user_id: userId,
                   learnworlds_id: courseId
                 });
             }
@@ -245,7 +254,7 @@
         return false;
       };
 
-      // Add all possible event listeners with capture
+      // Add event listeners
       ['click', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach(eventType => {
         button.addEventListener(eventType, (e) => {
           e.preventDefault();
@@ -274,11 +283,10 @@
       button.disabled = false;
     }
 
-    // Function to find and process course cards
+    // Find and process course cards
     function addRoadmapButtons() {
       console.log('Searching for course cards...');
       
-      // Try multiple selectors to find course cards
       const selectors = [
         '.course-card',
         '.lw-course-card',
@@ -300,7 +308,7 @@
       });
     }
 
-    // Initial setup with retry mechanism
+    // Initial setup with retry
     function initializeWithRetry(retries = 5) {
       if (retries === 0) {
         console.log('Failed to find course cards after all retries');
@@ -316,10 +324,10 @@
       }, 1000);
     }
 
-    // Start the initialization process
+    // Start initialization
     initializeWithRetry();
 
-    // Watch for new course cards being added
+    // Watch for new cards
     const observer = new MutationObserver((mutations) => {
       let shouldUpdate = false;
       mutations.forEach((mutation) => {
