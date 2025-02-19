@@ -4,196 +4,276 @@
   const SUPABASE_URL = "https://duhedfsjirpkzckqmgzf.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGVkZnNqaXJwa3pja3FtZ3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5NjQ4NDYsImV4cCI6MjA1NDU0MDg0Nn0.gvrxZc1O67LecA666BdrsgeYQGVvDmPbTYyAkmqiNRM";
 
-  let supabaseInstance = null;
-  let currentUserSession = null;
+  // Wait for DOM to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add Supabase JS library
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = initializeRoadmapButtons;
+    document.head.appendChild(script);
+  });
 
-  // Initialize Supabase Client
-  const getSupabase = async () => {
-    if (!supabaseInstance) {
-      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-      supabaseInstance = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  function initializeRoadmapButtons() {
+    console.log('Initializing roadmap buttons...');
+    
+    // Create Supabase client
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Add button styles
+    const styles = document.createElement('style');
+    styles.textContent = `
+      .roadmap-button-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        pointer-events: none;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 10px;
+      }
+      .roadmap-button {
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        color: white;
+        pointer-events: auto;
+        margin-top: 40px;
+      }
+      .roadmap-button.add {
+        background-color: #3b82f6;
+      }
+      .roadmap-button.add:hover {
+        background-color: #2563eb;
+      }
+      .roadmap-button.remove {
+        background-color: #ef4444;
+      }
+      .roadmap-button.remove:hover {
+        background-color: #dc2626;
+      }
+    `;
+    document.head.appendChild(styles);
+
+    // Function to get course ID from card
+    function getCourseIdFromCard(courseCard) {
+      // Try different selectors to find the course ID
+      const possibleElements = [
+        courseCard.querySelector('a[href*="courseid="]'),
+        courseCard.querySelector('[data-course-id]'),
+        courseCard.closest('[data-course-id]'),
+        courseCard
+      ];
+
+      for (const element of possibleElements) {
+        if (!element) continue;
+
+        // Try data attribute first
+        const dataId = element.getAttribute('data-course-id');
+        if (dataId) return dataId;
+
+        // Try href attribute
+        const href = element.getAttribute('href');
+        if (href) {
+          const match = href.match(/courseid=([^&]+)/);
+          if (match) return match[1];
+        }
+      }
+      return null;
+    }
+
+    // Function to add button to a course card
+    async function addButtonToCourseCard(courseCard) {
+      console.log('Processing course card:', courseCard);
+
+      // Check if button already exists
+      if (courseCard.querySelector('.roadmap-button-container')) {
+        return;
+      }
+
+      // Make sure the course card has relative positioning
+      courseCard.style.position = 'relative';
+
+      const courseId = getCourseIdFromCard(courseCard);
+      if (!courseId) {
+        console.log('No course ID found for card');
+        return;
+      }
+
+      console.log('Found course ID:', courseId);
+
+      const userId = "{{USER.ID}}";
+      if (!userId) {
+        console.log('No user ID found');
+        return;
+      }
+
+      // Create button container that overlays the entire card
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'roadmap-button-container';
+
+      // Create button
+      const button = document.createElement('button');
+      button.className = 'roadmap-button add';
+      updateButtonState(button, false);
+
+      // Check if course is already in roadmap
+      try {
+        const { data: existingCourse, error } = await supabaseClient
+          .from('user_courses')
+          .select('id')
+          .eq('course_id', courseId)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!error && existingCourse) {
+          updateButtonState(button, true);
+        }
+      } catch (error) {
+        console.error('Error checking course status:', error);
+      }
+
+      // Handle all possible click events
+      const handleClick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        const isInRoadmap = button.classList.contains('remove');
+        button.disabled = true;
+
+        try {
+          if (isInRoadmap) {
+            await supabaseClient
+              .from('user_courses')
+              .delete()
+              .eq('course_id', courseId)
+              .eq('user_id', userId);
+          } else {
+            await supabaseClient
+              .from('user_courses')
+              .insert({
+                course_id: courseId,
+                user_id: userId
+              });
+          }
+          updateButtonState(button, !isInRoadmap);
+        } catch (error) {
+          console.error('Error updating roadmap:', error);
+        } finally {
+          button.disabled = false;
+        }
+        
+        return false;
+      };
+
+      // Add all possible event listeners with capture
+      ['click', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach(eventType => {
+        button.addEventListener(eventType, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (eventType === 'click') handleClick(e);
+        }, true);
+      });
+
+      buttonContainer.appendChild(button);
+      courseCard.appendChild(buttonContainer);
+      console.log('Button added to course card');
+    }
+
+    // Update button state
+    function updateButtonState(button, isInRoadmap) {
+      if (isInRoadmap) {
+        button.textContent = 'Remove from Roadmap';
+        button.classList.remove('add');
+        button.classList.add('remove');
+      } else {
+        button.textContent = 'Add to Roadmap';
+        button.classList.remove('remove');
+        button.classList.add('add');
+      }
+      button.disabled = false;
+    }
+
+    // Function to find and process course cards
+    function addRoadmapButtons() {
+      console.log('Searching for course cards...');
       
-      // Set up auth state change listener
-      supabaseInstance.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session ? 'has session' : 'no session');
-        currentUserSession = session;
-        // Refresh buttons when auth state changes
-        addRoadmapButtons();
+      // Try multiple selectors to find course cards
+      const selectors = [
+        '.course-card',
+        '.lw-course-card',
+        '[data-course-id]',
+        '[href*="courseid="]',
+        '.catalog-item'
+      ];
+
+      const courseCards = new Set();
+      selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(card => {
+          courseCards.add(card.closest('.course-card') || card.closest('.lw-course-card') || card);
+        });
+      });
+
+      console.log('Found course cards:', courseCards.size);
+      courseCards.forEach(card => {
+        if (card) addButtonToCourseCard(card);
       });
     }
-    return supabaseInstance;
-  };
 
-  // Get current session
-  const getCurrentSession = async () => {
-    const supabase = await getSupabase();
-    if (!currentUserSession) {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
-        return null;
-      }
-      currentUserSession = session;
-    }
-    return currentUserSession;
-  };
-
-  // Add Roadmap Button to a single course card
-  const addButtonToCourseCard = async (courseCard) => {
-    const courseLink = courseCard.querySelector('.lw-course-card--stretched-link');
-    if (!courseLink) {
-      console.log('No course link found in card');
-      return;
-    }
-
-    const courseUrl = courseLink.getAttribute('href');
-    const courseIdMatch = courseUrl.match(/courseid=([^&]+)/);
-    if (!courseIdMatch) {
-      console.log('Could not extract course ID from URL:', courseUrl);
-      return;
-    }
-    const courseId = courseIdMatch[1];
-    console.log('Found course ID:', courseId);
-
-    // Remove existing roadmap button if any
-    const existingButton = courseCard.querySelector('.roadmap-button-container');
-    if (existingButton) {
-      existingButton.remove();
-    }
-
-    // Create button container
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'roadmap-button-container';
-    buttonContainer.style.cssText = 'margin: 10px 0; text-align: left; position: relative; z-index: 100;';
-    
-    // Create button
-    const button = document.createElement('button');
-    button.style.cssText = `
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      color: white;
-      background-color: #3b82f6;
-      font-size: 14px;
-    `;
-
-    const session = await getCurrentSession();
-    
-    if (!session) {
-      button.textContent = 'Login to Add to Roadmap';
-      button.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        window.location.href = '/login';
-      };
-    } else {
-      const supabase = await getSupabase();
-      // Check if course is already in user's roadmap
-      const { data: existingCourse, error: checkError } = await supabase
-        .from('user_courses')
-        .select('*')
-        .eq('course_id', courseId)
-        .eq('user_id', session.user.id)
-        .single();
-      
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Error checking course:', checkError);
+    // Initial setup with retry mechanism
+    function initializeWithRetry(retries = 5) {
+      if (retries === 0) {
+        console.log('Failed to find course cards after all retries');
         return;
       }
-      
-      button.textContent = existingCourse ? 'Remove from Roadmap' : 'Add to Roadmap';
-      button.style.backgroundColor = existingCourse ? '#ef4444' : '#3b82f6';
-      
-      button.onclick = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (existingCourse) {
-          // Remove from roadmap
-          const { error: removeError } = await supabase
-            .from('user_courses')
-            .delete()
-            .eq('course_id', courseId)
-            .eq('user_id', session.user.id);
-            
-          if (removeError) {
-            console.error('Error removing course:', removeError);
-            return;
-          }
-          
-          button.textContent = 'Add to Roadmap';
-          button.style.backgroundColor = '#3b82f6';
-        } else {
-          // Add to roadmap
-          const { error: addError } = await supabase
-            .from('user_courses')
-            .insert({
-              course_id: courseId,
-              user_id: session.user.id
-            });
-            
-          if (addError) {
-            console.error('Error adding course:', addError);
-            return;
-          }
-          
-          button.textContent = 'Remove from Roadmap';
-          button.style.backgroundColor = '#ef4444';
+
+      setTimeout(() => {
+        addRoadmapButtons();
+        if (document.querySelectorAll('.roadmap-button').length === 0) {
+          console.log(`No buttons added, retrying... (${retries} attempts left)`);
+          initializeWithRetry(retries - 1);
         }
-      };
+      }, 1000);
     }
-    
-    buttonContainer.appendChild(button);
-    
-    // Add button to the course card (under the course title)
-    const titleElement = courseCard.querySelector('.learnworlds-heading3') || courseCard;
-    titleElement.parentNode.insertBefore(buttonContainer, titleElement.nextSibling);
-  };
 
-  // Add Roadmap Buttons to all course cards
-  const addRoadmapButtons = async () => {
-    // Wait for LearnWorlds to load the cards
-    const waitForCards = async (retries = 0, maxRetries = 10) => {
-      if (retries >= maxRetries) {
-        console.log('Max retries reached waiting for course cards');
-        return;
+    // Start the initialization process
+    initializeWithRetry();
+
+    // Watch for new course cards being added
+    const observer = new MutationObserver((mutations) => {
+      let shouldUpdate = false;
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach(node => {
+          if (node instanceof HTMLElement) {
+            if (node.classList && (
+              node.classList.contains('course-card') ||
+              node.classList.contains('lw-course-card') ||
+              node.querySelector('.course-card, .lw-course-card')
+            )) {
+              shouldUpdate = true;
+            }
+          }
+        });
+      });
+
+      if (shouldUpdate) {
+        console.log('New course cards detected, updating buttons...');
+        addRoadmapButtons();
       }
-      
-      const courseCards = document.querySelectorAll('.lw-course-card, [data-href*="/course?courseid="]');
-      if (courseCards.length === 0) {
-        console.log('No cards found, retrying in 500ms...');
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return waitForCards(retries + 1);
-      }
-
-      console.log(`Found ${courseCards.length} course cards`);
-      for (const card of courseCards) {
-        await addButtonToCourseCard(card);
-      }
-    };
-
-    await waitForCards();
-  };
-
-  // Initialize Supabase and auth listener when the page loads
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      getSupabase().then(() => addRoadmapButtons());
     });
-  } else {
-    getSupabase().then(() => addRoadmapButtons());
-  }
 
-  // Also listen for URL changes since LearnWorlds is a SPA
-  let lastUrl = location.href; 
-  new MutationObserver(() => {
-    const url = location.href;
-    if (url !== lastUrl) {
-      lastUrl = url;
-      setTimeout(addRoadmapButtons, 1000); // Wait a bit for LearnWorlds to load the data
-    }
-  }).observe(document, {subtree: true, childList: true});
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
 })();
