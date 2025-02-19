@@ -3,8 +3,8 @@ export interface UserCourse {
   id: string;
   user_id: string;
   course_id: string;
-  stage_id: string;
   created_at: string;
+  learnworlds_id: string;
 }
 
 export interface Course {
@@ -13,12 +13,6 @@ export interface Course {
   description: string;
   progress: number;
   image: string;
-  stage_id: string;
-}
-
-export interface Stage {
-  id: string;
-  title: string;
-  description: string;
-  order: number;
+  categories: string[];
+  learnworlds_id: string;
 }

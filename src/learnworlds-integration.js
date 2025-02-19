@@ -1,4 +1,3 @@
-
 // LearnWorlds Integration Script
 (function() {
   const SUPABASE_URL = "https://duhedfsjirpkzckqmgzf.supabase.co";
@@ -161,7 +160,7 @@
             // First, get the course details
             const { data: courseData, error: courseError } = await supabaseClient
               .from('courses')
-              .select('id, stage_id')
+              .select('id')
               .eq('learnworlds_id', courseId)
               .maybeSingle();
 
@@ -170,19 +169,12 @@
               return;
             }
 
+            // Get categories from LearnWorlds (you'll need to implement this based on LearnWorlds' structure)
+            const categories = Array.from(courseCard.querySelectorAll('.course-category'))
+              .map(el => el.textContent?.trim())
+              .filter(Boolean);
+
             if (!courseData) {
-              // Course doesn't exist yet, create it first with default stage
-              const { data: defaultStage } = await supabaseClient
-                .from('stages')
-                .select('id')
-                .eq('title', 'Beginner')
-                .maybeSingle();
-
-              if (!defaultStage?.id) {
-                console.error('Could not find default stage');
-                return;
-              }
-
               // Get course details from the page
               const courseTitle = courseCard.querySelector('.course-title')?.textContent?.trim() || 'Untitled Course';
               const courseDesc = courseCard.querySelector('.course-description')?.textContent?.trim() || '';
@@ -192,11 +184,11 @@
               const { data: newCourse, error: insertError } = await supabaseClient
                 .from('courses')
                 .insert({
-                  learnworlds_id: courseId, // Store LearnWorlds ID in separate column
+                  learnworlds_id: courseId,
                   title: courseTitle,
                   description: courseDesc,
                   image: courseImg,
-                  stage_id: defaultStage.id
+                  categories: categories
                 })
                 .select()
                 .maybeSingle();
@@ -212,7 +204,6 @@
                 .insert({
                   course_id: newCourse.id,
                   user_id: userId,
-                  stage_id: defaultStage.id,
                   learnworlds_id: courseId
                 });
             } else {
@@ -222,7 +213,6 @@
                 .insert({
                   course_id: courseData.id,
                   user_id: userId,
-                  stage_id: courseData.stage_id,
                   learnworlds_id: courseId
                 });
             }
