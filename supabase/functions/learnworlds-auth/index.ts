@@ -39,39 +39,24 @@ serve(async (req) => {
 
     // Create base64 encoded credentials
     const credentials = btoa(`${clientId}:${clientSecret}`);
-    console.log('Making request to Learnworlds API');
     
-    // First get an access token
-    const tokenResponse = await fetch(`${apiUrl}/oauth2/access_token`, {
-      method: 'POST',
+    // Make request to get user data directly with Basic Auth
+    const userResponse = await fetch(`${apiUrl}/api/v2/users/${userId}`, {
+      method: 'GET',
       headers: {
         'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: 'grant_type=client_credentials'
-    });
-
-    const tokenData = await tokenResponse.json();
-    console.log('Token response status:', tokenResponse.status);
-
-    if (!tokenResponse.ok) {
-      throw new Error(`Failed to get access token: ${JSON.stringify(tokenData)}`);
-    }
-
-    // Now use the access token to get user data
-    const userResponse = await fetch(`${apiUrl}/v2/users/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${tokenData.access_token}`,
         'Content-Type': 'application/json'
       }
     });
 
-    const userData = await userResponse.json();
-    console.log('User response status:', userResponse.status);
-
     if (!userResponse.ok) {
-      throw new Error(`Failed to get user data: ${JSON.stringify(userData)}`);
+      const errorText = await userResponse.text();
+      console.error('Failed to get user data:', userResponse.status, errorText);
+      throw new Error(`Failed to get user data: ${errorText}`);
     }
+
+    const userData = await userResponse.json();
+    console.log('Successfully retrieved user data');
 
     // Create Supabase JWT
     const supabaseJwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
