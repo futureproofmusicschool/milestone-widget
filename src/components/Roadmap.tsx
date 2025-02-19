@@ -26,6 +26,12 @@ export const Roadmap: React.FC = () => {
         console.log("Received user data from Learnworlds:", data);
         setUsername(data.username || "");
         
+        if (!data.jwt) {
+          console.error("No JWT token received from Learnworlds");
+          toast.error("Authentication failed: No token received");
+          return;
+        }
+
         try {
           // Call our Learnworlds auth endpoint
           const { data: authData, error: authError } = await supabase.functions.invoke('learnworlds-auth', {
@@ -34,6 +40,12 @@ export const Roadmap: React.FC = () => {
 
           if (authError) {
             console.error("Error authenticating:", authError);
+            toast.error("Failed to authenticate");
+            return;
+          }
+
+          if (!authData?.token) {
+            console.error("No Supabase token received");
             toast.error("Failed to authenticate");
             return;
           }
