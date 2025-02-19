@@ -37,16 +37,42 @@ serve(async (req) => {
       throw new Error('Learnworlds credentials not configured');
     }
 
-    // Construct URL with query parameters for authentication
-    const url = new URL(`${apiUrl}/v2/users/${userId}`);
-    url.searchParams.append('client_id', clientId);
-    url.searchParams.append('client_secret', clientSecret);
+    // Format the URL properly, ensuring it doesn't have double slashes
+    const baseUrl = apiUrl.replace(/\/+$/, '');
+    const userUrl = `${baseUrl}/v2/users/${userId}`;
     
-    console.log('Making request to:', url.toString());
+    // First, get an access token
+    const tokenUrl = `${baseUrl}/oauth2/access_token`;
+    const tokenBody = new URLSearchParams();
+    tokenBody.append('grant_type', 'client_credentials');
+    tokenBody.append('client_id', clientId);
+    tokenBody.append('client_secret', clientSecret);
 
-    const userResponse = await fetch(url, {
+    console.log('Requesting access token from:', tokenUrl);
+    
+    const tokenResponse = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: tokenBody,
+    });
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error('Token response error:', errorText);
+      throw new Error(`Failed to get access token: ${tokenResponse.status}`);
+    }
+
+    const tokenData = await tokenResponse.json();
+    console.log('Received access token');
+
+    // Now use the access token to get user data
+    console.log('Making request to:', userUrl);
+    const userResponse = await fetch(userUrl, {
       method: 'GET',
       headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       }
