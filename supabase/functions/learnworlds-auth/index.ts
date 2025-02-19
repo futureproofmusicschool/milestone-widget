@@ -37,16 +37,15 @@ serve(async (req) => {
       throw new Error('Learnworlds credentials not configured');
     }
 
-    // Verify token with Learnworlds
+    // Verify token with Learnworlds - Note the updated URL structure
     console.log('Making request to Learnworlds API');
-    const response = await fetch(`${apiUrl}/v2/validate-token`, {
+    const response = await fetch(`${apiUrl}/v2/validate-token?client_id=${encodeURIComponent(clientId)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        client_id: clientId,
         client_secret: clientSecret
       })
     });
