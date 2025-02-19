@@ -25,30 +25,23 @@ serve(async (req) => {
     // Get Learnworlds credentials from environment
     const clientId = Deno.env.get('LEARNWORLDS_CLIENT_ID');
     const clientSecret = Deno.env.get('LEARNWORLDS_CLIENT_SECRET');
-    const schoolDomain = Deno.env.get('LEARNWORLDS_API_URL');
+    const apiUrl = Deno.env.get('LEARNWORLDS_API_URL');
 
     console.log('Checking Learnworlds credentials', {
       hasClientId: !!clientId,
       hasClientSecret: !!clientSecret,
-      schoolDomain
+      apiUrl
     });
 
-    if (!clientId || !clientSecret || !schoolDomain) {
+    if (!clientId || !clientSecret || !apiUrl) {
       throw new Error('Learnworlds credentials not configured');
     }
-
-    // Ensure the school domain is properly formatted
-    const baseUrl = schoolDomain.startsWith('http') 
-      ? schoolDomain 
-      : `https://${schoolDomain}.learnworlds.com`;
-    
-    console.log('Using base URL:', baseUrl);
 
     // Create base64 encoded credentials
     const credentials = btoa(`${clientId}:${clientSecret}`);
     
     // Make request to get user data with Basic Auth
-    const userUrl = `${baseUrl}/api/v2/users/${userId}`;
+    const userUrl = `${apiUrl}/v2/users/${userId}`;
     console.log('Making request to:', userUrl);
 
     const userResponse = await fetch(userUrl, {
