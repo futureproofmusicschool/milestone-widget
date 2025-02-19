@@ -27,14 +27,25 @@ export const Roadmap: React.FC = () => {
         setUsername(data.username || "");
         
         try {
-          // Sign in with JWT token as an ID token
-          const { data: session, error } = await supabase.auth.signInWithIdToken({
-            provider: 'jwt',
-            token: data.jwt
+          // Call our Learnworlds auth endpoint
+          const { data: authData, error: authError } = await supabase.functions.invoke('learnworlds-auth', {
+            body: { token: data.jwt }
           });
 
-          if (error) {
-            console.error("Error signing in:", error);
+          if (authError) {
+            console.error("Error authenticating:", authError);
+            toast.error("Failed to authenticate");
+            return;
+          }
+
+          // Sign in with the returned Supabase JWT
+          const { data: session, error: signInError } = await supabase.auth.signInWithIdToken({
+            provider: 'jwt',
+            token: authData.token
+          });
+
+          if (signInError) {
+            console.error("Error signing in:", signInError);
             toast.error("Failed to authenticate");
             return;
           }
