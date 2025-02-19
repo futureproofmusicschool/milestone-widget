@@ -1,10 +1,11 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { RoadmapStage } from "./RoadmapStage";
 import { useRoadmap } from "@/hooks/useRoadmap";
 
 export const Roadmap: React.FC = () => {
   const { stages, userCourses, isLoading, removeCourse } = useRoadmap();
+  const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -15,8 +16,7 @@ export const Roadmap: React.FC = () => {
       
       if (type === "USER_DATA") {
         console.log("Received user data from Learnworlds:", data);
-        // Here you can handle the user data
-        // For example, store it in state or pass it to your Supabase client
+        setUsername(data.username || "");
       }
     };
 
@@ -54,6 +54,9 @@ export const Roadmap: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#000000] p-8">
       <div className="mx-auto max-w-3xl">
+        <h1 className="text-2xl font-bold text-white mb-8 text-center">
+          ROADMAP FOR {username.toUpperCase()}
+        </h1>
         <div className="space-y-8">
           {stages?.map((stage) => {
             const stageCourses = userCourses
