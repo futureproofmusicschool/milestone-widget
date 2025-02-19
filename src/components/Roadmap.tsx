@@ -27,9 +27,12 @@ export const Roadmap: React.FC = () => {
         setUsername(data.username || "");
         
         try {
-          // Try to sign in with just the Learnworlds ID
+          // Use learnworlds_id as unique identifier for auth
+          const identifier = `user_${data.id}`;
+          
+          // Try to sign in existing user
           const { data: session, error: signInError } = await supabase.auth.signInWithPassword({
-            id: data.id,
+            email: identifier,
             password: 'anonymous'
           });
 
@@ -37,7 +40,7 @@ export const Roadmap: React.FC = () => {
             console.log("User doesn't exist yet, creating new user");
             // If sign in fails, create a new user
             const { error: signUpError } = await supabase.auth.signUp({
-              id: data.id,
+              email: identifier,
               password: 'anonymous',
               options: {
                 data: {
