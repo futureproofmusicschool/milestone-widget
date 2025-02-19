@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { CourseCard } from "./CourseCard";
 import { useRoadmap } from "@/hooks/useRoadmap";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export const Roadmap: React.FC = () => {
   const { userCourses, isLoading, removeCourse } = useRoadmap();
@@ -17,12 +19,43 @@ export const Roadmap: React.FC = () => {
   };
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       const { type, data } = event.data;
       
       if (type === "USER_DATA") {
         console.log("Received user data from Learnworlds:", data);
         setUsername(data.username || "");
+        
+        // Check if user exists in Supabase
+        const { data: existingUser } = await supabase
+          .from('user_courses')
+          .select('user_id')
+          .limit(1);
+
+        if (!existingUser || existingUser.length === 0) {
+          // Create new user in Supabase
+          const email = `${data.id}@learnworlds.user`; // Create a unique email
+          const password = crypto.randomUUID(); // Generate a random password
+
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                learnworlds_id: data.id,
+                username: data.username
+              }
+            }
+          });
+
+          if (signUpError) {
+            console.error("Error creating user:", signUpError);
+            toast.error("Failed to initialize user data");
+          } else {
+            console.log("Created new user account in Supabase");
+            toast.success("User data initialized successfully");
+          }
+        }
       }
     };
 
