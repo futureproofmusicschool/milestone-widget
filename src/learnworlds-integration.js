@@ -151,18 +151,73 @@
 
         try {
           if (isInRoadmap) {
+            // Remove course from roadmap
             await supabaseClient
               .from('user_courses')
               .delete()
               .eq('course_id', courseId)
               .eq('user_id', userId);
           } else {
-            await supabaseClient
-              .from('user_courses')
-              .insert({
-                course_id: courseId,
-                user_id: userId
-              });
+            // First, get the course details to find its stage
+            const { data: courseData, error: courseError } = await supabaseClient
+              .from('courses')
+              .select('stage_id')
+              .eq('learnworlds_id', courseId)
+              .maybeSingle();
+
+            if (courseError) {
+              console.error('Error fetching course:', courseError);
+              return;
+            }
+
+            if (!courseData) {
+              // Course doesn't exist yet, create it first
+              const courseTitle = courseCard.querySelector('.course-title')?.textContent || '';
+              const courseDesc = courseCard.querySelector('.course-description')?.textContent || '';
+              const courseImg = courseCard.querySelector('img')?.src || '';
+
+              // Default to beginner stage if we can't determine the stage
+              const { data: defaultStage } = await supabaseClient
+                .from('stages')
+                .select('id')
+                .eq('title', 'Beginner')
+                .maybeSingle();
+
+              const { data: newCourse, error: insertError } = await supabaseClient
+                .from('courses')
+                .insert({
+                  learnworlds_id: courseId,
+                  title: courseTitle,
+                  description: courseDesc,
+                  image: courseImg,
+                  stage_id: defaultStage?.id
+                })
+                .select()
+                .maybeSingle();
+
+              if (insertError) {
+                console.error('Error creating course:', insertError);
+                return;
+              }
+
+              // Add course to user's roadmap
+              await supabaseClient
+                .from('user_courses')
+                .insert({
+                  course_id: newCourse.id,
+                  user_id: userId,
+                  stage_id: newCourse.stage_id
+                });
+            } else {
+              // Add existing course to user's roadmap
+              await supabaseClient
+                .from('user_courses')
+                .insert({
+                  course_id: courseId,
+                  user_id: userId,
+                  stage_id: courseData.stage_id
+                });
+            }
           }
           updateButtonState(button, !isInRoadmap);
         } catch (error) {
