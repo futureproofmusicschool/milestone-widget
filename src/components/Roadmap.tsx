@@ -23,7 +23,9 @@ export const Roadmap: React.FC = () => {
 
     const sendHeight = () => {
       if (containerRef.current) {
-        const height = containerRef.current.scrollHeight;
+        // Add extra padding to ensure we capture everything
+        const height = containerRef.current.scrollHeight + 32;
+        console.log("Sending height:", height);
         window.parent.postMessage({ type: "RESIZE", height }, "*");
       }
     };
@@ -37,20 +39,28 @@ export const Roadmap: React.FC = () => {
       observer.observe(containerRef.current);
     }
 
+    // Send initial height after a short delay to ensure content is rendered
+    setTimeout(sendHeight, 100);
+
     window.addEventListener("message", handleMessage);
     
     // Let the parent know we're ready to receive data
     window.parent.postMessage({ type: "READY" }, "*");
 
+    // Set up periodic height checks for the first few seconds
+    const intervalId = setInterval(sendHeight, 500);
+    setTimeout(() => clearInterval(intervalId), 5000);
+
     return () => {
       window.removeEventListener("message", handleMessage);
       observer.disconnect();
+      clearInterval(intervalId);
     };
   }, []);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#000000] p-8">
+      <div className="bg-[#000000] p-8" ref={containerRef}>
         <div className="mx-auto max-w-3xl">
           <div className="animate-pulse space-y-4">
             <div className="h-8 w-48 rounded bg-[#111111]" />
