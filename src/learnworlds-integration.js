@@ -1,3 +1,4 @@
+
 // LearnWorlds Integration Script
 (function() {
   const SUPABASE_URL = "https://duhedfsjirpkzckqmgzf.supabase.co";
@@ -128,7 +129,7 @@
         const { data: existingCourse, error } = await supabaseClient
           .from('user_courses')
           .select('id')
-          .eq('course_id', courseId)
+          .eq('learnworlds_id', courseId)
           .eq('user_id', userId)
           .maybeSingle();
 
