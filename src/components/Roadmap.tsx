@@ -1,11 +1,12 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { RoadmapStage } from "./RoadmapStage";
 import { useRoadmap } from "@/hooks/useRoadmap";
 
 export const Roadmap: React.FC = () => {
   const { stages, userCourses, isLoading, removeCourse } = useRoadmap();
   const [username, setUsername] = useState<string>("");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -20,6 +21,22 @@ export const Roadmap: React.FC = () => {
       }
     };
 
+    const sendHeight = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.scrollHeight;
+        window.parent.postMessage({ type: "RESIZE", height }, "*");
+      }
+    };
+
+    // Send height whenever content changes
+    const observer = new ResizeObserver(() => {
+      sendHeight();
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
     window.addEventListener("message", handleMessage);
     
     // Let the parent know we're ready to receive data
@@ -27,6 +44,7 @@ export const Roadmap: React.FC = () => {
 
     return () => {
       window.removeEventListener("message", handleMessage);
+      observer.disconnect();
     };
   }, []);
 
@@ -52,7 +70,7 @@ export const Roadmap: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#000000] p-8">
+    <div ref={containerRef} className="bg-[#000000] p-8">
       <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-bold text-white mb-8 text-center">
           ROADMAP FOR {username.toUpperCase()}
