@@ -25,38 +25,57 @@ serve(async (req) => {
     // Get Learnworlds credentials from environment
     const clientId = Deno.env.get('LEARNWORLDS_CLIENT_ID');
     const clientSecret = Deno.env.get('LEARNWORLDS_CLIENT_SECRET');
-    const apiUrl = Deno.env.get('LEARNWORLDS_API_URL');
+    const schoolDomain = Deno.env.get('LEARNWORLDS_API_URL');
 
     console.log('Checking Learnworlds credentials', {
       hasClientId: !!clientId,
       hasClientSecret: !!clientSecret,
-      apiUrl
+      schoolDomain
     });
 
-    if (!clientId || !clientSecret || !apiUrl) {
+    if (!clientId || !clientSecret || !schoolDomain) {
       throw new Error('Learnworlds credentials not configured');
     }
+
+    // Ensure the school domain is properly formatted
+    const baseUrl = schoolDomain.startsWith('http') 
+      ? schoolDomain 
+      : `https://${schoolDomain}.learnworlds.com`;
+    
+    console.log('Using base URL:', baseUrl);
 
     // Create base64 encoded credentials
     const credentials = btoa(`${clientId}:${clientSecret}`);
     
-    // Make request to get user data directly with Basic Auth
-    const userResponse = await fetch(`${apiUrl}/api/v2/users/${userId}`, {
+    // Make request to get user data with Basic Auth
+    const userUrl = `${baseUrl}/api/v2/users/${userId}`;
+    console.log('Making request to:', userUrl);
+
+    const userResponse = await fetch(userUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     });
 
+    const responseText = await userResponse.text();
+    console.log('Response status:', userResponse.status);
+    console.log('Response headers:', Object.fromEntries(userResponse.headers.entries()));
+    console.log('Response body:', responseText);
+
     if (!userResponse.ok) {
-      const errorText = await userResponse.text();
-      console.error('Failed to get user data:', userResponse.status, errorText);
-      throw new Error(`Failed to get user data: ${errorText}`);
+      throw new Error(`Failed to get user data (${userResponse.status}): ${responseText}`);
     }
 
-    const userData = await userResponse.json();
-    console.log('Successfully retrieved user data');
+    let userData;
+    try {
+      userData = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response as JSON:', e);
+      throw new Error('Invalid response format from Learnworlds API');
+    }
 
     // Create Supabase JWT
     const supabaseJwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
