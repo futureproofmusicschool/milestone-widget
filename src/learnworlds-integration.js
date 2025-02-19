@@ -158,11 +158,11 @@
               .eq('course_id', courseId)
               .eq('user_id', userId);
           } else {
-            // First, get the course details to find its stage
+            // First, get the course details
             const { data: courseData, error: courseError } = await supabaseClient
               .from('courses')
-              .select('stage_id')
-              .eq('learnworlds_id', courseId)
+              .select('id, stage_id')
+              .eq('id', courseId)
               .maybeSingle();
 
             if (courseError) {
@@ -171,26 +171,32 @@
             }
 
             if (!courseData) {
-              // Course doesn't exist yet, create it first
-              const courseTitle = courseCard.querySelector('.course-title')?.textContent || '';
-              const courseDesc = courseCard.querySelector('.course-description')?.textContent || '';
-              const courseImg = courseCard.querySelector('img')?.src || '';
-
-              // Default to beginner stage if we can't determine the stage
+              // Course doesn't exist yet, create it first with default stage
               const { data: defaultStage } = await supabaseClient
                 .from('stages')
                 .select('id')
                 .eq('title', 'Beginner')
                 .maybeSingle();
 
+              if (!defaultStage?.id) {
+                console.error('Could not find default stage');
+                return;
+              }
+
+              // Get course details from the page
+              const courseTitle = courseCard.querySelector('.course-title')?.textContent?.trim() || 'Untitled Course';
+              const courseDesc = courseCard.querySelector('.course-description')?.textContent?.trim() || '';
+              const courseImg = courseCard.querySelector('img')?.src || '';
+
+              // Create the course
               const { data: newCourse, error: insertError } = await supabaseClient
                 .from('courses')
                 .insert({
-                  learnworlds_id: courseId,
+                  id: courseId, // Use the LearnWorlds course ID as our course ID
                   title: courseTitle,
                   description: courseDesc,
                   image: courseImg,
-                  stage_id: defaultStage?.id
+                  stage_id: defaultStage.id
                 })
                 .select()
                 .maybeSingle();
@@ -204,9 +210,9 @@
               await supabaseClient
                 .from('user_courses')
                 .insert({
-                  course_id: newCourse.id,
+                  course_id: courseId,
                   user_id: userId,
-                  stage_id: newCourse.stage_id
+                  stage_id: defaultStage.id
                 });
             } else {
               // Add existing course to user's roadmap
