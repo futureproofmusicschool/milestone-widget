@@ -16,17 +16,29 @@ serve(async (req) => {
 
   try {
     const { token } = await req.json();
+    console.log('Received token from client');
+
+    if (!token) {
+      throw new Error('No token provided');
+    }
     
     // Get Learnworlds credentials from environment
     const clientId = Deno.env.get('LEARNWORLDS_CLIENT_ID');
     const clientSecret = Deno.env.get('LEARNWORLDS_CLIENT_SECRET');
     const apiUrl = Deno.env.get('LEARNWORLDS_API_URL');
 
+    console.log('Checking Learnworlds credentials', {
+      hasClientId: !!clientId,
+      hasClientSecret: !!clientSecret,
+      apiUrl
+    });
+
     if (!clientId || !clientSecret || !apiUrl) {
       throw new Error('Learnworlds credentials not configured');
     }
 
     // Verify token with Learnworlds
+    console.log('Making request to Learnworlds API');
     const response = await fetch(`${apiUrl}/v2/validate-token`, {
       method: 'POST',
       headers: {
@@ -39,13 +51,15 @@ serve(async (req) => {
       })
     });
 
+    const responseText = await response.text();
+    console.log('Learnworlds API response:', response.status, responseText);
+
     if (!response.ok) {
-      console.error('Learnworlds validation failed:', await response.text());
-      throw new Error('Failed to validate Learnworlds token');
+      throw new Error(`Learnworlds validation failed: ${responseText}`);
     }
 
-    const userData = await response.json();
-    console.log('Learnworlds user data:', userData);
+    const userData = JSON.parse(responseText);
+    console.log('Parsed user data:', userData);
 
     // Create Supabase JWT
     const supabaseJwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
@@ -57,12 +71,14 @@ serve(async (req) => {
     const jwt = await new jose.SignJWT({
       role: 'authenticated',
       aud: 'authenticated',
-      sub: userData.id, // Use Learnworlds user ID
-      email: userData.email,
+      sub: userData.id?.toString() || 'unknown', // Ensure ID is a string
+      email: userData.email || '',
       exp: now + 3600 // 1 hour expiration
     })
       .setProtectedHeader({ alg: 'HS256' })
       .sign(new TextEncoder().encode(supabaseJwtSecret));
+
+    console.log('JWT created successfully');
 
     return new Response(
       JSON.stringify({ token: jwt, user: userData }),
@@ -74,7 +90,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Auth error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
