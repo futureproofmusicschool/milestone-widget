@@ -5,7 +5,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGVkZnNqaXJwa3pja3FtZ3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5NjQ4NDYsImV4cCI6MjA1NDU0MDg0Nn0.gvrxZc1O67LecA666BdrsgeYQGVvDmPbTYyAkmqiNRM";
 
   // Wait for DOM to be ready
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', async function() {
     // Add Supabase JS library
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
@@ -13,12 +13,29 @@
     document.head.appendChild(script);
   });
 
-  function initializeRoadmapButtons() {
+  async function initializeRoadmapButtons() {
     console.log('Initializing roadmap buttons...');
     
     // Create Supabase client
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Get the user's JWT from LearnWorlds
+    const jwt = "{{USER.JWT}}";
+    if (!jwt) {
+      console.error('No JWT found');
+      return;
+    }
+
+    // Sign in to Supabase with the JWT
+    const { error: signInError } = await supabaseClient.auth.signInWithJwt({
+      jwt: jwt
+    });
+
+    if (signInError) {
+      console.error('Error signing in:', signInError);
+      return;
+    }
 
     // Add button styles
     const styles = document.createElement('style');
@@ -109,9 +126,9 @@
 
       console.log('Found course ID:', courseId);
 
-      const userId = "{{USER.ID}}";
-      if (!userId) {
-        console.log('No user ID found');
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        console.log('No user found');
         return;
       }
 
@@ -130,7 +147,7 @@
           .from('user_courses')
           .select('id')
           .eq('learnworlds_id', courseId)
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .maybeSingle();
 
         if (!error && existingCourse) {
@@ -156,7 +173,7 @@
               .from('user_courses')
               .delete()
               .eq('learnworlds_id', courseId)
-              .eq('user_id', userId);
+              .eq('user_id', user.id);
           } else {
             // First, get the course details
             const { data: courseData, error: courseError } = await supabaseClient
@@ -204,7 +221,7 @@
                 .from('user_courses')
                 .insert({
                   course_id: newCourse.id,
-                  user_id: userId,
+                  user_id: user.id,
                   learnworlds_id: courseId
                 });
             } else {
@@ -213,7 +230,7 @@
                 .from('user_courses')
                 .insert({
                   course_id: courseData.id,
-                  user_id: userId,
+                  user_id: user.id,
                   learnworlds_id: courseId
                 });
             }
