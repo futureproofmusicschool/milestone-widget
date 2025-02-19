@@ -155,14 +155,14 @@
             await supabaseClient
               .from('user_courses')
               .delete()
-              .eq('course_id', courseId)
+              .eq('learnworlds_id', courseId)
               .eq('user_id', userId);
           } else {
             // First, get the course details
             const { data: courseData, error: courseError } = await supabaseClient
               .from('courses')
               .select('id, stage_id')
-              .eq('id', courseId)
+              .eq('learnworlds_id', courseId)
               .maybeSingle();
 
             if (courseError) {
@@ -188,11 +188,11 @@
               const courseDesc = courseCard.querySelector('.course-description')?.textContent?.trim() || '';
               const courseImg = courseCard.querySelector('img')?.src || '';
 
-              // Create the course
+              // Create the course with auto-generated UUID
               const { data: newCourse, error: insertError } = await supabaseClient
                 .from('courses')
                 .insert({
-                  id: courseId, // Use the LearnWorlds course ID as our course ID
+                  learnworlds_id: courseId, // Store LearnWorlds ID in separate column
                   title: courseTitle,
                   description: courseDesc,
                   image: courseImg,
@@ -206,22 +206,24 @@
                 return;
               }
 
-              // Add course to user's roadmap
+              // Add course to user's roadmap using the generated UUID
               await supabaseClient
                 .from('user_courses')
                 .insert({
-                  course_id: courseId,
+                  course_id: newCourse.id,
                   user_id: userId,
-                  stage_id: defaultStage.id
+                  stage_id: defaultStage.id,
+                  learnworlds_id: courseId
                 });
             } else {
               // Add existing course to user's roadmap
               await supabaseClient
                 .from('user_courses')
                 .insert({
-                  course_id: courseId,
+                  course_id: courseData.id,
                   user_id: userId,
-                  stage_id: courseData.stage_id
+                  stage_id: courseData.stage_id,
+                  learnworlds_id: courseId
                 });
             }
           }
