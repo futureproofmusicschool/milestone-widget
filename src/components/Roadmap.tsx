@@ -27,9 +27,10 @@ export const Roadmap: React.FC = () => {
         setUsername(data.username || "");
         
         try {
-          // Sign in with custom JWT token
-          const { data: session, error } = await supabase.auth.signInWithCustomToken({
-            token: data.jwt // This should be provided by Learnworlds
+          // Sign in with JWT token as an ID token
+          const { data: session, error } = await supabase.auth.signInWithIdToken({
+            provider: 'jwt',
+            token: data.jwt
           });
 
           if (error) {
