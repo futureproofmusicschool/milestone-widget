@@ -27,17 +27,17 @@ export const Roadmap: React.FC = () => {
         setUsername(data.username || "");
         
         try {
-          // First try to sign in anonymously
+          // Try to sign in with just the Learnworlds ID
           const { data: session, error: signInError } = await supabase.auth.signInWithPassword({
-            email: `${data.id}@anonymous.user`,
-            password: 'anonymous' // We'll use a fixed password for anonymous users
+            id: data.id,
+            password: 'anonymous'
           });
 
           if (signInError) {
-            console.log("User doesn't exist yet, creating new anonymous user");
-            // If sign in fails, create a new anonymous user
+            console.log("User doesn't exist yet, creating new user");
+            // If sign in fails, create a new user
             const { error: signUpError } = await supabase.auth.signUp({
-              email: `${data.id}@anonymous.user`,
+              id: data.id,
               password: 'anonymous',
               options: {
                 data: {
@@ -51,7 +51,7 @@ export const Roadmap: React.FC = () => {
               console.error("Error creating user:", signUpError);
               toast.error("Failed to initialize user data");
             } else {
-              console.log("Created new anonymous user account in Supabase");
+              console.log("Created new user account in Supabase");
               toast.success("User data initialized successfully");
             }
           } else {
