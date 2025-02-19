@@ -37,25 +37,41 @@ serve(async (req) => {
       throw new Error('Learnworlds credentials not configured');
     }
 
-    // Get user info from Learnworlds using user ID
+    // Create base64 encoded credentials
+    const credentials = btoa(`${clientId}:${clientSecret}`);
     console.log('Making request to Learnworlds API');
-    const response = await fetch(`${apiUrl}/v2/users/${userId}`, {
-      method: 'GET',
+    
+    // First get an access token
+    const tokenResponse = await fetch(`${apiUrl}/oauth2/access_token`, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'grant_type=client_credentials'
+    });
+
+    const tokenData = await tokenResponse.json();
+    console.log('Token response status:', tokenResponse.status);
+
+    if (!tokenResponse.ok) {
+      throw new Error(`Failed to get access token: ${JSON.stringify(tokenData)}`);
+    }
+
+    // Now use the access token to get user data
+    const userResponse = await fetch(`${apiUrl}/v2/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+        'Content-Type': 'application/json'
       }
     });
 
-    const responseText = await response.text();
-    console.log('Learnworlds API response:', response.status, responseText);
+    const userData = await userResponse.json();
+    console.log('User response status:', userResponse.status);
 
-    if (!response.ok) {
-      throw new Error(`Learnworlds validation failed: ${responseText}`);
+    if (!userResponse.ok) {
+      throw new Error(`Failed to get user data: ${JSON.stringify(userData)}`);
     }
-
-    const userData = JSON.parse(responseText);
-    console.log('Parsed user data:', userData);
 
     // Create Supabase JWT
     const supabaseJwtSecret = Deno.env.get('SUPABASE_JWT_SECRET');
@@ -67,7 +83,7 @@ serve(async (req) => {
     const jwt = await new jose.SignJWT({
       role: 'authenticated',
       aud: 'authenticated',
-      sub: userData.id?.toString() || userId, // Use the user ID we received
+      sub: userData.id?.toString() || userId,
       email: userData.email || '',
       exp: now + 3600 // 1 hour expiration
     })
