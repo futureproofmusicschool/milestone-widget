@@ -1,60 +1,17 @@
-
 // LearnWorlds Integration Script
 (function() {
-  const SUPABASE_URL = "https://duhedfsjirpkzckqmgzf.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGVkZnNqaXJwa3pja3FtZ3pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5NjQ4NDYsImV4cCI6MjA1NDU0MDg0Nn0.gvrxZc1O67LecA666BdrsgeYQGVvDmPbTYyAkmqiNRM";
+  const API_URL = 'https://learn-pathway-widget.vercel.app'; // Your actual Vercel deployment URL
 
   // Wait for DOM to be ready
-  document.addEventListener('DOMContentLoaded', async function() {
-    // Add Supabase JS library
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    script.onload = initializeRoadmapButtons;
-    document.head.appendChild(script);
-  });
+  document.addEventListener('DOMContentLoaded', initializeRoadmapButtons);
 
   async function initializeRoadmapButtons() {
     console.log('Initializing roadmap buttons...');
     
-    // Create Supabase client
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Get user ID and authenticate first
+    // Get user ID
     const userId = "{{USER.ID}}";
-    const username = "{{USER.USERNAME}}";
     if (!userId) {
       console.error('No user ID available');
-      return;
-    }
-
-    try {
-      console.log('Authenticating with Learnworlds user ID:', userId);
-      
-      // Call the Edge Function to authenticate
-      const { data: authData, error: authError } = await supabaseClient.functions.invoke('learnworlds-auth', {
-        body: { token: userId }
-      });
-
-      if (authError || !authData?.token) {
-        console.error('Authentication failed:', authError || 'No token received');
-        return;
-      }
-
-      // Sign in with the returned JWT
-      const { error: signInError } = await supabaseClient.auth.signInWithIdToken({
-        provider: 'jwt',
-        token: authData.token
-      });
-
-      if (signInError) {
-        console.error('Error signing in with JWT:', signInError);
-        return;
-      }
-
-      console.log('Successfully authenticated with Supabase');
-    } catch (error) {
-      console.error('Error in authentication flow:', error);
       return;
     }
 
@@ -124,6 +81,19 @@
       return null;
     }
 
+    // Function to check if a course is in user's roadmap
+    async function isInRoadmap(courseId, userId) {
+      try {
+        const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch roadmap');
+        const data = await response.json();
+        return data.courses.includes(courseId);
+      } catch (error) {
+        console.error('Error checking roadmap:', error);
+        return false;
+      }
+    }
+
     // Function to add button to a course card
     async function addButtonToCourseCard(courseCard) {
       console.log('Processing course card:', courseCard);
@@ -149,29 +119,15 @@
       // Create button
       const button = document.createElement('button');
       button.className = 'roadmap-button add';
-      updateButtonState(button, false);
-
+      
       // Check if course is already in roadmap
-      try {
-        const { data: existingCourse, error } = await supabaseClient
-          .from('user_courses')
-          .select('id')
-          .eq('learnworlds_id', courseId)
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (!error && existingCourse) {
-          updateButtonState(button, true);
-        }
-      } catch (error) {
-        console.error('Error checking course status:', error);
-      }
+      const inRoadmap = await isInRoadmap(courseId, userId);
+      updateButtonState(button, inRoadmap);
 
       // Handle click events
       const handleClick = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
         
         const isInRoadmap = button.classList.contains('remove');
         button.disabled = true;
@@ -179,71 +135,24 @@
         try {
           if (isInRoadmap) {
             // Remove course from roadmap
-            await supabaseClient
-              .from('user_courses')
-              .delete()
-              .eq('learnworlds_id', courseId)
-              .eq('user_id', userId);
+            const response = await fetch(`${API_URL}/api/roadmap/${userId}/remove`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ courseId })
+            });
+            
+            if (!response.ok) throw new Error('Failed to remove course');
           } else {
-            // Check if course exists
-            const { data: courseData, error: courseError } = await supabaseClient
-              .from('courses')
-              .select('id')
-              .eq('learnworlds_id', courseId)
-              .maybeSingle();
-
-            if (courseError) {
-              console.error('Error fetching course:', courseError);
-              return;
-            }
-
-            // Get categories
-            const categories = Array.from(courseCard.querySelectorAll('.course-category'))
-              .map(el => el.textContent?.trim())
-              .filter(Boolean);
-
-            if (!courseData) {
-              // Create new course
-              const courseTitle = courseCard.querySelector('.course-title')?.textContent?.trim() || 'Untitled Course';
-              const courseDesc = courseCard.querySelector('.course-description')?.textContent?.trim() || '';
-              const courseImg = courseCard.querySelector('img')?.src || '';
-
-              const { data: newCourse, error: insertError } = await supabaseClient
-                .from('courses')
-                .insert({
-                  learnworlds_id: courseId,
-                  title: courseTitle,
-                  description: courseDesc,
-                  image: courseImg,
-                  categories: categories
-                })
-                .select()
-                .maybeSingle();
-
-              if (insertError) {
-                console.error('Error creating course:', insertError);
-                return;
-              }
-
-              // Add to user's roadmap
-              await supabaseClient
-                .from('user_courses')
-                .insert({
-                  course_id: newCourse.id,
-                  user_id: userId,
-                  learnworlds_id: courseId
-                });
-            } else {
-              // Add existing course to roadmap
-              await supabaseClient
-                .from('user_courses')
-                .insert({
-                  course_id: courseData.id,
-                  user_id: userId,
-                  learnworlds_id: courseId
-                });
-            }
+            // Add course to roadmap
+            const response = await fetch(`${API_URL}/api/roadmap/${userId}/add`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ courseId })
+            });
+            
+            if (!response.ok) throw new Error('Failed to add course');
           }
+          
           updateButtonState(button, !isInRoadmap);
         } catch (error) {
           console.error('Error updating roadmap:', error);
@@ -259,7 +168,6 @@
         button.addEventListener(eventType, (e) => {
           e.preventDefault();
           e.stopPropagation();
-          e.stopImmediatePropagation();
           if (eventType === 'click') handleClick(e);
         }, true);
       });
