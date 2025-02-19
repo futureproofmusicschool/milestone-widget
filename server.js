@@ -1,66 +1,104 @@
 require('dotenv').config();
 const express = require('express');
+const { google } = require('googleapis');
 const bodyParser = require('body-parser');
-const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Express app
 const app = express();
 app.use(bodyParser.json());
 
-// Load environment variables
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Google Sheets setup
+const auth = new google.auth.GoogleAuth({
+  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
 
-// Create a Supabase client instance using the service role key
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const sheets = google.sheets({ version: 'v4', auth });
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID;  // From your Google Sheet's URL
 
 /**
- * Endpoint: GET /api/roadmap/:userId
- * - Retrieves the student's saved courses from the 'student_roadmap' table.
- * - You should verify the user's identity with a proper authentication check here (e.g., validate a JWT or session cookie).
+ * Get a user's saved courses
  */
 app.get('/api/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    // TODO: Add authentication verification here to ensure the user is allowed to access this data.
     
-    const { data, error } = await supabase
-      .from('student_roadmap')
-      .select('*')
-      .eq('user_id', userId);
+    // Read all rows from the sheet
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet1!A:B',  // Just get user_id and course_id columns
+    });
 
-    if (error) throw error;
-    res.status(200).json({ courses: data });
+    // Filter for just this user's courses
+    const userCourses = (response.data.values || [])
+      .filter(row => row[0] === userId)
+      .map(row => row[1]); // Get just the course_ids
+
+    res.status(200).json({ courses: userCourses });
   } catch (err) {
-    console.error('Error fetching roadmap data:', err);
-    res.status(500).json({ error: 'Something went wrong' });
+    console.error('Error fetching courses:', err);
+    res.status(500).json({ error: 'Failed to fetch courses' });
   }
 });
 
 /**
- * Endpoint: POST /api/roadmap/:userId/add
- * - Adds a course to the student's roadmap
- * - Make sure to securely validate and sanitize incoming data.
+ * Add a course to user's roadmap
  */
 app.post('/api/roadmap/:userId/add', async (req, res) => {
   try {
     const { userId } = req.params;
     const { courseId } = req.body;
-    
-    // TODO: Validate input data and implement authentication check here.
 
-    const { data, error } = await supabase
-      .from('student_roadmap')
-      .insert({ user_id: userId, course_id: courseId });
-    
-    if (error) throw error;
-    res.status(200).json({ added: data });
+    // Append the new course preference
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet1!A:C',
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[userId, courseId, new Date().toISOString()]]
+      }
+    });
+
+    res.status(200).json({ message: 'Course added successfully' });
   } catch (err) {
     console.error('Error adding course:', err);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: 'Failed to add course' });
   }
 });
 
-// Start the server
+/**
+ * Remove a course from user's roadmap
+ */
+app.post('/api/roadmap/:userId/remove', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { courseId } = req.body;
+    
+    // Get current data
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet1!A:C',
+    });
+
+    // Find the row to remove
+    const values = response.data.values || [];
+    const rowIndex = values.findIndex(row => 
+      row[0] === userId && row[1] === courseId
+    );
+
+    if (rowIndex !== -1) {
+      // Clear the row (Google Sheets doesn't have a true delete, so we clear it)
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `Sheet1!A${rowIndex + 1}:C${rowIndex + 1}`,
+      });
+    }
+
+    res.status(200).json({ message: 'Course removed successfully' });
+  } catch (err) {
+    console.error('Error removing course:', err);
+    res.status(500).json({ error: 'Failed to remove course' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
