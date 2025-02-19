@@ -33,13 +33,10 @@ export const Roadmap: React.FC = () => {
           .limit(1);
 
         if (!existingUser || existingUser.length === 0) {
-          // Create new user in Supabase
-          const email = `${data.id}@learnworlds.user`; // Create a unique email
-          const password = crypto.randomUUID(); // Generate a random password
-
+          // Create new user in Supabase without email
           const { error: signUpError } = await supabase.auth.signUp({
-            email,
-            password,
+            email: null,
+            password: crypto.randomUUID(), // Generate a random password
             options: {
               data: {
                 learnworlds_id: data.id,
