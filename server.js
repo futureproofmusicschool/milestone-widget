@@ -39,7 +39,7 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 
 /**
  * Endpoint: POST /api/roadmap/:userId/add
- * - Adds a course to the student's roadmap.
+ * - Adds a course to the student's roadmap
  * - Make sure to securely validate and sanitize incoming data.
  */
 app.post('/api/roadmap/:userId/add', async (req, res) => {
