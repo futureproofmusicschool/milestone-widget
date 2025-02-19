@@ -15,11 +15,11 @@ serve(async (req) => {
   }
 
   try {
-    const { token } = await req.json();
-    console.log('Received token from client');
+    const { token: userId } = await req.json();
+    console.log('Received user ID from client:', userId);
 
-    if (!token) {
-      throw new Error('No token provided');
+    if (!userId) {
+      throw new Error('No user ID provided');
     }
     
     // Get Learnworlds credentials from environment
@@ -37,17 +37,14 @@ serve(async (req) => {
       throw new Error('Learnworlds credentials not configured');
     }
 
-    // Verify token with Learnworlds - Note the updated URL structure
+    // Get user info from Learnworlds using user ID
     console.log('Making request to Learnworlds API');
-    const response = await fetch(`${apiUrl}/v2/validate-token?client_id=${encodeURIComponent(clientId)}`, {
-      method: 'POST',
+    const response = await fetch(`${apiUrl}/v2/users/${userId}`, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        client_secret: clientSecret
-      })
+        'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
+      }
     });
 
     const responseText = await response.text();
@@ -70,7 +67,7 @@ serve(async (req) => {
     const jwt = await new jose.SignJWT({
       role: 'authenticated',
       aud: 'authenticated',
-      sub: userData.id?.toString() || 'unknown', // Ensure ID is a string
+      sub: userData.id?.toString() || userId, // Use the user ID we received
       email: userData.email || '',
       exp: now + 3600 // 1 hour expiration
     })

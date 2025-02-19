@@ -26,16 +26,17 @@ export const Roadmap: React.FC = () => {
         console.log("Received user data from Learnworlds:", data);
         setUsername(data.username || "");
         
-        if (!data.jwt) {
-          console.error("No JWT token received from Learnworlds");
-          toast.error("Authentication failed: No token received");
+        // Instead of looking for jwt, use userId as the token
+        if (!data.userId) {
+          console.error("No user ID received from Learnworlds");
+          toast.error("Authentication failed: No user ID received");
           return;
         }
 
         try {
-          // Call our Learnworlds auth endpoint
+          // Call our Learnworlds auth endpoint with userId instead of jwt
           const { data: authData, error: authError } = await supabase.functions.invoke('learnworlds-auth', {
-            body: { token: data.jwt }
+            body: { token: data.userId } // Using userId as the token
           });
 
           if (authError) {
