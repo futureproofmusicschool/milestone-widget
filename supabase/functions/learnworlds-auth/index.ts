@@ -37,17 +37,16 @@ serve(async (req) => {
       throw new Error('Learnworlds credentials not configured');
     }
 
-    // Create base64 encoded credentials
-    const credentials = btoa(`${clientId}:${clientSecret}`);
+    // Construct URL with query parameters for authentication
+    const url = new URL(`${apiUrl}/v2/users/${userId}`);
+    url.searchParams.append('client_id', clientId);
+    url.searchParams.append('client_secret', clientSecret);
     
-    // Make request to get user data with Basic Auth
-    const userUrl = `${apiUrl}/v2/users/${userId}`;
-    console.log('Making request to:', userUrl);
+    console.log('Making request to:', url.toString());
 
-    const userResponse = await fetch(userUrl, {
+    const userResponse = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Basic ${credentials}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       }
