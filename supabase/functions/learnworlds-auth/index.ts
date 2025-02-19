@@ -37,25 +37,23 @@ serve(async (req) => {
       throw new Error('Learnworlds credentials not configured');
     }
 
-    // Format the URL properly, ensuring it doesn't have double slashes
+    // Format base URL
     const baseUrl = apiUrl.replace(/\/+$/, '');
     const userUrl = `${baseUrl}/v2/users/${userId}`;
     
-    // First, get an access token
+    // Get access token
     const tokenUrl = `${baseUrl}/oauth2/access_token`;
-    const tokenBody = new URLSearchParams();
-    tokenBody.append('grant_type', 'client_credentials');
-    tokenBody.append('client_id', clientId);
-    tokenBody.append('client_secret', clientSecret);
+    const tokenFormData = new FormData();
+    tokenFormData.append('grant_type', 'client_credentials');
+    tokenFormData.append('client_id', clientId);
+    tokenFormData.append('client_secret', clientSecret);
+    tokenFormData.append('scope', 'read');
 
     console.log('Requesting access token from:', tokenUrl);
     
     const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: tokenBody,
+      body: tokenFormData
     });
 
     if (!tokenResponse.ok) {
@@ -65,10 +63,10 @@ serve(async (req) => {
     }
 
     const tokenData = await tokenResponse.json();
-    console.log('Received access token');
+    console.log('Received access token response');
 
-    // Now use the access token to get user data
-    console.log('Making request to:', userUrl);
+    // Get user data with access token
+    console.log('Making user data request to:', userUrl);
     const userResponse = await fetch(userUrl, {
       method: 'GET',
       headers: {
@@ -79,9 +77,9 @@ serve(async (req) => {
     });
 
     const responseText = await userResponse.text();
-    console.log('Response status:', userResponse.status);
-    console.log('Response headers:', Object.fromEntries(userResponse.headers.entries()));
-    console.log('Response body:', responseText);
+    console.log('User data response status:', userResponse.status);
+    console.log('User data response headers:', Object.fromEntries(userResponse.headers.entries()));
+    console.log('User data response body:', responseText);
 
     if (!userResponse.ok) {
       throw new Error(`Failed to get user data (${userResponse.status}): ${responseText}`);
