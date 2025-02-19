@@ -27,39 +27,20 @@ export const Roadmap: React.FC = () => {
         setUsername(data.username || "");
         
         try {
-          // Use learnworlds_id as unique identifier for auth
-          const identifier = `user_${data.id}`;
-          
-          // Try to sign in existing user
-          const { data: session, error: signInError } = await supabase.auth.signInWithPassword({
-            email: identifier,
-            password: 'anonymous'
+          // Sign in with custom JWT token
+          const { data: session, error } = await supabase.auth.signInWithCustomToken({
+            token: data.jwt // This should be provided by Learnworlds
           });
 
-          if (signInError) {
-            console.log("User doesn't exist yet, creating new user");
-            // If sign in fails, create a new user
-            const { error: signUpError } = await supabase.auth.signUp({
-              email: identifier,
-              password: 'anonymous',
-              options: {
-                data: {
-                  learnworlds_id: data.id,
-                  username: data.username
-                }
-              }
-            });
-
-            if (signUpError) {
-              console.error("Error creating user:", signUpError);
-              toast.error("Failed to initialize user data");
-            } else {
-              console.log("Created new user account in Supabase");
-              toast.success("User data initialized successfully");
-            }
-          } else {
-            console.log("Successfully signed in existing user");
+          if (error) {
+            console.error("Error signing in:", error);
+            toast.error("Failed to authenticate");
+            return;
           }
+
+          console.log("Successfully signed in with JWT");
+          toast.success("Authentication successful");
+          
         } catch (error) {
           console.error("Error in authentication flow:", error);
           toast.error("Failed to authenticate");
