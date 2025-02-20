@@ -361,17 +361,13 @@ app.get('/api/progress/:userId', async (req, res) => {
     
     const apiUrl = `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
     console.log('LearnWorlds API URL:', apiUrl);
-    console.log('Using credentials:', {
-      clientId: process.env.LEARNWORLDS_CLIENT_ID?.slice(0, 5) + '...',
-      hasSecret: !!process.env.LEARNWORLDS_CLIENT_SECRET
-    });
 
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'client_id': process.env.LEARNWORLDS_CLIENT_ID,
-        'client_secret': process.env.LEARNWORLDS_CLIENT_SECRET
+        'Authorization': `Bearer ${process.env.LEARNWORLDS_CLIENT_SECRET}`,
+        'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
       }
     });
 
