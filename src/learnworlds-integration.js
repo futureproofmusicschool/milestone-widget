@@ -305,19 +305,43 @@
     return progress;
   }
 
-  // Remove the separate load event listeners and combine them
+  // Add a function to wait for course cards
+  async function waitForCourseCards() {
+    const maxAttempts = 10;
+    const delayMs = 500;
+    
+    for (let i = 0; i < maxAttempts; i++) {
+      const cards = document.querySelectorAll('.course-card, .lw-course-card');
+      if (cards.length > 0) {
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    return false;
+  }
+
+  // Update the load event handler
   window.addEventListener('load', async function() {
     const iframe = document.getElementById('pathway-widget');
     if (iframe) {
-      // First get all course progress
+      // Wait for course cards to be available
+      const cardsLoaded = await waitForCourseCards();
+      if (!cardsLoaded) {
+        console.error('Course cards not found after waiting');
+        return;
+      }
+
+      // Now get progress when we know cards are available
       const progress = await getAllCourseProgress();
+      console.log('Course progress found:', progress); // Debug log
+      
       const progressParam = encodeURIComponent(JSON.stringify(progress));
       
       // Update iframe src with both user data and progress
       const baseUrl = iframe.src.split('?')[0];
       iframe.src = `${baseUrl}?userId={{USER.ID}}&username={{USER.NAME}}&progress=${progressParam}`;
 
-      // Send user data message after iframe loads with new src
+      // Send user data message after iframe loads
       iframe.onload = function() {
         iframe.contentWindow.postMessage({ 
           type: "USER_DATA",

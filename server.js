@@ -60,24 +60,22 @@ app.get('/api/roadmap/:userId', async (req, res) => {
       console.log('First time user, adding Getting Started course...');
       
       try {
-        // Add Getting Started course with initial progress
         await sheets.spreadsheets.values.append({
           spreadsheetId: SPREADSHEET_ID,
-          range: 'Sheet1!A:E',
+          range: 'Sheet1!A:D', // Changed from A:E since we don't store progress
           valueInputOption: 'RAW',
           resource: {
             values: [[
               userId,
               'getting-started',
               'Getting Started',
-              '0', // Initial progress
               new Date().toISOString()
             ]]
           }
         });
         
-        // Add it to our current results
-        userRows.push([userId, 'getting-started', 'Getting Started', '0', new Date().toISOString()]);
+        // Add it to our current results without progress
+        userRows.push([userId, 'getting-started', 'Getting Started', new Date().toISOString()]);
       } catch (error) {
         console.error('Error adding Getting Started course:', error);
       }
