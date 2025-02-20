@@ -254,4 +254,49 @@
       subtree: true
     });
   }
+
+  // Update the message event listener to be more specific
+  window.addEventListener('message', function(event) {
+    // Only handle messages related to the roadmap widget
+    if (!event.data || !event.data.type) return;
+    
+    // Only process specific roadmap-related message types
+    const roadmapMessageTypes = ['RESIZE', 'READY', 'USER_DATA'];
+    if (!roadmapMessageTypes.includes(event.data.type)) return;
+    
+    // Handle roadmap-specific messages
+    if (event.data.type === 'RESIZE') {
+      const iframe = document.getElementById('pathway-widget');
+      if (iframe) {
+        iframe.style.height = `${event.data.height}px`;
+      }
+    }
+
+    if (event.data.type === 'READY') {
+      const iframe = document.getElementById('pathway-widget');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ 
+          type: "USER_DATA",
+          data: { 
+            username: "{{USER.NAME}}",
+            userId: "{{USER.ID}}"
+          }
+        }, "https://learn-pathway-widget.vercel.app");
+      }
+    }
+  });
+
+  // When sending messages to the iframe, specify the target origin
+  window.addEventListener('load', function() {
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ 
+        type: "USER_DATA",
+        data: { 
+          username: "{{USER.NAME}}",
+          userId: "{{USER.ID}}"
+        }
+      }, "https://learn-pathway-widget.vercel.app"); // Specify exact origin instead of "*"
+    }
+  });
 })();
