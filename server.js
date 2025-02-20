@@ -94,10 +94,10 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
     const { userId } = req.params;
     const { courseId } = req.body;
     
-    // Get current data
+    // Get current data - update range to include all columns
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:C',
+      range: 'Sheet1!A:D', // Changed from A:C to A:D
     });
 
     // Find the row to remove
@@ -107,10 +107,10 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
     );
 
     if (rowIndex !== -1) {
-      // Clear the row (Google Sheets doesn't have a true delete, so we clear it)
+      // Clear the row - update range to include all columns
       await sheets.spreadsheets.values.clear({
         spreadsheetId: SPREADSHEET_ID,
-        range: `Sheet1!A${rowIndex + 1}:C${rowIndex + 1}`,
+        range: `Sheet1!A${rowIndex + 1}:D${rowIndex + 1}`, // Changed from C to D
       });
     }
 
