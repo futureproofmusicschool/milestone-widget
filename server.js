@@ -125,7 +125,7 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
 app.get('/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const username = req.query.username || 'Student'; // Get username from query parameter
+    const username = decodeURIComponent(req.query.username || '') || 'Student'; // Decode the username
     
     // Get user's courses from the sheet
     const response = await sheets.spreadsheets.values.get({
