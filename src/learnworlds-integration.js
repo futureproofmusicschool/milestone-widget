@@ -3,8 +3,86 @@
   const API_URL = 'https://learn-pathway-widget.vercel.app';
   let userCoursesCache = null; // Cache for user's courses
 
-  // Wait for DOM to be ready
-  document.addEventListener('DOMContentLoaded', initializeRoadmapButtons);
+  // Single source of truth for progress data
+  const courseProgress = new Map();
+
+  // One function to get progress from a card
+  function getProgressFromCard(card) {
+    const progressText = card.querySelector('.weglot-exclude')?.textContent;
+    if (progressText) {
+      const value = parseInt(progressText, 10);
+      console.log('Found progress:', { text: progressText, value });
+      return value;
+    }
+    return 0;
+  }
+
+  // One function to update the widget
+  function updateWidget() {
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe && iframe.contentWindow) {
+      const progress = Object.fromEntries(courseProgress);
+      console.log('Sending progress to widget:', progress);
+      iframe.contentWindow.postMessage({
+        type: "USER_DATA",
+        data: {
+          username: "{{USER.NAME}}",
+          userId: "{{USER.ID}}",
+          progress
+        }
+      }, "https://learn-pathway-widget.vercel.app");
+    }
+  }
+
+  // Simplified card processing
+  function processCard(card) {
+    const courseId = getCourseIdFromCard(card);
+    if (!courseId) return;
+
+    // Get and store progress
+    const progress = getProgressFromCard(card);
+    courseProgress.set(courseId, progress);
+    
+    // Add button if needed
+    if (!card.querySelector('.roadmap-button-container')) {
+      addButtonToCourseCard(card);
+    }
+  }
+
+  // Main initialization
+  function initialize() {
+    console.log('Starting fresh initialization');
+    
+    // Process all existing cards
+    document.querySelectorAll('.course-card, .lw-course-card').forEach(processCard);
+    
+    // Update widget with current progress
+    updateWidget();
+
+    // Watch for new cards
+    new MutationObserver((mutations) => {
+      let needsUpdate = false;
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node instanceof HTMLElement) {
+            const cards = node.querySelectorAll('.course-card, .lw-course-card');
+            cards.forEach(card => {
+              processCard(card);
+              needsUpdate = true;
+            });
+          }
+        });
+      });
+      if (needsUpdate) updateWidget();
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+  } else {
+    initialize();
+  }
 
   async function initializeRoadmapButtons() {
     console.log('Initializing roadmap buttons...');
@@ -106,26 +184,19 @@
         if (fullCard) {
           courseCards.add(fullCard);
           
-          // Get progress while we're here
           const courseId = getCourseIdFromCard(fullCard);
           if (courseId) {
-            const progressElement = fullCard.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude');
+            // Get progress using exact selector chain from the HTML
+            const progressElement = fullCard.querySelector('.learnworlds-overline-text.learnworlds-element.no-margin-bottom .weglot-exclude');
             if (progressElement) {
-              const progressValue = parseInt(progressElement.textContent.trim(), 10);
+              const progressText = progressElement.textContent;
+              const progressValue = parseInt(progressText, 10); // Will parse "87%" to 87
               progress[courseId] = progressValue;
               console.log(`Found progress for ${courseId}:`, progressValue);
             }
           }
         }
       });
-    });
-
-    console.log('Found course cards:', courseCards.size);
-    console.log('Progress data:', progress);
-
-    // Add buttons and send progress to widget
-    courseCards.forEach(card => {
-      if (card) addButtonToCourseCard(card);
     });
 
     // Send progress to widget
@@ -140,6 +211,11 @@
         }
       }, "https://learn-pathway-widget.vercel.app");
     }
+
+    // Add buttons
+    courseCards.forEach(card => {
+      if (card) addButtonToCourseCard(card);
+    });
   }
 
   // Add button to a course card
