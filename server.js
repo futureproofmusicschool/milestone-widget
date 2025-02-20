@@ -153,16 +153,29 @@ app.get('/roadmap/:userId', async (req, res) => {
         progress: parseInt(row[3] || '0', 10)
       }));
 
-    // Check if Getting Started course is already in the list
-    const hasGettingStarted = userCourses.some(course => course.id === 'getting-started');
+    // Check if Getting Started course exists in the list
+    const existingGettingStarted = userCourses.find(course => course.id === 'getting-started');
     
-    // If not, add it to the beginning of the list
-    if (!hasGettingStarted) {
-      userCourses.unshift({
-        id: 'getting-started',
-        title: 'Getting Started',
-        progress: 0 // Default progress for new course
-      });
+    // If not in list, look for it in the sheet regardless of user
+    if (!existingGettingStarted) {
+      const gettingStartedRow = (response.data.values || [])
+        .find(row => row[1] === 'getting-started' && row[0] === userId);
+
+      if (gettingStartedRow) {
+        // If found in sheet, add with actual progress
+        userCourses.unshift({
+          id: 'getting-started',
+          title: 'Getting Started',
+          progress: parseInt(gettingStartedRow[3] || '0', 10)
+        });
+      } else {
+        // If not found at all, add with default values
+        userCourses.unshift({
+          id: 'getting-started',
+          title: 'Getting Started',
+          progress: 0
+        });
+      }
     }
 
     // Calculate average progress including Getting Started course
@@ -191,7 +204,7 @@ app.get('/roadmap/:userId', async (req, res) => {
               color: #F6F8FF;
               text-transform: uppercase;
               margin: 40px 0;
-              font-size: 2.1em;
+              font-size: 1.7em;
               font-weight: 700;
             }
             .course-list {

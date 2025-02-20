@@ -16,12 +16,16 @@
       return;
     }
 
-    // Fetch user's courses once and cache them
+    // Fetch user's courses and ensure Getting Started is included
     try {
       const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch roadmap');
       const data = await response.json();
-      userCoursesCache = new Set(data.courses); // Use a Set for O(1) lookups
+      userCoursesCache = new Set(data.courses);
+      
+      // Always include Getting Started in the cache
+      userCoursesCache.add('getting-started');
+      
       console.log('Cached user courses:', userCoursesCache);
     } catch (error) {
       console.error('Error fetching initial courses:', error);
