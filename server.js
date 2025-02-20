@@ -67,19 +67,18 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 app.post('/api/roadmap/:userId/add', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { courseId, courseTitle, courseDescription, progress } = req.body;
+    const { courseId, courseTitle, progress } = req.body;
 
-    // Append with all columns
+    // Append without description
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:F', // Extended range for new columns
+      range: 'Sheet1!A:E', // Changed from A:F to A:E (removed description column)
       valueInputOption: 'RAW',
       resource: {
         values: [[
           userId,
           courseId,
           courseTitle,
-          courseDescription,
           progress,
           new Date().toISOString()
         ]]
@@ -146,8 +145,7 @@ app.get('/roadmap/:userId', async (req, res) => {
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
-        description: row[3] || '',
-        progress: row[4] || '0'
+        progress: row[3] || '0'
       }));
 
     // Render a simple HTML page with your brand colors
@@ -246,7 +244,6 @@ app.get('/roadmap/:userId', async (req, res) => {
                          target="_blank" 
                          rel="noopener noreferrer">
                         <div class="course-title">${course.title}</div>
-                        <div class="course-description">${course.description}</div>
                         <div class="course-progress">${course.progress}% Complete</div>
                       </a>
                     </div>

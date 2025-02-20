@@ -145,21 +145,15 @@
           
           if (!response.ok) throw new Error('Failed to remove course');
         } else {
-          // Get course information with precise selectors
+          // Get course information with precise selectors - title and progress only
           const courseTitle = courseCard.querySelector('.learnworlds-heading3')?.textContent?.trim()
             || courseCard.querySelector('.lw-course-card--stretched-link')?.textContent?.trim()
             || `Course: ${courseId}`;
-
-          const courseDescription = courseCard.querySelector('.lw-course-card-descr')?.textContent?.trim() || '';
           
           const progressText = courseCard.querySelector('.learnworlds-overline-text .weglot-exclude')?.textContent?.trim() || '0';
           const progress = progressText.replace('%', '');
 
-          console.log('Parsed info:', {
-            courseTitle,
-            courseDescription,
-            progress
-          });
+          console.log('Parsed info:', { courseTitle, progress });
 
           const response = await fetch(
             `${API_URL}/api/roadmap/{{USER.ID}}/add`,
@@ -169,7 +163,6 @@
               body: JSON.stringify({ 
                 courseId,
                 courseTitle,
-                courseDescription,
                 progress
               })
             }
