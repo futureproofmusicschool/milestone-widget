@@ -46,13 +46,18 @@ app.get('/api/roadmap/:userId', async (req, res) => {
     // Read all rows from the sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:B',  // Just get user_id and course_id columns
+      range: 'Sheet1!A:B',
     });
 
-    // Filter for just this user's courses
-    const userCourses = (response.data.values || [])
+    // Filter for user's courses
+    let userCourses = (response.data.values || [])
       .filter(row => row[0] === userId)
-      .map(row => row[1]); // Get just the course_ids
+      .map(row => row[1]); // Get course_ids
+
+    // Add Getting Started if not present
+    if (!userCourses.includes('getting-started')) {
+      userCourses.unshift('getting-started');
+    }
 
     res.status(200).json({ courses: userCourses });
   } catch (err) {
@@ -133,22 +138,34 @@ app.get('/roadmap/:userId', async (req, res) => {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
     
-    // Get user's courses from the sheet - update range to get title
+    // Get user's courses from the sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:D', // Changed from A:C to A:D to include all columns
+      range: 'Sheet1!A:D',
     });
 
-    // Filter and map to get id and title from correct columns
-    const userCourses = (response.data.values || [])
+    // Filter and map user's courses
+    let userCourses = (response.data.values || [])
       .filter(row => row[0] === userId)
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
-        progress: parseInt(row[3] || '0', 10) // Ensure progress is a number
+        progress: parseInt(row[3] || '0', 10)
       }));
 
-    // Calculate average progress
+    // Check if Getting Started course is already in the list
+    const hasGettingStarted = userCourses.some(course => course.id === 'getting-started');
+    
+    // If not, add it to the beginning of the list
+    if (!hasGettingStarted) {
+      userCourses.unshift({
+        id: 'getting-started',
+        title: 'Getting Started',
+        progress: 0 // Default progress for new course
+      });
+    }
+
+    // Calculate average progress including Getting Started course
     const totalProgress = userCourses.length > 0
       ? Math.round(userCourses.reduce((sum, course) => sum + course.progress, 0) / userCourses.length)
       : 0;
