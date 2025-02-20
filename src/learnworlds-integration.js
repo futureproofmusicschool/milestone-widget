@@ -145,9 +145,20 @@
           
           if (!response.ok) throw new Error('Failed to remove course');
         } else {
-          // Get the course title from the card
-          const courseTitle = courseCard.querySelector('.course-title')?.textContent?.trim() 
-            || 'Untitled Course';
+          // Get the course title using LearnWorlds' structure
+          let courseTitle = courseCard.querySelector('.lw-cols .one-row')?.textContent?.trim();
+          
+          // If not found, try other common LearnWorlds selectors
+          if (!courseTitle) {
+            courseTitle = courseCard.querySelector('.one-row-tl, .one-row, .lw-course-title')?.textContent?.trim();
+          }
+          
+          // If still not found, use a default with the course ID
+          if (!courseTitle) {
+            courseTitle = `Course: ${courseId}`;
+          }
+
+          console.log('Found course title:', courseTitle); // Debug log
 
           const response = await fetch(
             `${API_URL}/api/roadmap/{{USER.ID}}/add`,
