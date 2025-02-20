@@ -239,15 +239,17 @@
   function setupIframe() {
     const iframe = document.getElementById('pathway-widget');
     if (iframe) {
-      // Set a generous initial height
-      iframe.style.height = '800px';
+      // Start with reasonable height
+      iframe.style.height = '400px';
+      iframe.style.minHeight = '100px';
       iframe.style.overflow = 'hidden';
       
       // Listen for resize messages from the iframe
       window.addEventListener('message', (event) => {
-        if (event.data.type === 'resize') {
-          // Add some padding to prevent scrollbar
-          iframe.style.height = `${event.data.height + 20}px`;
+        if (event.data?.type === 'resize' && event.data?.height) {
+          // Add padding and set the height
+          const newHeight = Math.max(event.data.height + 40, 100);
+          iframe.style.height = `${newHeight}px`;
         }
       });
 

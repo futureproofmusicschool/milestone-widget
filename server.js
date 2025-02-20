@@ -268,15 +268,13 @@ app.get('/roadmap/:userId', async (req, res) => {
           <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
             body {
-              font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-              max-width: 800px;
-              margin: 0 auto;
+              margin: 0;
               padding: 20px;
-              background: #000000;
-              color: #F6F8FF;
-              min-height: 100vh;
+              min-height: 100%;
               height: auto;
               overflow: visible;
+              background: #000000;
+              color: #F6F8FF;
             }
             h1 {
               text-align: center;
@@ -294,6 +292,7 @@ app.get('/roadmap/:userId', async (req, res) => {
               height: auto;
               min-height: 100px;
               overflow: visible;
+              margin-bottom: 20px; /* Add space for the last item */
             }
             .course-item {
               padding: 15px 20px;
@@ -370,15 +369,21 @@ app.get('/roadmap/:userId', async (req, res) => {
           </style>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
           <script>
-            // Send height to parent window
-            function updateParentHeight() {
-              const height = document.body.scrollHeight;
+            // Move height calculation to a function
+            function sendHeight() {
+              const height = document.documentElement.scrollHeight;
               window.parent.postMessage({ type: 'resize', height }, '*');
             }
-            
-            // Update on load and when content changes
-            window.addEventListener('load', updateParentHeight);
-            new MutationObserver(updateParentHeight).observe(document.body, {
+
+            // Send height as soon as possible
+            document.addEventListener('DOMContentLoaded', sendHeight);
+            // Also send after a short delay to ensure all content is rendered
+            window.addEventListener('load', () => {
+              setTimeout(sendHeight, 100);
+            });
+
+            // Watch for content changes
+            new MutationObserver(sendHeight).observe(document.body, {
               childList: true,
               subtree: true
             });
