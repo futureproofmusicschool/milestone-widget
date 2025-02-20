@@ -358,8 +358,10 @@ app.get('/api/progress/:userId', async (req, res) => {
     const { userId } = req.params;
     console.log('Fetching progress for user:', userId);
     
-    // Get progress from LearnWorlds API
-    const apiUrl = `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
+    // Fix the API URL to match LearnWorlds documentation
+    const apiUrl = `https://www.futureproofmusicschool.com/admin/api:main/2951998/v2/users/${userId}/progress`;
+    console.log('Using LearnWorlds API URL:', apiUrl);
+
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
