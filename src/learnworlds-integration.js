@@ -292,13 +292,13 @@
     courseCards.forEach(card => {
       const courseId = getCourseIdFromCard(card);
       if (courseId) {
-        // Get progress using exact selector for LearnWorlds progress element
-        const progressElement = card.querySelector('.lw-course-card-progress');
+        // Get progress using the exact class structure we saw in the HTML
+        const progressElement = card.querySelector('.learnworlds-element.mt-2rem');
         const progressText = progressElement?.textContent?.trim() || '0';
         const progressValue = parseInt(progressText.replace(/[^0-9]/g, ''), 10);
         
         progress[courseId] = progressValue;
-        console.log(`Found progress for ${courseId}:`, progressValue); // Debug log
+        console.log(`Found progress for ${courseId}:`, { text: progressText, value: progressValue }); // More detailed debug log
       }
     });
     
@@ -307,13 +307,17 @@
 
   // Add a function to wait for course cards
   async function waitForCourseCards() {
-    const maxAttempts = 10;
-    const delayMs = 500;
+    const maxAttempts = 20;
+    const delayMs = 1000;
     
     for (let i = 0; i < maxAttempts; i++) {
       const cards = document.querySelectorAll('.course-card, .lw-course-card');
       if (cards.length > 0) {
-        return true;
+        // Also wait for progress elements to be loaded
+        const hasProgress = Array.from(cards).some(card => 
+          card.querySelector('.learnworlds-element.mt-2rem')
+        );
+        if (hasProgress) return true;
       }
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
