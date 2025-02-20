@@ -145,8 +145,13 @@ app.get('/roadmap/:userId', async (req, res) => {
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
-        progress: row[3] || '0'
+        progress: parseInt(row[3] || '0', 10) // Ensure progress is a number
       }));
+
+    // Calculate average progress
+    const totalProgress = userCourses.length > 0
+      ? Math.round(userCourses.reduce((sum, course) => sum + course.progress, 0) / userCourses.length)
+      : 0;
 
     // Render a simple HTML page with your brand colors
     const html = `
@@ -218,13 +223,27 @@ app.get('/roadmap/:userId', async (req, res) => {
               font-style: italic;
               padding: 40px 0;
             }
+            .total-progress-container {
+              margin-top: 20px;
+              padding: 15px 20px;
+              display: flex;
+              justify-content: flex-end;
+              align-items: center;
+            }
+            .total-progress {
+              font-size: 1.3em;
+              color: #FFFFFF;
+              font-weight: 600;
+              white-space: nowrap;
+            }
           </style>
         </head>
         <body>
           <h1>Course Roadmap for ${username}</h1>
           <div class="course-list">
             ${userCourses.length > 0 
-              ? userCourses.map(course => `
+              ? `
+                ${userCourses.map(course => `
                   <div class="course-item">
                     <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
                        target="_blank" 
@@ -233,7 +252,11 @@ app.get('/roadmap/:userId', async (req, res) => {
                       <span class="course-progress">${course.progress}% Complete</span>
                     </a>
                   </div>
-                `).join('')
+                `).join('')}
+                <div class="total-progress-container">
+                  <span class="total-progress">Total Progress: ${totalProgress}% Complete</span>
+                </div>
+                `
               : '<div class="empty-message">No courses added to roadmap yet.</div>'
             }
           </div>
