@@ -292,13 +292,21 @@
     courseCards.forEach(card => {
       const courseId = getCourseIdFromCard(card);
       if (courseId) {
-        // Get progress using the exact class structure we saw in the HTML
-        const progressElement = card.querySelector('.learnworlds-element.mt-2rem');
-        const progressText = progressElement?.textContent?.trim() || '0';
-        const progressValue = parseInt(progressText.replace(/[^0-9]/g, ''), 10);
-        
-        progress[courseId] = progressValue;
-        console.log(`Found progress for ${courseId}:`, { text: progressText, value: progressValue }); // More detailed debug log
+        // Get progress using the exact class we saw in the HTML
+        const progressElement = card.querySelector('.lw-course-card-progress');
+        if (progressElement) {
+          const progressText = progressElement.textContent.trim();
+          const progressValue = parseInt(progressText.replace(/[^0-9]/g, ''), 10);
+          
+          progress[courseId] = progressValue;
+          console.log(`Found progress for ${courseId}:`, { 
+            element: progressElement,
+            text: progressText, 
+            value: progressValue 
+          }); // Detailed debug log
+        } else {
+          console.log(`No progress element found for ${courseId}`);
+        }
       }
     });
     
@@ -313,11 +321,17 @@
     for (let i = 0; i < maxAttempts; i++) {
       const cards = document.querySelectorAll('.course-card, .lw-course-card');
       if (cards.length > 0) {
-        // Also wait for progress elements to be loaded
+        // Wait for progress elements to be loaded
         const hasProgress = Array.from(cards).some(card => 
-          card.querySelector('.learnworlds-element.mt-2rem')
+          card.querySelector('.lw-course-card-progress')
         );
-        if (hasProgress) return true;
+        if (hasProgress) {
+          console.log('Found cards with progress elements');
+          return true;
+        }
+        console.log(`Attempt ${i + 1}: Found cards but no progress elements yet`);
+      } else {
+        console.log(`Attempt ${i + 1}: No cards found yet`);
       }
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
