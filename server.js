@@ -356,11 +356,17 @@ app.get('/roadmap/:userId', async (req, res) => {
 app.get('/api/progress/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log('Fetching progress for user:', userId);
+    console.log('Server: Progress endpoint called for user:', userId);
     
     // Get progress from LearnWorlds API  
     const apiUrl = `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
-    console.log('Using LearnWorlds API URL:', apiUrl);
+    console.log('Server: Calling LearnWorlds API at:', apiUrl);
+
+    // Log environment variables (safely)
+    console.log('Server: Environment check:', {
+      hasClientId: !!process.env.LEARNWORLDS_CLIENT_ID,
+      hasClientSecret: !!process.env.LEARNWORLDS_CLIENT_SECRET
+    });
 
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',

@@ -7,7 +7,10 @@
 
   async function initializeRoadmapButtons() {
     const userId = "{{USER.ID}}";
-    if (!userId) return;
+    if (!userId) {
+      console.log('No user ID found, skipping progress fetch');
+      return;
+    }
 
     try {
       // First get user's courses
@@ -18,7 +21,12 @@
       userCoursesCache.add('getting-started');
 
       // Fetch progress (this will update the sheet)
-      await fetch(`${API_URL}/api/progress/${userId}`);
+      console.log('Fetching progress for user:', userId);
+      const progressResponse = await fetch(`${API_URL}/api/progress/${userId}`);
+      console.log('Progress response:', progressResponse.status);
+      if (!progressResponse.ok) {
+        console.error('Progress fetch failed:', await progressResponse.text());
+      }
 
       // Add styles and buttons
       addStyles();
