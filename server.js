@@ -127,18 +127,18 @@ app.get('/roadmap/:userId', async (req, res) => {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
     
-    // Get user's courses from the sheet
+    // Get user's courses from the sheet - update range to get title
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:C',
+      range: 'Sheet1!A:D', // Changed from A:C to A:D to include all columns
     });
 
-    // Filter for this user's courses and get both id and title
+    // Filter and map to get id and title from correct columns
     const userCourses = (response.data.values || [])
       .filter(row => row[0] === userId)
       .map(row => ({
         id: row[1],
-        title: row[2] || row[1] // Fallback to ID if no title
+        title: row[2] || row[1] // Title is in column C (index 2)
       }));
 
     // Render a simple HTML page with your brand colors
@@ -159,10 +159,10 @@ app.get('/roadmap/:userId', async (req, res) => {
             }
             h1 {
               text-align: center;
-              color: #F6F8FF; /* Light text */
+              color: #F6F8FF;
               text-transform: uppercase;
               margin: 40px 0;
-              font-size: 2.5em;
+              font-size: 2.1em; /* Reduced from 2.5em */
               font-weight: 700;
             }
             .course-list {
