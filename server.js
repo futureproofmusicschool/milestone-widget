@@ -125,6 +125,7 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
 app.get('/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    const username = req.query.username || 'Student'; // Get username from query parameter
     
     // Get user's courses from the sheet
     const response = await sheets.spreadsheets.values.get({
@@ -137,52 +138,61 @@ app.get('/roadmap/:userId', async (req, res) => {
       .filter(row => row[0] === userId)
       .map(row => row[1]);
 
-    // Render a simple HTML page
+    // Render a simple HTML page with your brand colors
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Course Roadmap</title>
+          <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
             body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
               max-width: 800px;
               margin: 0 auto;
               padding: 20px;
-              background: #f5f5f5;
+              background: #000000; /* Body background */
+              color: #F6F8FF; /* Light text */
             }
             h1 {
               text-align: center;
-              color: #333;
+              color: #F6F8FF; /* Light text */
               text-transform: uppercase;
               margin: 40px 0;
               font-size: 2.5em;
               font-weight: 700;
             }
             .course-list {
-              background: white;
+              background: #111111; /* Light background */
               border-radius: 8px;
               padding: 20px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
             .course-item {
               padding: 15px;
-              border-bottom: 1px solid #eee;
+              border-bottom: 1px solid #A373F8; /* Accent 1 */
               font-size: 1.1em;
+              color: #F6F8FF; /* Light text */
             }
             .course-item:last-child {
               border-bottom: none;
             }
             .empty-message {
               text-align: center;
-              color: #666;
+              color: #BBBDC5; /* Accent 2 */
               font-style: italic;
               padding: 40px 0;
+            }
+            .course-item:hover {
+              background: #A373F8; /* Accent 1 */
+              color: #000000; /* Dark text */
+              border-radius: 4px;
+              transition: all 0.2s ease;
             }
           </style>
         </head>
         <body>
-          <h1>Course Roadmap for ${userId}</h1>
+          <h1>Course Roadmap for ${username}</h1>
           <div class="course-list">
             ${userCourses.length > 0 
               ? userCourses.map(course => `
