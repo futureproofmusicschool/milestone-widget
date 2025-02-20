@@ -271,9 +271,7 @@ app.get('/roadmap/:userId', async (req, res) => {
               font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
               margin: 0;
               padding: 20px;
-              min-height: 100%;
               height: auto;
-              overflow: visible;
               background: #000000;
               color: #F6F8FF;
             }
@@ -289,11 +287,8 @@ app.get('/roadmap/:userId', async (req, res) => {
               background: #111111;
               border-radius: 8px;
               padding: 20px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+              margin-bottom: 20px;
               height: auto;
-              min-height: 100px;
-              overflow: visible;
-              margin-bottom: 20px; /* Add space for the last item */
             }
             .course-item {
               padding: 15px 20px;
@@ -336,11 +331,10 @@ app.get('/roadmap/:userId', async (req, res) => {
               padding: 40px 0;
             }
             .total-progress-container {
-              margin-top: 20px;
-              padding: 15px 20px;
-              display: flex;
-              justify-content: flex-end;
-              align-items: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid rgba(255,255,255,0.1);
+              text-align: right;
             }
             .total-progress {
               font-size: 1.3em;
@@ -370,24 +364,27 @@ app.get('/roadmap/:userId', async (req, res) => {
           </style>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
           <script>
-            // Move height calculation to a function
             function sendHeight() {
-              // Add extra padding to account for the total progress section
-              const height = document.documentElement.scrollHeight + 60;
-              window.parent.postMessage({ type: 'resize', height }, '*');
+              // Get the actual height of all content
+              const totalHeight = document.body.offsetHeight;
+              window.parent.postMessage({ 
+                type: 'resize', 
+                height: totalHeight
+              }, '*');
             }
 
-            // Send height as soon as possible
-            document.addEventListener('DOMContentLoaded', sendHeight);
-            // Send after a longer delay to ensure everything is rendered
+            // Send height on load and after a delay
             window.addEventListener('load', () => {
-              setTimeout(sendHeight, 200);
+              sendHeight();
+              // Send again after a delay to ensure all content is rendered
+              setTimeout(sendHeight, 300);
             });
 
             // Watch for content changes
             new MutationObserver(sendHeight).observe(document.body, {
               childList: true,
-              subtree: true
+              subtree: true,
+              attributes: true
             });
 
             // Add delete functionality
