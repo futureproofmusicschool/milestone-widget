@@ -145,18 +145,25 @@
           
           if (!response.ok) throw new Error('Failed to remove course');
         } else {
-          // Get course information
-          const titleElement = courseCard.querySelector('.lw-cols .one-row');
-          const descriptionElement = courseCard.querySelector('.course-description, .description');
-          const progressElement = courseCard.querySelector('[class*="complete" i], [class*="progress" i]');
-
-          // Extract clean text
-          const courseTitle = titleElement?.textContent?.trim() || `Course: ${courseId}`;
-          const courseDescription = descriptionElement?.textContent?.trim() || '';
-          const progressText = progressElement?.textContent?.trim() || '0% Complete';
+          // Get course information with more specific selectors
+          const titleElement = courseCard.querySelector('.lw-cols .one-row-tl')?.textContent?.trim()
+            || courseCard.querySelector('.lw-cols .one-row')?.textContent?.split('\n')[0]?.trim();
+          
+          const descriptionElement = courseCard.querySelector('.course-description')?.textContent?.trim()
+            || courseCard.querySelector('.lw-cols .one-row')?.textContent?.split('\n')[1]?.trim();
+          
+          const progressText = courseCard.querySelector('[class*="complete"]')?.textContent?.trim() || '0% Complete';
           const progress = progressText.match(/(\d+)%/)?.[1] || '0';
 
-          console.log('Found course info:', { courseTitle, courseDescription, progress }); // Debug log
+          // Clean up the data
+          const courseTitle = titleElement || `Course: ${courseId}`;
+          const courseDescription = descriptionElement || '';
+
+          console.log('Found course info:', { 
+            courseTitle, 
+            courseDescription, 
+            progress 
+          }); // Debug log
 
           const response = await fetch(
             `${API_URL}/api/roadmap/{{USER.ID}}/add`,
