@@ -268,6 +268,7 @@ app.get('/roadmap/:userId', async (req, res) => {
           <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
             body {
+              font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
               margin: 0;
               padding: 20px;
               min-height: 100%;
@@ -371,15 +372,16 @@ app.get('/roadmap/:userId', async (req, res) => {
           <script>
             // Move height calculation to a function
             function sendHeight() {
-              const height = document.documentElement.scrollHeight;
+              // Add extra padding to account for the total progress section
+              const height = document.documentElement.scrollHeight + 60;
               window.parent.postMessage({ type: 'resize', height }, '*');
             }
 
             // Send height as soon as possible
             document.addEventListener('DOMContentLoaded', sendHeight);
-            // Also send after a short delay to ensure all content is rendered
+            // Send after a longer delay to ensure everything is rendered
             window.addEventListener('load', () => {
-              setTimeout(sendHeight, 100);
+              setTimeout(sendHeight, 200);
             });
 
             // Watch for content changes

@@ -247,8 +247,8 @@
       // Listen for resize messages from the iframe
       window.addEventListener('message', (event) => {
         if (event.data?.type === 'resize' && event.data?.height) {
-          // Add padding and set the height
-          const newHeight = Math.max(event.data.height + 40, 100);
+          // Add more padding to ensure everything is visible
+          const newHeight = Math.max(event.data.height + 60, 100);
           iframe.style.height = `${newHeight}px`;
         }
       });
