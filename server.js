@@ -67,15 +67,15 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 app.post('/api/roadmap/:userId/add', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { courseId } = req.body;
+    const { courseId, courseTitle } = req.body;
 
-    // Append the new course preference
+    // Append with title
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:C',
+      range: 'Sheet1!A:D',
       valueInputOption: 'RAW',
       resource: {
-        values: [[userId, courseId, new Date().toISOString()]]
+        values: [[userId, courseId, courseTitle, new Date().toISOString()]]
       }
     });
 
@@ -125,18 +125,21 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
 app.get('/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const username = decodeURIComponent(req.query.username || '') || 'Student'; // Decode the username
+    const username = decodeURIComponent(req.query.username || '') || 'Student';
     
     // Get user's courses from the sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:B',
+      range: 'Sheet1!A:C',
     });
 
-    // Filter for this user's courses
+    // Filter for this user's courses and get both id and title
     const userCourses = (response.data.values || [])
       .filter(row => row[0] === userId)
-      .map(row => row[1]);
+      .map(row => ({
+        id: row[1],
+        title: row[2] || row[1] // Fallback to ID if no title
+      }));
 
     // Render a simple HTML page with your brand colors
     const html = `
@@ -189,6 +192,16 @@ app.get('/roadmap/:userId', async (req, res) => {
               border-radius: 4px;
               transition: all 0.2s ease;
             }
+            .course-item a {
+              color: #F6F8FF;
+              text-decoration: none;
+              display: block;
+              width: 100%;
+              height: 100%;
+            }
+            .course-item:hover a {
+              color: #000000;
+            }
           </style>
         </head>
         <body>
@@ -197,7 +210,11 @@ app.get('/roadmap/:userId', async (req, res) => {
             ${userCourses.length > 0 
               ? userCourses.map(course => `
                   <div class="course-item">
-                    ${course}
+                    <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                      ${course.title}
+                    </a>
                   </div>
                 `).join('')
               : '<div class="empty-message">No courses added to roadmap yet.</div>'

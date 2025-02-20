@@ -133,16 +133,36 @@
       button.disabled = true;
 
       try {
-        const response = await fetch(
-          `${API_URL}/api/roadmap/{{USER.ID}}/${removing ? 'remove' : 'add'}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ courseId })
-          }
-        );
-        
-        if (!response.ok) throw new Error(`Failed to ${removing ? 'remove' : 'add'} course`);
+        if (removing) {
+          const response = await fetch(
+            `${API_URL}/api/roadmap/{{USER.ID}}/remove`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ courseId })
+            }
+          );
+          
+          if (!response.ok) throw new Error('Failed to remove course');
+        } else {
+          // Get the course title from the card
+          const courseTitle = courseCard.querySelector('.course-title')?.textContent?.trim() 
+            || 'Untitled Course';
+
+          const response = await fetch(
+            `${API_URL}/api/roadmap/{{USER.ID}}/add`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                courseId,
+                courseTitle 
+              })
+            }
+          );
+          
+          if (!response.ok) throw new Error('Failed to add course');
+        }
         
         // Update cache
         if (removing) {
