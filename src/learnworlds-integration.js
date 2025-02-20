@@ -98,16 +98,48 @@
     ];
 
     const courseCards = new Set();
+    const progress = {};
+
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(card => {
-        courseCards.add(card.closest('.course-card') || card.closest('.lw-course-card') || card);
+        const fullCard = card.closest('.course-card') || card.closest('.lw-course-card') || card;
+        if (fullCard) {
+          courseCards.add(fullCard);
+          
+          // Get progress while we're here
+          const courseId = getCourseIdFromCard(fullCard);
+          if (courseId) {
+            const progressElement = fullCard.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude');
+            if (progressElement) {
+              const progressValue = parseInt(progressElement.textContent.trim(), 10);
+              progress[courseId] = progressValue;
+              console.log(`Found progress for ${courseId}:`, progressValue);
+            }
+          }
+        }
       });
     });
 
     console.log('Found course cards:', courseCards.size);
+    console.log('Progress data:', progress);
+
+    // Add buttons and send progress to widget
     courseCards.forEach(card => {
       if (card) addButtonToCourseCard(card);
     });
+
+    // Send progress to widget
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ 
+        type: "USER_DATA",
+        data: { 
+          username: "{{USER.NAME}}",
+          userId: "{{USER.ID}}",
+          progress: progress
+        }
+      }, "https://learn-pathway-widget.vercel.app");
+    }
   }
 
   // Add button to a course card
@@ -289,27 +321,50 @@
     
     // Get all course cards
     const courseCards = document.querySelectorAll('.course-card, .lw-course-card');
-    console.log('Found course cards:', courseCards.length);
+    console.log('Found course cards:', {
+      count: courseCards.length,
+      cards: Array.from(courseCards).map(card => ({
+        html: card.innerHTML,
+        courseId: getCourseIdFromCard(card)
+      }))
+    });
     
     courseCards.forEach(card => {
       const courseId = getCourseIdFromCard(card);
       if (courseId) {
+        // Log the entire card HTML to see what we're working with
+        console.log(`Examining card for ${courseId}:`, {
+          cardHTML: card.innerHTML
+        });
+
         // Get progress from the exact element structure
         const progressElement = card.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude');
+        console.log(`Progress element for ${courseId}:`, {
+          found: !!progressElement,
+          element: progressElement,
+          text: progressElement?.textContent,
+          parentHTML: progressElement?.parentElement?.innerHTML
+        });
+
         if (progressElement) {
           const progressValue = parseInt(progressElement.textContent.trim(), 10);
           progress[courseId] = progressValue;
-          console.log(`Found progress for ${courseId}:`, { 
-            text: progressElement.textContent,
-            value: progressValue
+          console.log(`Progress parsed for ${courseId}:`, {
+            rawText: progressElement.textContent,
+            trimmed: progressElement.textContent.trim(),
+            parsed: progressValue
           });
         } else {
-          console.log(`No progress element found for ${courseId}`);
+          // Try logging all elements with class 'weglot-exclude' in this card
+          const allWeglotElements = card.querySelectorAll('.weglot-exclude');
+          console.log(`No direct match, found ${allWeglotElements.length} weglot elements:`, 
+            Array.from(allWeglotElements).map(el => el.innerHTML)
+          );
         }
       }
     });
     
-    console.log('Complete progress object:', progress);
+    console.log('Final progress object:', progress);
     return progress;
   }
 
