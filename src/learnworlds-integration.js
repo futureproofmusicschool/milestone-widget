@@ -289,35 +289,31 @@
     
     // Get all course cards
     const courseCards = document.querySelectorAll('.course-card, .lw-course-card');
+    console.log('Found course cards:', courseCards.length);
+    
     courseCards.forEach(card => {
       const courseId = getCourseIdFromCard(card);
       if (courseId) {
-        // First try to get progress from the text element
-        let progressValue = 0;
-        const progressText = card.querySelector('.weglot-exclude')?.textContent?.trim();
-        if (progressText) {
-          progressValue = parseInt(progressText.replace(/[^0-9]/g, ''), 10);
+        // Get progress from the exact element structure
+        const progressElement = card.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude');
+        if (progressElement) {
+          const progressValue = parseInt(progressElement.textContent.trim(), 10);
+          progress[courseId] = progressValue;
+          console.log(`Found progress for ${courseId}:`, { 
+            text: progressElement.textContent,
+            value: progressValue
+          });
         } else {
-          // Fallback to progress bar width
-          const progressBar = card.querySelector('.lw-course-card-progress-bar');
-          const widthStyle = progressBar?.style?.width;
-          if (widthStyle) {
-            progressValue = parseInt(widthStyle.replace(/[^0-9]/g, ''), 10);
-          }
+          console.log(`No progress element found for ${courseId}`);
         }
-        
-        progress[courseId] = progressValue;
-        console.log(`Found progress for ${courseId}:`, { 
-          text: progressText, 
-          value: progressValue
-        });
       }
     });
     
+    console.log('Complete progress object:', progress);
     return progress;
   }
 
-  // Update the wait function to match these selectors
+  // Update the wait function to match the exact selector
   async function waitForCourseCards() {
     const maxAttempts = 20;
     const delayMs = 1000;
@@ -327,7 +323,7 @@
       if (cards.length > 0) {
         // Wait for progress elements to be loaded
         const hasProgress = Array.from(cards).some(card => 
-          card.querySelector('.weglot-exclude') || card.querySelector('.lw-course-card-progress-bar')
+          card.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude')
         );
         if (hasProgress) {
           console.log('Found cards with progress elements');
