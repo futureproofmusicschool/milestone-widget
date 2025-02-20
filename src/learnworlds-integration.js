@@ -1,6 +1,7 @@
 // LearnWorlds Integration Script
 (function() {
-  const API_URL = 'https://learn-pathway-widget.vercel.app'; // Your actual Vercel deployment URL
+  const API_URL = 'https://learn-pathway-widget.vercel.app';
+  let userCoursesCache = null; // Cache for user's courses
 
   // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', initializeRoadmapButtons);
@@ -15,7 +16,31 @@
       return;
     }
 
-    // Add button styles
+    // Fetch user's courses once and cache them
+    try {
+      const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch roadmap');
+      const data = await response.json();
+      userCoursesCache = new Set(data.courses); // Use a Set for O(1) lookups
+      console.log('Cached user courses:', userCoursesCache);
+    } catch (error) {
+      console.error('Error fetching initial courses:', error);
+      return;
+    }
+
+    // Add styles and start processing course cards
+    addStyles();
+    processAllCourseCards();
+    observeNewCards();
+  }
+
+  // Function to check if a course is in user's roadmap (uses cache)
+  function isInRoadmap(courseId) {
+    return userCoursesCache ? userCoursesCache.has(courseId) : false;
+  }
+
+  // Add button styles
+  function addStyles() {
     const styles = document.createElement('style');
     styles.textContent = `
       .roadmap-button-container {
@@ -56,186 +81,125 @@
       }
     `;
     document.head.appendChild(styles);
+  }
 
-    // Function to get course ID from card
-    function getCourseIdFromCard(courseCard) {
-      const possibleElements = [
-        courseCard.querySelector('a[href*="courseid="]'),
-        courseCard.querySelector('[data-course-id]'),
-        courseCard.closest('[data-course-id]'),
-        courseCard
-      ];
+  // Process all course cards at once
+  function processAllCourseCards() {
+    const selectors = [
+      '.course-card',
+      '.lw-course-card',
+      '[data-course-id]',
+      '[href*="courseid="]',
+      '.catalog-item'
+    ];
 
-      for (const element of possibleElements) {
-        if (!element) continue;
+    const courseCards = new Set();
+    selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(card => {
+        courseCards.add(card.closest('.course-card') || card.closest('.lw-course-card') || card);
+      });
+    });
 
-        const dataId = element.getAttribute('data-course-id');
-        if (dataId) return dataId;
+    console.log('Found course cards:', courseCards.size);
+    courseCards.forEach(card => {
+      if (card) addButtonToCourseCard(card);
+    });
+  }
 
-        const href = element.getAttribute('href');
-        if (href) {
-          const match = href.match(/courseid=([^&]+)/);
-          if (match) return match[1];
-        }
-      }
-      return null;
-    }
+  // Add button to a course card
+  async function addButtonToCourseCard(courseCard) {
+    if (courseCard.querySelector('.roadmap-button-container')) return;
 
-    // Function to check if a course is in user's roadmap
-    async function isInRoadmap(courseId, userId) {
+    const courseId = getCourseIdFromCard(courseCard);
+    if (!courseId) return;
+
+    courseCard.style.position = 'relative';
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'roadmap-button-container';
+
+    const button = document.createElement('button');
+    button.className = 'roadmap-button add';
+    
+    // Use cached data to set initial state
+    updateButtonState(button, isInRoadmap(courseId));
+
+    // Handle click events
+    button.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const removing = button.classList.contains('remove');
+      button.disabled = true;
+
       try {
-        const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch roadmap');
-        const data = await response.json();
-        return data.courses.includes(courseId);
-      } catch (error) {
-        console.error('Error checking roadmap:', error);
-        return false;
-      }
-    }
-
-    // Function to add button to a course card
-    async function addButtonToCourseCard(courseCard) {
-      console.log('Processing course card:', courseCard);
-
-      if (courseCard.querySelector('.roadmap-button-container')) {
-        return;
-      }
-
-      courseCard.style.position = 'relative';
-
-      const courseId = getCourseIdFromCard(courseCard);
-      if (!courseId) {
-        console.log('No course ID found for card');
-        return;
-      }
-
-      console.log('Found course ID:', courseId);
-
-      // Create button container
-      const buttonContainer = document.createElement('div');
-      buttonContainer.className = 'roadmap-button-container';
-
-      // Create button
-      const button = document.createElement('button');
-      button.className = 'roadmap-button add';
-      
-      // Check if course is already in roadmap
-      const inRoadmap = await isInRoadmap(courseId, userId);
-      updateButtonState(button, inRoadmap);
-
-      // Handle click events
-      const handleClick = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const isInRoadmap = button.classList.contains('remove');
-        button.disabled = true;
-
-        try {
-          if (isInRoadmap) {
-            // Remove course from roadmap
-            const response = await fetch(`${API_URL}/api/roadmap/${userId}/remove`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ courseId })
-            });
-            
-            if (!response.ok) throw new Error('Failed to remove course');
-          } else {
-            // Add course to roadmap
-            const response = await fetch(`${API_URL}/api/roadmap/${userId}/add`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ courseId })
-            });
-            
-            if (!response.ok) throw new Error('Failed to add course');
+        const response = await fetch(
+          `${API_URL}/api/roadmap/{{USER.ID}}/${removing ? 'remove' : 'add'}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ courseId })
           }
-          
-          updateButtonState(button, !isInRoadmap);
-        } catch (error) {
-          console.error('Error updating roadmap:', error);
-        } finally {
-          button.disabled = false;
+        );
+        
+        if (!response.ok) throw new Error(`Failed to ${removing ? 'remove' : 'add'} course`);
+        
+        // Update cache
+        if (removing) {
+          userCoursesCache.delete(courseId);
+        } else {
+          userCoursesCache.add(courseId);
         }
         
-        return false;
-      };
-
-      // Add event listeners
-      ['click', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach(eventType => {
-        button.addEventListener(eventType, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (eventType === 'click') handleClick(e);
-        }, true);
-      });
-
-      buttonContainer.appendChild(button);
-      courseCard.appendChild(buttonContainer);
-      console.log('Button added to course card');
-    }
-
-    // Update button state
-    function updateButtonState(button, isInRoadmap) {
-      if (isInRoadmap) {
-        button.textContent = 'Remove from Roadmap';
-        button.classList.remove('add');
-        button.classList.add('remove');
-      } else {
-        button.textContent = 'Add to Roadmap';
-        button.classList.remove('remove');
-        button.classList.add('add');
+        updateButtonState(button, !removing);
+      } catch (error) {
+        console.error('Error updating roadmap:', error);
+      } finally {
+        button.disabled = false;
       }
-      button.disabled = false;
-    }
+    });
 
-    // Find and process course cards
-    function addRoadmapButtons() {
-      console.log('Searching for course cards...');
-      
-      const selectors = [
-        '.course-card',
-        '.lw-course-card',
-        '[data-course-id]',
-        '[href*="courseid="]',
-        '.catalog-item'
-      ];
+    buttonContainer.appendChild(button);
+    courseCard.appendChild(buttonContainer);
+  }
 
-      const courseCards = new Set();
-      selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(card => {
-          courseCards.add(card.closest('.course-card') || card.closest('.lw-course-card') || card);
-        });
-      });
+  // Helper functions remain the same
+  function getCourseIdFromCard(courseCard) {
+    const possibleElements = [
+      courseCard.querySelector('a[href*="courseid="]'),
+      courseCard.querySelector('[data-course-id]'),
+      courseCard.closest('[data-course-id]'),
+      courseCard
+    ];
 
-      console.log('Found course cards:', courseCards.size);
-      courseCards.forEach(card => {
-        if (card) addButtonToCourseCard(card);
-      });
-    }
-
-    // Initial setup with retry
-    function initializeWithRetry(retries = 5) {
-      if (retries === 0) {
-        console.log('Failed to find course cards after all retries');
-        return;
+    for (const element of possibleElements) {
+      if (!element) continue;
+      const dataId = element.getAttribute('data-course-id');
+      if (dataId) return dataId;
+      const href = element.getAttribute('href');
+      if (href) {
+        const match = href.match(/courseid=([^&]+)/);
+        if (match) return match[1];
       }
-
-      setTimeout(() => {
-        addRoadmapButtons();
-        if (document.querySelectorAll('.roadmap-button').length === 0) {
-          console.log(`No buttons added, retrying... (${retries} attempts left)`);
-          initializeWithRetry(retries - 1);
-        }
-      }, 1000);
     }
+    return null;
+  }
 
-    // Start initialization
-    initializeWithRetry();
+  function updateButtonState(button, isInRoadmap) {
+    if (isInRoadmap) {
+      button.textContent = 'Remove from Roadmap';
+      button.classList.remove('add');
+      button.classList.add('remove');
+    } else {
+      button.textContent = 'Add to Roadmap';
+      button.classList.remove('remove');
+      button.classList.add('add');
+    }
+    button.disabled = false;
+  }
 
-    // Watch for new cards
+  // Observe DOM for new cards
+  function observeNewCards() {
     const observer = new MutationObserver((mutations) => {
       let shouldUpdate = false;
       mutations.forEach((mutation) => {
@@ -254,7 +218,7 @@
 
       if (shouldUpdate) {
         console.log('New course cards detected, updating buttons...');
-        addRoadmapButtons();
+        processAllCourseCards();
       }
     });
 
