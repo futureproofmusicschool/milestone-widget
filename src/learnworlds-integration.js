@@ -290,9 +290,8 @@
     }
   });
 
-  // Add function to get course progress
+  // Update the progress detection function to use LearnWorlds API
   async function getAllCourseProgress() {
-    // This is a placeholder - you'll need to replace with actual LearnWorlds API call
     const progress = {};
     
     // Get all course cards
@@ -300,8 +299,13 @@
     courseCards.forEach(card => {
       const courseId = getCourseIdFromCard(card);
       if (courseId) {
-        const progressText = card.querySelector('.learnworlds-overline-text .weglot-exclude')?.textContent?.trim() || '0';
-        progress[courseId] = parseInt(progressText.replace('%', ''), 10);
+        // Get progress using exact selector for LearnWorlds progress element
+        const progressElement = card.querySelector('.lw-course-card-progress');
+        const progressText = progressElement?.textContent?.trim() || '0';
+        const progressValue = parseInt(progressText.replace(/[^0-9]/g, ''), 10);
+        
+        progress[courseId] = progressValue;
+        console.log(`Found progress for ${courseId}:`, progressValue); // Debug log
       }
     });
     
