@@ -342,10 +342,12 @@
     return false;
   }
 
-  // Update the load event handler
+  // Update the load event handler to properly use the progress data
   window.addEventListener('load', async function() {
     const iframe = document.getElementById('pathway-widget');
     if (iframe) {
+      console.log('Starting widget initialization...');
+      
       // Wait for course cards to be available
       const cardsLoaded = await waitForCourseCards();
       if (!cardsLoaded) {
@@ -356,15 +358,10 @@
       // Now get progress when we know cards are available
       const progress = await getAllCourseProgress();
       console.log('Course progress found:', progress); // Debug log
-      
-      const progressParam = encodeURIComponent(JSON.stringify(progress));
-      
-      // Update iframe src with both user data and progress
-      const baseUrl = iframe.src.split('?')[0];
-      iframe.src = `${baseUrl}?userId={{USER.ID}}&username={{USER.NAME}}&progress=${progressParam}`;
 
-      // Send user data message after iframe loads
+      // Important: Wait for iframe to load before sending message
       iframe.onload = function() {
+        console.log('Iframe loaded, sending progress data:', progress);
         iframe.contentWindow.postMessage({ 
           type: "USER_DATA",
           data: { 
@@ -374,6 +371,11 @@
           }
         }, "https://learn-pathway-widget.vercel.app");
       };
+      
+      // Update iframe src with progress data
+      const progressParam = encodeURIComponent(JSON.stringify(progress));
+      const baseUrl = iframe.src.split('?')[0];
+      iframe.src = `${baseUrl}?userId={{USER.ID}}&username={{USER.NAME}}&progress=${progressParam}`;
     }
   });
 })();
