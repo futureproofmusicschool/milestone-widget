@@ -99,19 +99,17 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 app.post('/api/roadmap/:userId/add', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { courseId, courseTitle, progress } = req.body;
+    const { courseId, courseTitle } = req.body; // Remove progress from destructuring
 
-    // Append without description
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:E', // Changed from A:F to A:E (removed description column)
+      range: 'Sheet1!A:D', // Now just storing: userId, courseId, courseTitle, timestamp
       valueInputOption: 'RAW',
       resource: {
         values: [[
           userId,
           courseId,
           courseTitle,
-          progress,
           new Date().toISOString()
         ]]
       }
@@ -207,58 +205,36 @@ app.get('/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
+    const progress = req.query.progress ? JSON.parse(req.query.progress) : {};
     
-    // Get course progress from LearnWorlds
-    const courseProgress = req.query.progress ? JSON.parse(req.query.progress) : {};
-    
-    // Update progress in spreadsheet
-    await updateCourseProgress(userId, courseProgress);
-    
-    // Get user's courses from the sheet - use full range to ensure we get progress
+    // Get user's courses from sheet (just IDs and titles)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:E', // Changed from A:D to A:E to ensure we get all columns
+      range: 'Sheet1!A:D',
     });
 
-    // Filter and map user's courses
+    // Map courses and include live progress from the page
     let userCourses = (response.data.values || [])
       .filter(row => row[0] === userId)
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
-        progress: parseInt(row[3] || '0', 10)
+        progress: progress[row[1]] || 0 // Get progress from live data
       }));
 
-    // Check if Getting Started course exists in the list
-    const existingGettingStarted = userCourses.find(course => course.id === 'getting-started');
-    
-    // If not in list, look for it in ALL rows for this user
-    if (!existingGettingStarted) {
-      const gettingStartedRow = response.data.values
-        ?.filter(row => row[0] === userId) // Filter for this user's rows
-        ?.find(row => row[1] === 'getting-started'); // Find Getting Started among their courses
-
-      if (gettingStartedRow) {
-        // If found in sheet, add with actual progress
-        userCourses.unshift({
-          id: 'getting-started',
-          title: 'Getting Started',
-          progress: parseInt(gettingStartedRow[3] || '0', 10)
-        });
-        console.log('Found Getting Started progress:', gettingStartedRow[3]); // Debug log
-      } else {
-        // If not found at all, add with default values
-        userCourses.unshift({
-          id: 'getting-started',
-          title: 'Getting Started',
-          progress: 0
-        });
-      }
+    // Handle Getting Started course
+    const hasGettingStarted = userCourses.some(course => course.id === 'getting-started');
+    if (!hasGettingStarted) {
+      userCourses.unshift({
+        id: 'getting-started',
+        title: 'Getting Started',
+        progress: progress['getting-started'] || 0 // Get from live data
+      });
     }
 
-    // Calculate average progress including Getting Started course
+    // Calculate total progress from live data
     const totalProgress = userCourses.length > 0
-      ? Math.round(userCourses.reduce((sum, course) => sum + course.progress, 0) / userCourses.length)
+      ? Math.round(userCourses.reduce((sum, course) => sum + (progress[course.id] || 0), 0) / userCourses.length)
       : 0;
 
     // Render a simple HTML page with your brand colors
