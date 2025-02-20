@@ -161,75 +161,62 @@ app.get('/roadmap/:userId', async (req, res) => {
               max-width: 800px;
               margin: 0 auto;
               padding: 20px;
-              background: #000000; /* Body background */
-              color: #F6F8FF; /* Light text */
+              background: #000000;
+              color: #F6F8FF;
             }
             h1 {
               text-align: center;
               color: #F6F8FF;
               text-transform: uppercase;
               margin: 40px 0;
-              font-size: 2.1em; /* Reduced from 2.5em */
+              font-size: 2.1em;
               font-weight: 700;
             }
             .course-list {
-              background: #111111; /* Light background */
+              background: #111111;
               border-radius: 8px;
               padding: 20px;
               box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
             .course-item {
-              padding: 20px;
-              border-bottom: 1px solid #A373F8;
+              padding: 15px 20px;
               font-size: 1.1em;
               color: #F6F8FF;
-            }
-            .course-item:last-child {
-              border-bottom: none;
-            }
-            .empty-message {
-              text-align: center;
-              color: #BBBDC5; /* Accent 2 */
-              font-style: italic;
-              padding: 40px 0;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              transition: all 0.3s ease;
             }
             .course-item:hover {
               background: #A373F8;
               border-radius: 8px;
               transform: translateX(5px);
-              transition: all 0.3s ease;
             }
             .course-title {
-              font-size: 1.2em;
               font-weight: 600;
-              margin-bottom: 8px;
-            }
-            .course-description {
-              font-size: 0.9em;
-              color: #BBBDC5;
-              margin-bottom: 12px;
-              line-height: 1.4;
+              margin-right: 20px;
             }
             .course-progress {
-              font-size: 0.85em;
+              font-size: 0.9em;
               color: #A373F8;
-              font-weight: 600;
-              display: inline-block;
-              padding: 4px 8px;
-              background: rgba(163, 115, 248, 0.1);
-              border-radius: 4px;
-            }
-            .course-item:hover .course-description {
-              color: rgba(0, 0, 0, 0.7);
+              white-space: nowrap;
             }
             .course-item:hover .course-progress {
-              background: rgba(0, 0, 0, 0.2);
               color: #000000;
             }
             .course-item a {
               color: inherit;
               text-decoration: none;
-              display: block;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              width: 100%;
+            }
+            .empty-message {
+              text-align: center;
+              color: #BBBDC5;
+              font-style: italic;
+              padding: 40px 0;
             }
           </style>
         </head>
@@ -237,19 +224,16 @@ app.get('/roadmap/:userId', async (req, res) => {
           <h1>Course Roadmap for ${username}</h1>
           <div class="course-list">
             ${userCourses.length > 0 
-              ? userCourses.map(course => {
-                  const courseHtml = `
-                    <div class="course-item">
-                      <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
-                         target="_blank" 
-                         rel="noopener noreferrer">
-                        <div class="course-title">${course.title}</div>
-                        <div class="course-progress">${course.progress}% Complete</div>
-                      </a>
-                    </div>
-                  `;
-                  return courseHtml;
-                }).join('')
+              ? userCourses.map(course => `
+                  <div class="course-item">
+                    <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                      <span class="course-title">${course.title}</span>
+                      <span class="course-progress">${course.progress}% Complete</span>
+                    </a>
+                  </div>
+                `).join('')
               : '<div class="empty-message">No courses added to roadmap yet.</div>'
             }
           </div>
