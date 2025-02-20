@@ -17,9 +17,8 @@
       userCoursesCache = new Set(data.courses);
       userCoursesCache.add('getting-started');
 
-      // Get progress from LearnWorlds API
-      const progressResponse = await fetch(`${API_URL}/api/progress/{{USER.ID}}`);
-
+      // Get progress from our server endpoint
+      const progressResponse = await fetch(`${API_URL}/api/progress/${userId}`);
       if (!progressResponse.ok) {
         throw new Error('Failed to fetch progress data');
       }

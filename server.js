@@ -240,10 +240,6 @@ app.get('/roadmap/:userId', async (req, res) => {
       <!DOCTYPE html>
       <html>
         <head>
-          <script>
-            window.LEARNWORLDS_CLIENT_ID = '${process.env.LEARNWORLDS_CLIENT_ID}';
-            window.LEARNWORLDS_CLIENT_SECRET = '${process.env.LEARNWORLDS_CLIENT_SECRET}';
-          </script>
           <title>Course Roadmap</title>
           <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
@@ -375,6 +371,7 @@ app.get('/api/progress/:userId', async (req, res) => {
     );
 
     if (!progressResponse.ok) {
+      console.error('LearnWorlds API error:', await progressResponse.text());
       throw new Error('Failed to fetch progress from LearnWorlds');
     }
 
