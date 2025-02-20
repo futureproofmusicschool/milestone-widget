@@ -33,11 +33,8 @@
       processAllCourseCards();
       observeNewCards();
 
-      // Load widget with just the user info
-      const iframe = document.getElementById('pathway-widget');
-      if (iframe) {
-        iframe.src = `${API_URL}/roadmap/${userId}?username={{USER.NAME}}`;
-      }
+      // Setup iframe with dynamic resizing
+      setupIframe();
     } catch (error) {
       console.error('Error:', error);
     }
@@ -235,5 +232,24 @@
       childList: true,
       subtree: true
     });
+  }
+
+  function setupIframe() {
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe) {
+      // Set a generous initial height
+      iframe.style.height = '800px';
+      iframe.style.overflow = 'hidden';
+      
+      // Listen for resize messages from the iframe
+      window.addEventListener('message', (event) => {
+        if (event.data.type === 'resize') {
+          // Add some padding to prevent scrollbar
+          iframe.style.height = `${event.data.height + 20}px`;
+        }
+      });
+
+      iframe.src = `${API_URL}/roadmap/${userId}?username={{USER.NAME}}`;
+    }
   }
 })();

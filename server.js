@@ -269,6 +269,9 @@ app.get('/roadmap/:userId', async (req, res) => {
               padding: 20px;
               background: #000000;
               color: #F6F8FF;
+              min-height: 100vh;
+              height: auto;
+              overflow: visible;
             }
             h1 {
               text-align: center;
@@ -283,6 +286,9 @@ app.get('/roadmap/:userId', async (req, res) => {
               border-radius: 8px;
               padding: 20px;
               box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+              height: auto;
+              min-height: 100px;
+              overflow: visible;
             }
             .course-item {
               padding: 15px 20px;
@@ -338,6 +344,20 @@ app.get('/roadmap/:userId', async (req, res) => {
               white-space: nowrap;
             }
           </style>
+          <script>
+            // Send height to parent window
+            function updateParentHeight() {
+              const height = document.body.scrollHeight;
+              window.parent.postMessage({ type: 'resize', height }, '*');
+            }
+            
+            // Update on load and when content changes
+            window.addEventListener('load', updateParentHeight);
+            new MutationObserver(updateParentHeight).observe(document.body, {
+              childList: true,
+              subtree: true
+            });
+          </script>
         </head>
         <body>
           <h1>Course Roadmap for ${username}</h1>
