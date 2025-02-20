@@ -145,25 +145,21 @@
           
           if (!response.ok) throw new Error('Failed to remove course');
         } else {
-          // Get course information with more specific selectors
-          const titleElement = courseCard.querySelector('.lw-cols .one-row-tl')?.textContent?.trim()
-            || courseCard.querySelector('.lw-cols .one-row')?.textContent?.split('\n')[0]?.trim();
-          
-          const descriptionElement = courseCard.querySelector('.course-description')?.textContent?.trim()
-            || courseCard.querySelector('.lw-cols .one-row')?.textContent?.split('\n')[1]?.trim();
-          
-          const progressText = courseCard.querySelector('[class*="complete"]')?.textContent?.trim() || '0% Complete';
-          const progress = progressText.match(/(\d+)%/)?.[1] || '0';
+          // Get course information with precise selectors
+          const courseTitle = courseCard.querySelector('.learnworlds-heading3')?.textContent?.trim()
+            || courseCard.querySelector('.lw-course-card--stretched-link')?.textContent?.trim()
+            || `Course: ${courseId}`;
 
-          // Clean up the data
-          const courseTitle = titleElement || `Course: ${courseId}`;
-          const courseDescription = descriptionElement || '';
+          const courseDescription = courseCard.querySelector('.lw-course-card-descr')?.textContent?.trim() || '';
+          
+          const progressText = courseCard.querySelector('.learnworlds-overline-text .weglot-exclude')?.textContent?.trim() || '0';
+          const progress = progressText.replace('%', '');
 
-          console.log('Found course info:', { 
-            courseTitle, 
-            courseDescription, 
-            progress 
-          }); // Debug log
+          console.log('Parsed info:', {
+            courseTitle,
+            courseDescription,
+            progress
+          });
 
           const response = await fetch(
             `${API_URL}/api/roadmap/{{USER.ID}}/add`,
