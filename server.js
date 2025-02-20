@@ -370,8 +370,8 @@ app.get('/api/progress/:userId', async (req, res) => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Client-ID': process.env.LEARNWORLDS_CLIENT_ID,
-        'Client-Secret': process.env.LEARNWORLDS_CLIENT_SECRET
+        'client_id': process.env.LEARNWORLDS_CLIENT_ID,
+        'client_secret': process.env.LEARNWORLDS_CLIENT_SECRET
       }
     });
 
