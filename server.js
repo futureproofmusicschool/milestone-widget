@@ -357,29 +357,38 @@ app.get('/roadmap/:userId', async (req, res) => {
 app.get('/api/progress/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('Fetching progress for user:', userId);
     
-    const progressResponse = await fetch(
-      `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`,
-      {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Client-ID': process.env.LEARNWORLDS_CLIENT_ID,
-          'Client-Secret': process.env.LEARNWORLDS_CLIENT_SECRET
-        }
+    const apiUrl = `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
+    console.log('LearnWorlds API URL:', apiUrl);
+    console.log('Using credentials:', {
+      clientId: process.env.LEARNWORLDS_CLIENT_ID?.slice(0, 5) + '...',
+      hasSecret: !!process.env.LEARNWORLDS_CLIENT_SECRET
+    });
+
+    const progressResponse = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Client-ID': process.env.LEARNWORLDS_CLIENT_ID,
+        'Client-Secret': process.env.LEARNWORLDS_CLIENT_SECRET
       }
-    );
+    });
+
+    console.log('LearnWorlds API response status:', progressResponse.status);
+    const responseText = await progressResponse.text();
+    console.log('LearnWorlds API response:', responseText);
 
     if (!progressResponse.ok) {
-      console.error('LearnWorlds API error:', await progressResponse.text());
-      throw new Error('Failed to fetch progress from LearnWorlds');
+      throw new Error(`Failed to fetch progress: ${responseText}`);
     }
 
-    const data = await progressResponse.json();
+    const data = JSON.parse(responseText);
+    console.log('Parsed progress data:', data);
     res.json(data);
   } catch (error) {
     console.error('Error fetching progress:', error);
-    res.status(500).json({ error: 'Failed to fetch progress' });
+    res.status(500).json({ error: error.message });
   }
 });
 
