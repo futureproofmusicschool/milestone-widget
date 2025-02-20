@@ -67,15 +67,22 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 app.post('/api/roadmap/:userId/add', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { courseId, courseTitle } = req.body;
+    const { courseId, courseTitle, courseDescription, progress } = req.body;
 
-    // Append with title
+    // Append with all columns
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:D',
+      range: 'Sheet1!A:F', // Extended range for new columns
       valueInputOption: 'RAW',
       resource: {
-        values: [[userId, courseId, courseTitle, new Date().toISOString()]]
+        values: [[
+          userId,
+          courseId,
+          courseTitle,
+          courseDescription,
+          progress,
+          new Date().toISOString()
+        ]]
       }
     });
 
@@ -138,7 +145,9 @@ app.get('/roadmap/:userId', async (req, res) => {
       .filter(row => row[0] === userId)
       .map(row => ({
         id: row[1],
-        title: row[2] || row[1] // Title is in column C (index 2)
+        title: row[2] || row[1],
+        description: row[3] || '',
+        progress: row[4] || '0'
       }));
 
     // Render a simple HTML page with your brand colors
@@ -172,10 +181,10 @@ app.get('/roadmap/:userId', async (req, res) => {
               box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
             .course-item {
-              padding: 15px;
-              border-bottom: 1px solid #A373F8; /* Accent 1 */
+              padding: 20px;
+              border-bottom: 1px solid #A373F8;
               font-size: 1.1em;
-              color: #F6F8FF; /* Light text */
+              color: #F6F8FF;
             }
             .course-item:last-child {
               border-bottom: none;
@@ -187,20 +196,42 @@ app.get('/roadmap/:userId', async (req, res) => {
               padding: 40px 0;
             }
             .course-item:hover {
-              background: #A373F8; /* Accent 1 */
-              color: #000000; /* Dark text */
+              background: #A373F8;
+              border-radius: 8px;
+              transform: translateX(5px);
+              transition: all 0.3s ease;
+            }
+            .course-title {
+              font-size: 1.2em;
+              font-weight: 600;
+              margin-bottom: 8px;
+            }
+            .course-description {
+              font-size: 0.9em;
+              color: #BBBDC5;
+              margin-bottom: 12px;
+              line-height: 1.4;
+            }
+            .course-progress {
+              font-size: 0.85em;
+              color: #A373F8;
+              font-weight: 600;
+              display: inline-block;
+              padding: 4px 8px;
+              background: rgba(163, 115, 248, 0.1);
               border-radius: 4px;
-              transition: all 0.2s ease;
+            }
+            .course-item:hover .course-description {
+              color: rgba(0, 0, 0, 0.7);
+            }
+            .course-item:hover .course-progress {
+              background: rgba(0, 0, 0, 0.2);
+              color: #000000;
             }
             .course-item a {
-              color: #F6F8FF;
+              color: inherit;
               text-decoration: none;
               display: block;
-              width: 100%;
-              height: 100%;
-            }
-            .course-item:hover a {
-              color: #000000;
             }
           </style>
         </head>
@@ -208,15 +239,20 @@ app.get('/roadmap/:userId', async (req, res) => {
           <h1>Course Roadmap for ${username}</h1>
           <div class="course-list">
             ${userCourses.length > 0 
-              ? userCourses.map(course => `
-                  <div class="course-item">
-                    <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
-                       target="_blank" 
-                       rel="noopener noreferrer">
-                      ${course.title}
-                    </a>
-                  </div>
-                `).join('')
+              ? userCourses.map(course => {
+                  const courseHtml = `
+                    <div class="course-item">
+                      <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
+                         target="_blank" 
+                         rel="noopener noreferrer">
+                        <div class="course-title">${course.title}</div>
+                        <div class="course-description">${course.description}</div>
+                        <div class="course-progress">${course.progress}% Complete</div>
+                      </a>
+                    </div>
+                  `;
+                  return courseHtml;
+                }).join('')
               : '<div class="empty-message">No courses added to roadmap yet.</div>'
             }
           </div>

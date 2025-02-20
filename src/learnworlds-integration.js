@@ -145,20 +145,18 @@
           
           if (!response.ok) throw new Error('Failed to remove course');
         } else {
-          // Get the course title using LearnWorlds' structure
-          let courseTitle = courseCard.querySelector('.lw-cols .one-row')?.textContent?.trim();
-          
-          // If not found, try other common LearnWorlds selectors
-          if (!courseTitle) {
-            courseTitle = courseCard.querySelector('.one-row-tl, .one-row, .lw-course-title')?.textContent?.trim();
-          }
-          
-          // If still not found, use a default with the course ID
-          if (!courseTitle) {
-            courseTitle = `Course: ${courseId}`;
-          }
+          // Get course information
+          const titleElement = courseCard.querySelector('.lw-cols .one-row');
+          const descriptionElement = courseCard.querySelector('.course-description, .description');
+          const progressElement = courseCard.querySelector('[class*="complete" i], [class*="progress" i]');
 
-          console.log('Found course title:', courseTitle); // Debug log
+          // Extract clean text
+          const courseTitle = titleElement?.textContent?.trim() || `Course: ${courseId}`;
+          const courseDescription = descriptionElement?.textContent?.trim() || '';
+          const progressText = progressElement?.textContent?.trim() || '0% Complete';
+          const progress = progressText.match(/(\d+)%/)?.[1] || '0';
+
+          console.log('Found course info:', { courseTitle, courseDescription, progress }); // Debug log
 
           const response = await fetch(
             `${API_URL}/api/roadmap/{{USER.ID}}/add`,
@@ -167,7 +165,9 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
                 courseId,
-                courseTitle 
+                courseTitle,
+                courseDescription,
+                progress
               })
             }
           );
