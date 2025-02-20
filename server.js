@@ -361,11 +361,47 @@ app.get('/roadmap/:userId', async (req, res) => {
             .delete-button:hover {
               opacity: 1;
             }
+            .loading-container {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              min-height: 400px;
+            }
+            .loading-spinner {
+              width: 50px;
+              height: 50px;
+              border: 3px solid rgba(163, 115, 248, 0.3);
+              border-radius: 50%;
+              border-top-color: #A373F8;
+              animation: spin 1s ease-in-out infinite;
+              margin-bottom: 20px;
+            }
+            .loading-text {
+              color: #A373F8;
+              font-size: 16px;
+              font-family: 'Source Sans Pro', sans-serif;
+            }
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+            .course-list {
+              display: none; /* Hide initially */
+            }
+            .course-list.loaded {
+              display: block; /* Show when loaded */
+            }
           </style>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
           <script>
+            // Show content after everything is loaded
+            function showContent() {
+              document.querySelector('.loading-container').style.display = 'none';
+              document.querySelector('.course-list').classList.add('loaded');
+              sendHeight();
+            }
+
             function sendHeight() {
-              // Get the actual height of all content
               const totalHeight = document.body.offsetHeight;
               window.parent.postMessage({ 
                 type: 'resize', 
@@ -373,11 +409,10 @@ app.get('/roadmap/:userId', async (req, res) => {
               }, '*');
             }
 
-            // Send height on load and after a delay
+            // Wait for all content to load
             window.addEventListener('load', () => {
-              sendHeight();
-              // Send again after a delay to ensure all content is rendered
-              setTimeout(sendHeight, 300);
+              // Short delay to ensure all content is rendered
+              setTimeout(showContent, 500);
             });
 
             // Watch for content changes
@@ -423,6 +458,12 @@ app.get('/roadmap/:userId', async (req, res) => {
         </head>
         <body>
           <h1>Course Roadmap for ${username}</h1>
+          
+          <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading your roadmap...</div>
+          </div>
+
           <div class="course-list">
             ${userCourses.length > 0 
               ? `
