@@ -290,17 +290,47 @@
     }
   });
 
-  // When sending messages to the iframe, specify the target origin
-  window.addEventListener('load', function() {
+  // Add function to get course progress
+  async function getAllCourseProgress() {
+    // This is a placeholder - you'll need to replace with actual LearnWorlds API call
+    const progress = {};
+    
+    // Get all course cards
+    const courseCards = document.querySelectorAll('.course-card, .lw-course-card');
+    courseCards.forEach(card => {
+      const courseId = getCourseIdFromCard(card);
+      if (courseId) {
+        const progressText = card.querySelector('.learnworlds-overline-text .weglot-exclude')?.textContent?.trim() || '0';
+        progress[courseId] = parseInt(progressText.replace('%', ''), 10);
+      }
+    });
+    
+    return progress;
+  }
+
+  // Remove the separate load event listeners and combine them
+  window.addEventListener('load', async function() {
     const iframe = document.getElementById('pathway-widget');
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage({ 
-        type: "USER_DATA",
-        data: { 
-          username: "{{USER.NAME}}",
-          userId: "{{USER.ID}}"
-        }
-      }, "https://learn-pathway-widget.vercel.app"); // Specify exact origin instead of "*"
+    if (iframe) {
+      // First get all course progress
+      const progress = await getAllCourseProgress();
+      const progressParam = encodeURIComponent(JSON.stringify(progress));
+      
+      // Update iframe src with both user data and progress
+      const baseUrl = iframe.src.split('?')[0];
+      iframe.src = `${baseUrl}?userId={{USER.ID}}&username={{USER.NAME}}&progress=${progressParam}`;
+
+      // Send user data message after iframe loads with new src
+      iframe.onload = function() {
+        iframe.contentWindow.postMessage({ 
+          type: "USER_DATA",
+          data: { 
+            username: "{{USER.NAME}}",
+            userId: "{{USER.ID}}",
+            progress: progress
+          }
+        }, "https://learn-pathway-widget.vercel.app");
+      };
     }
   });
 })();

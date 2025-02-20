@@ -46,18 +46,45 @@ app.get('/api/roadmap/:userId', async (req, res) => {
     // Read all rows from the sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:B',
+      range: 'Sheet1!A:E',
     });
 
-    // Filter for user's courses
-    let userCourses = (response.data.values || [])
-      .filter(row => row[0] === userId)
-      .map(row => row[1]); // Get course_ids
+    const values = response.data.values || [];
+    
+    // Check if this user has any courses (including Getting Started)
+    const userRows = values.filter(row => row[0] === userId);
+    const hasGettingStarted = userRows.some(row => row[1] === 'getting-started');
 
-    // Add Getting Started if not present
-    if (!userCourses.includes('getting-started')) {
-      userCourses.unshift('getting-started');
+    // If this is user's first time (no Getting Started course), add it
+    if (!hasGettingStarted) {
+      console.log('First time user, adding Getting Started course...');
+      
+      try {
+        // Add Getting Started course with initial progress
+        await sheets.spreadsheets.values.append({
+          spreadsheetId: SPREADSHEET_ID,
+          range: 'Sheet1!A:E',
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[
+              userId,
+              'getting-started',
+              'Getting Started',
+              '0', // Initial progress
+              new Date().toISOString()
+            ]]
+          }
+        });
+        
+        // Add it to our current results
+        userRows.push([userId, 'getting-started', 'Getting Started', '0', new Date().toISOString()]);
+      } catch (error) {
+        console.error('Error adding Getting Started course:', error);
+      }
     }
+
+    // Map all courses to just their IDs for the response
+    const userCourses = userRows.map(row => row[1]);
 
     res.status(200).json({ courses: userCourses });
   } catch (err) {
@@ -132,16 +159,65 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
   }
 });
 
-// Add this near your other routes
+// Add a new function to update course progress
+async function updateCourseProgress(userId, courseProgress) {
+  try {
+    // Get current data
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet1!A:E',
+    });
+
+    const values = response.data.values || [];
+    const updates = [];
+
+    // Find rows that need updating
+    values.forEach((row, index) => {
+      if (row[0] === userId) {
+        const courseId = row[1];
+        const newProgress = courseProgress[courseId];
+        
+        if (newProgress !== undefined && newProgress !== row[3]) {
+          updates.push({
+            range: `Sheet1!D${index + 1}`,
+            values: [[newProgress.toString()]]
+          });
+        }
+      }
+    });
+
+    // Batch update if there are changes
+    if (updates.length > 0) {
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        resource: {
+          valueInputOption: 'RAW',
+          data: updates
+        }
+      });
+      console.log(`Updated progress for ${updates.length} courses`);
+    }
+  } catch (error) {
+    console.error('Error updating course progress:', error);
+  }
+}
+
+// Update the roadmap endpoint to handle progress updates
 app.get('/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
     
-    // Get user's courses from the sheet
+    // Get course progress from LearnWorlds
+    const courseProgress = req.query.progress ? JSON.parse(req.query.progress) : {};
+    
+    // Update progress in spreadsheet
+    await updateCourseProgress(userId, courseProgress);
+    
+    // Get user's courses from the sheet - use full range to ensure we get progress
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:D',
+      range: 'Sheet1!A:E', // Changed from A:D to A:E to ensure we get all columns
     });
 
     // Filter and map user's courses
@@ -156,10 +232,11 @@ app.get('/roadmap/:userId', async (req, res) => {
     // Check if Getting Started course exists in the list
     const existingGettingStarted = userCourses.find(course => course.id === 'getting-started');
     
-    // If not in list, look for it in the sheet regardless of user
+    // If not in list, look for it in ALL rows for this user
     if (!existingGettingStarted) {
-      const gettingStartedRow = (response.data.values || [])
-        .find(row => row[1] === 'getting-started' && row[0] === userId);
+      const gettingStartedRow = response.data.values
+        ?.filter(row => row[0] === userId) // Filter for this user's rows
+        ?.find(row => row[1] === 'getting-started'); // Find Getting Started among their courses
 
       if (gettingStartedRow) {
         // If found in sheet, add with actual progress
@@ -168,6 +245,7 @@ app.get('/roadmap/:userId', async (req, res) => {
           title: 'Getting Started',
           progress: parseInt(gettingStartedRow[3] || '0', 10)
         });
+        console.log('Found Getting Started progress:', gettingStartedRow[3]); // Debug log
       } else {
         // If not found at all, add with default values
         userCourses.unshift({
