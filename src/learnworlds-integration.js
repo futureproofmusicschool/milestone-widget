@@ -185,22 +185,24 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s;
-        border: none;
         color: white;
         pointer-events: auto;
         margin-top: 40px;
       }
       .roadmap-button.add {
-        background-color: #3b82f6;
+        background-color: #A373F8;
+        border: none;
       }
       .roadmap-button.add:hover {
-        background-color: #2563eb;
+        background-color: #8b5df6;
       }
       .roadmap-button.remove {
-        background-color: #ef4444;
+        background-color: #000000;
+        border: 2px solid #A373F8;
+        color: white;
       }
       .roadmap-button.remove:hover {
-        background-color: #dc2626;
+        background-color: #1a1a1a;
       }
     `;
     document.head.appendChild(styles);

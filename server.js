@@ -343,7 +343,27 @@ app.get('/roadmap/:userId', async (req, res) => {
               font-weight: 600;
               white-space: nowrap;
             }
+            .course-content {
+              flex-grow: 1;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .delete-button {
+              background: none;
+              border: none;
+              color: #A373F8;
+              cursor: pointer;
+              padding: 0 0 0 20px;
+              font-size: 18px;
+              opacity: 0.8;
+              transition: opacity 0.2s;
+            }
+            .delete-button:hover {
+              opacity: 1;
+            }
           </style>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
           <script>
             // Send height to parent window
             function updateParentHeight() {
@@ -357,6 +377,39 @@ app.get('/roadmap/:userId', async (req, res) => {
               childList: true,
               subtree: true
             });
+
+            // Add delete functionality
+            function deleteCourse(courseId) {
+              fetch(\`${API_URL}/api/roadmap/{{userId}}/remove\`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ courseId })
+              })
+              .then(response => {
+                if (response.ok) {
+                  // Remove the course item from DOM
+                  const courseItem = document.querySelector(\`[data-course-id="\${courseId}"]\`);
+                  if (courseItem) {
+                    courseItem.remove();
+                    // Update total progress
+                    updateTotalProgress();
+                  }
+                }
+              })
+              .catch(error => console.error('Error:', error));
+            }
+
+            function updateTotalProgress() {
+              const progressElements = document.querySelectorAll('.course-progress');
+              let total = 0;
+              progressElements.forEach(el => {
+                total += parseInt(el.textContent);
+              });
+              const avg = progressElements.length ? Math.round(total / progressElements.length) : 0;
+              document.querySelector('.total-progress').textContent = \`Total Progress: \${avg}% Complete\`;
+            }
           </script>
         </head>
         <body>
@@ -365,13 +418,21 @@ app.get('/roadmap/:userId', async (req, res) => {
             ${userCourses.length > 0 
               ? `
                 ${userCourses.map(course => `
-                  <div class="course-item">
-                    <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
-                       target="_blank" 
-                       rel="noopener noreferrer">
-                      <span class="course-title">${course.title}</span>
-                      <span class="course-progress">${course.progress}% Complete</span>
-                    </a>
+                  <div class="course-item" data-course-id="${course.id}">
+                    <div class="course-content">
+                      <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
+                         target="_blank" 
+                         rel="noopener noreferrer">
+                        <span class="course-title">${course.title}</span>
+                        <span class="course-progress">${course.progress}% Complete</span>
+                      </a>
+                    </div>
+                    ${course.id !== 'getting-started' ? 
+                      `<button class="delete-button" onclick="deleteCourse('${course.id}')">
+                        <i class="fas fa-times"></i>
+                      </button>` : 
+                      ''
+                    }
                   </div>
                 `).join('')}
                 <div class="total-progress-container">
