@@ -2,10 +2,19 @@ import { config } from 'dotenv';
 import express from 'express';
 import { google } from 'googleapis';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 config(); // Initialize dotenv
 
 const app = express();
+
+// Add CORS middleware
+app.use(cors({
+  origin: 'https://www.futureproofmusicschool.com',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
 // Google Sheets setup
