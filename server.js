@@ -121,5 +121,88 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
   }
 });
 
+// Add this near your other routes
+app.get('/roadmap/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Get user's courses from the sheet
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet1!A:B',
+    });
+
+    // Filter for this user's courses
+    const userCourses = (response.data.values || [])
+      .filter(row => row[0] === userId)
+      .map(row => row[1]);
+
+    // Render a simple HTML page
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Course Roadmap</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 20px;
+              background: #f5f5f5;
+            }
+            h1 {
+              text-align: center;
+              color: #333;
+              text-transform: uppercase;
+              margin: 40px 0;
+              font-size: 2.5em;
+              font-weight: 700;
+            }
+            .course-list {
+              background: white;
+              border-radius: 8px;
+              padding: 20px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .course-item {
+              padding: 15px;
+              border-bottom: 1px solid #eee;
+              font-size: 1.1em;
+            }
+            .course-item:last-child {
+              border-bottom: none;
+            }
+            .empty-message {
+              text-align: center;
+              color: #666;
+              font-style: italic;
+              padding: 40px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Course Roadmap for ${userId}</h1>
+          <div class="course-list">
+            ${userCourses.length > 0 
+              ? userCourses.map(course => `
+                  <div class="course-item">
+                    ${course}
+                  </div>
+                `).join('')
+              : '<div class="empty-message">No courses added to roadmap yet.</div>'
+            }
+          </div>
+        </body>
+      </html>
+    `;
+
+    res.send(html);
+  } catch (err) {
+    console.error('Error fetching roadmap:', err);
+    res.status(500).send('Error loading roadmap');
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
