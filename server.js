@@ -204,6 +204,11 @@ app.get('/roadmap/:userId', async (req, res) => {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
     
+    // Define the API URL based on environment
+    const API_URL = process.env.NODE_ENV === 'production' 
+      ? 'https://learn-pathway-widget.vercel.app'
+      : 'http://localhost:3000';
+
     // First get the sorting order from Sheet2
     const orderResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
@@ -380,7 +385,7 @@ app.get('/roadmap/:userId', async (req, res) => {
 
             // Add delete functionality
             function deleteCourse(courseId) {
-              fetch(\`${API_URL}/api/roadmap/{{userId}}/remove\`, {
+              fetch(\`${API_URL}/api/roadmap/${userId}/remove\`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
