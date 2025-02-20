@@ -1,127 +1,175 @@
 // LearnWorlds Integration Script
 (function() {
   const API_URL = 'https://learn-pathway-widget.vercel.app';
-  let userCoursesCache = null; // Cache for user's courses
+  let userCoursesCache = null;
 
-  // Single source of truth for progress data
-  const courseProgress = new Map();
-
-  // One function to get progress from a card
-  function getProgressFromCard(card) {
-    const progressText = card.querySelector('.weglot-exclude')?.textContent;
-    if (progressText) {
-      const value = parseInt(progressText, 10);
-      console.log('Found progress:', { text: progressText, value });
-      return value;
-    }
-    return 0;
-  }
-
-  // One function to update the widget
-  function updateWidget() {
-    const iframe = document.getElementById('pathway-widget');
-    if (iframe && iframe.contentWindow) {
-      const progress = Object.fromEntries(courseProgress);
-      console.log('Sending progress to widget:', progress);
-      iframe.contentWindow.postMessage({
-        type: "USER_DATA",
-        data: {
-          username: "{{USER.NAME}}",
-          userId: "{{USER.ID}}",
-          progress
-        }
-      }, "https://learn-pathway-widget.vercel.app");
-    }
-  }
-
-  // Simplified card processing
-  function processCard(card) {
-    const courseId = getCourseIdFromCard(card);
-    if (!courseId) return;
-
-    // Get and store progress
-    const progress = getProgressFromCard(card);
-    courseProgress.set(courseId, progress);
-    
-    // Add button if needed
-    if (!card.querySelector('.roadmap-button-container')) {
-      addButtonToCourseCard(card);
-    }
-  }
-
-  // Main initialization
-  function initialize() {
-    console.log('Starting fresh initialization');
-    
-    // Process all existing cards
-    document.querySelectorAll('.course-card, .lw-course-card').forEach(processCard);
-    
-    // Update widget with current progress
-    updateWidget();
-
-    // Watch for new cards
-    new MutationObserver((mutations) => {
-      let needsUpdate = false;
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node instanceof HTMLElement) {
-            const cards = node.querySelectorAll('.course-card, .lw-course-card');
-            cards.forEach(card => {
-              processCard(card);
-              needsUpdate = true;
-            });
-          }
-        });
-      });
-      if (needsUpdate) updateWidget();
-    }).observe(document.body, { childList: true, subtree: true });
-  }
-
-  // Start when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
-  } else {
-    initialize();
-  }
+  document.addEventListener('DOMContentLoaded', initializeRoadmapButtons);
 
   async function initializeRoadmapButtons() {
-    console.log('Initializing roadmap buttons...');
-    
-    // Get user ID
     const userId = "{{USER.ID}}";
-    if (!userId) {
-      console.error('No user ID available');
-      return;
-    }
+    if (!userId) return;
 
-    // Fetch user's courses and ensure Getting Started is included
     try {
       const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch roadmap');
       const data = await response.json();
       userCoursesCache = new Set(data.courses);
-      
-      // Always include Getting Started in the cache
       userCoursesCache.add('getting-started');
       
-      console.log('Cached user courses:', userCoursesCache);
+      addStyles();
+      processAllCourseCards();
+      observeNewCards();
     } catch (error) {
-      console.error('Error fetching initial courses:', error);
-      return;
+      console.error('Error:', error);
     }
-
-    // Add styles and start processing course cards
-    addStyles();
-    processAllCourseCards();
-    observeNewCards();
   }
 
-  // Function to check if a course is in user's roadmap (uses cache)
+  function processAllCourseCards() {
+    const selectors = ['.course-card', '.lw-course-card', '[data-course-id]', '[href*="courseid="]', '.catalog-item'];
+    const courseCards = new Set();
+    const progress = {};
+
+    selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(card => {
+        const fullCard = card.closest('.course-card') || card.closest('.lw-course-card') || card;
+        if (!fullCard) return;
+        
+        courseCards.add(fullCard);
+        const courseId = getCourseIdFromCard(fullCard);
+        if (!courseId) return;
+
+        // Get progress using exact selector chain
+        const progressElement = fullCard.querySelector('.learnworlds-overline-text.learnworlds-element.no-margin-bottom');
+        if (progressElement) {
+          const progressText = progressElement.textContent.trim();
+          const progressValue = parseInt(progressText, 10);
+          if (!isNaN(progressValue)) {
+            progress[courseId] = progressValue;
+            console.log(`Found progress for ${courseId}:`, progressValue);
+          }
+        }
+      });
+    });
+
+    // Send progress to widget
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({ 
+        type: "USER_DATA",
+        data: { username: "{{USER.NAME}}", userId: "{{USER.ID}}", progress }
+      }, "https://learn-pathway-widget.vercel.app");
+    }
+
+    // Add buttons
+    courseCards.forEach(card => addButtonToCourseCard(card));
+  }
+
+  function addButtonToCourseCard(courseCard) {
+    if (courseCard.querySelector('.roadmap-button-container')) return;
+
+    const courseId = getCourseIdFromCard(courseCard);
+    if (!courseId) return;
+
+    courseCard.style.position = 'relative';
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'roadmap-button-container';
+
+    const button = document.createElement('button');
+    button.className = 'roadmap-button add';
+    
+    updateButtonState(button, isInRoadmap(courseId));
+
+    button.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const removing = button.classList.contains('remove');
+      button.disabled = true;
+
+      try {
+        if (removing) {
+          const response = await fetch(
+            `${API_URL}/api/roadmap/{{USER.ID}}/remove`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ courseId })
+            }
+          );
+          if (!response.ok) throw new Error('Failed to remove course');
+        } else {
+          const courseTitle = courseCard.querySelector('.learnworlds-heading3')?.textContent?.trim()
+            || courseCard.querySelector('.lw-course-card--stretched-link')?.textContent?.trim()
+            || `Course: ${courseId}`;
+
+          const response = await fetch(
+            `${API_URL}/api/roadmap/{{USER.ID}}/add`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ courseId, courseTitle })
+            }
+          );
+          if (!response.ok) throw new Error('Failed to add course');
+        }
+        
+        if (removing) {
+          userCoursesCache.delete(courseId);
+        } else {
+          userCoursesCache.add(courseId);
+        }
+        
+        updateButtonState(button, !removing);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    buttonContainer.appendChild(button);
+    courseCard.appendChild(buttonContainer);
+  }
+
+  function getCourseIdFromCard(courseCard) {
+    const possibleElements = [
+      courseCard.querySelector('a[href*="courseid="]'),
+      courseCard.querySelector('[data-course-id]'),
+      courseCard.closest('[data-course-id]'),
+      courseCard
+    ];
+
+    for (const element of possibleElements) {
+      if (!element) continue;
+      const dataId = element.getAttribute('data-course-id');
+      if (dataId) return dataId;
+      const href = element.getAttribute('href');
+      if (href) {
+        const match = href.match(/courseid=([^&]+)/);
+        if (match) return match[1];
+      }
+    }
+    return null;
+  }
+
   function isInRoadmap(courseId) {
     return userCoursesCache ? userCoursesCache.has(courseId) : false;
   }
 
-  // Add button styles
+  function updateButtonState(button, isInRoadmap) {
+    if (isInRoadmap) {
+      button.textContent = 'Remove from Roadmap';
+      button.classList.remove('add');
+      button.classList.add('remove');
+    } else {
+      button.textContent = 'Add to Roadmap';
+      button.classList.remove('remove');
+      button.classList.add('add');
+    }
+    button.disabled = false;
+  }
+
   function addStyles() {
     const styles = document.createElement('style');
     styles.textContent = `
@@ -165,172 +213,6 @@
     document.head.appendChild(styles);
   }
 
-  // Process all course cards at once
-  function processAllCourseCards() {
-    const selectors = [
-      '.course-card',
-      '.lw-course-card',
-      '[data-course-id]',
-      '[href*="courseid="]',
-      '.catalog-item'
-    ];
-
-    const courseCards = new Set();
-    const progress = {};
-
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(card => {
-        const fullCard = card.closest('.course-card') || card.closest('.lw-course-card') || card;
-        if (fullCard) {
-          courseCards.add(fullCard);
-          
-          const courseId = getCourseIdFromCard(fullCard);
-          if (courseId) {
-            // Get progress using exact selector chain from the HTML
-            const progressElement = fullCard.querySelector('.learnworlds-overline-text.learnworlds-element.no-margin-bottom .weglot-exclude');
-            if (progressElement) {
-              const progressText = progressElement.textContent;
-              const progressValue = parseInt(progressText, 10); // Will parse "87%" to 87
-              progress[courseId] = progressValue;
-              console.log(`Found progress for ${courseId}:`, progressValue);
-            }
-          }
-        }
-      });
-    });
-
-    // Send progress to widget
-    const iframe = document.getElementById('pathway-widget');
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage({ 
-        type: "USER_DATA",
-        data: { 
-          username: "{{USER.NAME}}",
-          userId: "{{USER.ID}}",
-          progress: progress
-        }
-      }, "https://learn-pathway-widget.vercel.app");
-    }
-
-    // Add buttons
-    courseCards.forEach(card => {
-      if (card) addButtonToCourseCard(card);
-    });
-  }
-
-  // Add button to a course card
-  async function addButtonToCourseCard(courseCard) {
-    if (courseCard.querySelector('.roadmap-button-container')) return;
-
-    const courseId = getCourseIdFromCard(courseCard);
-    if (!courseId) return;
-
-    courseCard.style.position = 'relative';
-    
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'roadmap-button-container';
-
-    const button = document.createElement('button');
-    button.className = 'roadmap-button add';
-    
-    // Use cached data to set initial state
-    updateButtonState(button, isInRoadmap(courseId));
-
-    // Handle click events
-    button.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const removing = button.classList.contains('remove');
-      button.disabled = true;
-
-      try {
-        if (removing) {
-          const response = await fetch(
-            `${API_URL}/api/roadmap/{{USER.ID}}/remove`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ courseId })
-            }
-          );
-          
-          if (!response.ok) throw new Error('Failed to remove course');
-        } else {
-          const courseTitle = courseCard.querySelector('.learnworlds-heading3')?.textContent?.trim()
-            || courseCard.querySelector('.lw-course-card--stretched-link')?.textContent?.trim()
-            || `Course: ${courseId}`;
-
-          const response = await fetch(
-            `${API_URL}/api/roadmap/{{USER.ID}}/add`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                courseId,
-                courseTitle
-              })
-            }
-          );
-          
-          if (!response.ok) throw new Error('Failed to add course');
-        }
-        
-        // Update cache
-        if (removing) {
-          userCoursesCache.delete(courseId);
-        } else {
-          userCoursesCache.add(courseId);
-        }
-        
-        updateButtonState(button, !removing);
-      } catch (error) {
-        console.error('Error updating roadmap:', error);
-      } finally {
-        button.disabled = false;
-      }
-    });
-
-    buttonContainer.appendChild(button);
-    courseCard.appendChild(buttonContainer);
-  }
-
-  // Helper functions remain the same
-  function getCourseIdFromCard(courseCard) {
-    const possibleElements = [
-      courseCard.querySelector('a[href*="courseid="]'),
-      courseCard.querySelector('[data-course-id]'),
-      courseCard.closest('[data-course-id]'),
-      courseCard
-    ];
-
-    for (const element of possibleElements) {
-      if (!element) continue;
-      const dataId = element.getAttribute('data-course-id');
-      if (dataId) return dataId;
-      const href = element.getAttribute('href');
-      if (href) {
-        const match = href.match(/courseid=([^&]+)/);
-        if (match) return match[1];
-      }
-    }
-    return null;
-  }
-
-  function updateButtonState(button, isInRoadmap) {
-    if (isInRoadmap) {
-      button.textContent = 'Remove from Roadmap';
-      button.classList.remove('add');
-      button.classList.add('remove');
-    } else {
-      button.textContent = 'Add to Roadmap';
-      button.classList.remove('remove');
-      button.classList.add('add');
-    }
-    button.disabled = false;
-  }
-
-  // Observe DOM for new cards
   function observeNewCards() {
     const observer = new MutationObserver((mutations) => {
       let shouldUpdate = false;
@@ -349,7 +231,6 @@
       });
 
       if (shouldUpdate) {
-        console.log('New course cards detected, updating buttons...');
         processAllCourseCards();
       }
     });
@@ -359,150 +240,4 @@
       subtree: true
     });
   }
-
-  // Update the message event listener to be more specific
-  window.addEventListener('message', function(event) {
-    // Only handle messages related to the roadmap widget
-    if (!event.data || !event.data.type) return;
-    
-    // Only process specific roadmap-related message types
-    const roadmapMessageTypes = ['RESIZE', 'READY', 'USER_DATA'];
-    if (!roadmapMessageTypes.includes(event.data.type)) return;
-    
-    // Handle roadmap-specific messages
-    if (event.data.type === 'RESIZE') {
-      const iframe = document.getElementById('pathway-widget');
-      if (iframe) {
-        iframe.style.height = `${event.data.height}px`;
-      }
-    }
-
-    if (event.data.type === 'READY') {
-      const iframe = document.getElementById('pathway-widget');
-      if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage({ 
-          type: "USER_DATA",
-          data: { 
-            username: "{{USER.NAME}}",
-            userId: "{{USER.ID}}"
-          }
-        }, "https://learn-pathway-widget.vercel.app");
-      }
-    }
-  });
-
-  // Update the progress detection function to use LearnWorlds API
-  async function getAllCourseProgress() {
-    const progress = {};
-    
-    // Get all course cards
-    const courseCards = document.querySelectorAll('.course-card, .lw-course-card');
-    console.log('Found course cards:', {
-      count: courseCards.length,
-      cards: Array.from(courseCards).map(card => ({
-        html: card.innerHTML,
-        courseId: getCourseIdFromCard(card)
-      }))
-    });
-    
-    courseCards.forEach(card => {
-      const courseId = getCourseIdFromCard(card);
-      if (courseId) {
-        // Log the entire card HTML to see what we're working with
-        console.log(`Examining card for ${courseId}:`, {
-          cardHTML: card.innerHTML
-        });
-
-        // Get progress from the exact element structure
-        const progressElement = card.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude');
-        console.log(`Progress element for ${courseId}:`, {
-          found: !!progressElement,
-          element: progressElement,
-          text: progressElement?.textContent,
-          parentHTML: progressElement?.parentElement?.innerHTML
-        });
-
-        if (progressElement) {
-          const progressValue = parseInt(progressElement.textContent.trim(), 10);
-          progress[courseId] = progressValue;
-          console.log(`Progress parsed for ${courseId}:`, {
-            rawText: progressElement.textContent,
-            trimmed: progressElement.textContent.trim(),
-            parsed: progressValue
-          });
-        } else {
-          // Try logging all elements with class 'weglot-exclude' in this card
-          const allWeglotElements = card.querySelectorAll('.weglot-exclude');
-          console.log(`No direct match, found ${allWeglotElements.length} weglot elements:`, 
-            Array.from(allWeglotElements).map(el => el.innerHTML)
-          );
-        }
-      }
-    });
-    
-    console.log('Final progress object:', progress);
-    return progress;
-  }
-
-  // Update the wait function to match the exact selector
-  async function waitForCourseCards() {
-    const maxAttempts = 20;
-    const delayMs = 1000;
-    
-    for (let i = 0; i < maxAttempts; i++) {
-      const cards = document.querySelectorAll('.course-card, .lw-course-card');
-      if (cards.length > 0) {
-        // Wait for progress elements to be loaded
-        const hasProgress = Array.from(cards).some(card => 
-          card.querySelector('.learnworlds-overline-text.learnworlds-element .weglot-exclude')
-        );
-        if (hasProgress) {
-          console.log('Found cards with progress elements');
-          return true;
-        }
-        console.log(`Attempt ${i + 1}: Found cards but no progress elements yet`);
-      } else {
-        console.log(`Attempt ${i + 1}: No cards found yet`);
-      }
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-    return false;
-  }
-
-  // Update the load event handler to properly use the progress data
-  window.addEventListener('load', async function() {
-    const iframe = document.getElementById('pathway-widget');
-    if (iframe) {
-      console.log('Starting widget initialization...');
-      
-      // Wait for course cards to be available
-      const cardsLoaded = await waitForCourseCards();
-      if (!cardsLoaded) {
-        console.error('Course cards not found after waiting');
-        return;
-      }
-
-      // Now get progress when we know cards are available
-      const progress = await getAllCourseProgress();
-      console.log('Course progress found:', progress); // Debug log
-
-      // Important: Wait for iframe to load before sending message
-      iframe.onload = function() {
-        console.log('Iframe loaded, sending progress data:', progress);
-        iframe.contentWindow.postMessage({ 
-          type: "USER_DATA",
-          data: { 
-            username: "{{USER.NAME}}",
-            userId: "{{USER.ID}}",
-            progress: progress
-          }
-        }, "https://learn-pathway-widget.vercel.app");
-      };
-      
-      // Update iframe src with progress data
-      const progressParam = encodeURIComponent(JSON.stringify(progress));
-      const baseUrl = iframe.src.split('?')[0];
-      iframe.src = `${baseUrl}?userId={{USER.ID}}&username={{USER.NAME}}&progress=${progressParam}`;
-    }
-  });
 })();
