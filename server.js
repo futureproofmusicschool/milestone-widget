@@ -203,21 +203,20 @@ app.get('/roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
-    const progress = req.query.progress ? JSON.parse(req.query.progress) : {};
     
-    // Get user's courses from sheet (just IDs and titles)
+    // Get user's courses and progress from sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:D',
+      range: 'Sheet1!A:E', // Include progress column
     });
 
-    // Map courses and include live progress from the page
+    // Map courses including progress from sheet
     let userCourses = (response.data.values || [])
       .filter(row => row[0] === userId)
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
-        progress: progress[row[1]] || 0 // Get progress from live data
+        progress: parseInt(row[4] || '0', 10) // Get progress from column E
       }));
 
     // Handle Getting Started course
@@ -226,13 +225,13 @@ app.get('/roadmap/:userId', async (req, res) => {
       userCourses.unshift({
         id: 'getting-started',
         title: 'Getting Started',
-        progress: progress['getting-started'] || 0 // Get from live data
+        progress: 0
       });
     }
 
-    // Calculate total progress from live data
+    // Calculate total progress from sheet data
     const totalProgress = userCourses.length > 0
-      ? Math.round(userCourses.reduce((sum, course) => sum + (progress[course.id] || 0), 0) / userCourses.length)
+      ? Math.round(userCourses.reduce((sum, course) => sum + (course.progress || 0), 0) / userCourses.length)
       : 0;
 
     // Render a simple HTML page with your brand colors
@@ -359,9 +358,8 @@ app.get('/api/progress/:userId', async (req, res) => {
     const { userId } = req.params;
     console.log('Fetching progress for user:', userId);
     
+    // Get progress from LearnWorlds API
     const apiUrl = `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
-    console.log('LearnWorlds API URL:', apiUrl);
-
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
@@ -371,19 +369,58 @@ app.get('/api/progress/:userId', async (req, res) => {
       }
     });
 
-    console.log('LearnWorlds API response status:', progressResponse.status);
-    const responseText = await progressResponse.text();
-    console.log('LearnWorlds API response:', responseText);
-
     if (!progressResponse.ok) {
-      throw new Error(`Failed to fetch progress: ${responseText}`);
+      throw new Error(`Failed to fetch progress: ${await progressResponse.text()}`);
     }
 
-    const data = JSON.parse(responseText);
-    console.log('Parsed progress data:', data);
+    const data = await progressResponse.json();
+    
+    // Update progress in Google Sheet
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet1!A:E',  // Changed to include column E
+    });
+
+    const values = response.data.values || [];
+    console.log('Current sheet data:', values);
+
+    const updates = [];
+
+    // For each course in the API response, update its progress in the sheet
+    data.data.forEach(course => {
+      console.log('Processing course:', course);
+      const rowIndex = values.findIndex(row => 
+        row[0] === userId && row[1] === course.course_id
+      );
+      
+      console.log('Found row index:', rowIndex, 'for course:', course.course_id);
+      
+      if (rowIndex !== -1) {
+        updates.push({
+          range: `Sheet1!E${rowIndex + 1}`,
+          values: [[course.progress_rate]]
+        });
+        console.log('Added update for row:', rowIndex + 1, 'progress:', course.progress_rate);
+      }
+    });
+
+    console.log('Updates to make:', updates);
+
+    // Batch update the progress values
+    if (updates.length > 0) {
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        resource: {
+          valueInputOption: 'RAW',
+          data: updates
+        }
+      });
+      console.log('Updated sheet with progress values');
+    }
+
     res.json(data);
   } catch (error) {
-    console.error('Error fetching progress:', error);
+    console.error('Error fetching/storing progress:', error);
     res.status(500).json({ error: error.message });
   }
 });

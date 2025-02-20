@@ -17,39 +17,19 @@
       userCoursesCache = new Set(data.courses);
       userCoursesCache.add('getting-started');
 
-      // Get progress from our server endpoint
-      const progressResponse = await fetch(`${API_URL}/api/progress/${userId}`);
-      if (!progressResponse.ok) {
-        throw new Error('Failed to fetch progress data');
-      }
-
-      const progressData = await progressResponse.json();
-      const progress = {};
-
-      // Map the API response to our progress object
-      progressData.data.forEach(course => {
-        progress[course.course_id] = course.progress_rate;
-      });
-
-      console.log('Progress from API:', progress);
-
-      // Send progress to widget
-      const iframe = document.getElementById('pathway-widget');
-      if (iframe?.contentWindow) {
-        iframe.contentWindow.postMessage({ 
-          type: "USER_DATA",
-          data: { 
-            username: "{{USER.NAME}}", 
-            userId: "{{USER.ID}}", 
-            progress 
-          }
-        }, "https://learn-pathway-widget.vercel.app");
-      }
+      // Fetch progress (this will update the sheet)
+      await fetch(`${API_URL}/api/progress/${userId}`);
 
       // Add styles and buttons
       addStyles();
       processAllCourseCards();
       observeNewCards();
+
+      // Load widget with just the user info
+      const iframe = document.getElementById('pathway-widget');
+      if (iframe) {
+        iframe.src = `${API_URL}/roadmap/${userId}?username={{USER.NAME}}`;
+      }
     } catch (error) {
       console.error('Error:', error);
     }
