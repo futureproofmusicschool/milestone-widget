@@ -372,8 +372,8 @@ app.get('/api/progress/:userId', async (req, res) => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Authorization': process.env.LEARNWORLDS_CLIENT_SECRET,
-        'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
+        'Authorization': '', // Just empty string as shown in docs
+        'Lw-Client': ''     // Just empty string as shown in docs
       }
     });
 
