@@ -204,10 +204,25 @@ app.get('/roadmap/:userId', async (req, res) => {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
     
+    // First get the sorting order from Sheet2
+    const orderResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet2!A2:B', // Start from row 2 to skip headers
+    });
+    
+    // Create a map of courseId to sort order, filtering out any empty rows
+    const courseOrder = new Map(
+      (orderResponse.data.values || [])
+        .filter(row => row[0] && row[1]) // Ensure both courseId and order exist
+        .map(([courseId, order]) => [courseId, parseInt(order, 10)])
+    );
+
+    console.log('Loaded course order:', Object.fromEntries(courseOrder));
+
     // Get user's courses and progress from sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:E', // Include progress column
+      range: 'Sheet1!A:E',
     });
 
     // Map courses including progress from sheet
@@ -216,7 +231,8 @@ app.get('/roadmap/:userId', async (req, res) => {
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
-        progress: parseInt(row[4] || '0', 10) // Get progress from column E
+        progress: parseInt(row[4] || '0', 10),
+        sortOrder: courseOrder.get(row[1]) || 999999 // Default to high number if not found
       }));
 
     // Handle Getting Started course
@@ -225,9 +241,13 @@ app.get('/roadmap/:userId', async (req, res) => {
       userCourses.unshift({
         id: 'getting-started',
         title: 'Getting Started',
-        progress: 0
+        progress: 0,
+        sortOrder: courseOrder.get('getting-started') || 0
       });
     }
+
+    // Sort courses by their order
+    userCourses.sort((a, b) => a.sortOrder - b.sortOrder);
 
     // Calculate total progress from sheet data
     const totalProgress = userCourses.length > 0
