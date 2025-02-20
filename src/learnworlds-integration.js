@@ -10,12 +10,44 @@
     if (!userId) return;
 
     try {
+      // First get user's courses
       const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch roadmap');
       const data = await response.json();
       userCoursesCache = new Set(data.courses);
       userCoursesCache.add('getting-started');
-      
+
+      // Get progress from LearnWorlds API
+      const progressResponse = await fetch(`${API_URL}/api/progress/{{USER.ID}}`);
+
+      if (!progressResponse.ok) {
+        throw new Error('Failed to fetch progress data');
+      }
+
+      const progressData = await progressResponse.json();
+      const progress = {};
+
+      // Map the API response to our progress object
+      progressData.data.forEach(course => {
+        progress[course.course_id] = course.progress_rate;
+      });
+
+      console.log('Progress from API:', progress);
+
+      // Send progress to widget
+      const iframe = document.getElementById('pathway-widget');
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage({ 
+          type: "USER_DATA",
+          data: { 
+            username: "{{USER.NAME}}", 
+            userId: "{{USER.ID}}", 
+            progress 
+          }
+        }, "https://learn-pathway-widget.vercel.app");
+      }
+
+      // Add styles and buttons
       addStyles();
       processAllCourseCards();
       observeNewCards();
@@ -27,38 +59,15 @@
   function processAllCourseCards() {
     const selectors = ['.course-card', '.lw-course-card', '[data-course-id]', '[href*="courseid="]', '.catalog-item'];
     const courseCards = new Set();
-    const progress = {};
 
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(card => {
         const fullCard = card.closest('.course-card') || card.closest('.lw-course-card') || card;
-        if (!fullCard) return;
-        
-        courseCards.add(fullCard);
-        const courseId = getCourseIdFromCard(fullCard);
-        if (!courseId) return;
-
-        // Get progress using exact selector chain
-        const progressElement = fullCard.querySelector('.learnworlds-overline-text.learnworlds-element.no-margin-bottom');
-        if (progressElement) {
-          const progressText = progressElement.textContent.trim();
-          const progressValue = parseInt(progressText, 10);
-          if (!isNaN(progressValue)) {
-            progress[courseId] = progressValue;
-            console.log(`Found progress for ${courseId}:`, progressValue);
-          }
+        if (fullCard) {
+          courseCards.add(fullCard);
         }
       });
     });
-
-    // Send progress to widget
-    const iframe = document.getElementById('pathway-widget');
-    if (iframe?.contentWindow) {
-      iframe.contentWindow.postMessage({ 
-        type: "USER_DATA",
-        data: { username: "{{USER.NAME}}", userId: "{{USER.ID}}", progress }
-      }, "https://learn-pathway-widget.vercel.app");
-    }
 
     // Add buttons
     courseCards.forEach(card => addButtonToCourseCard(card));

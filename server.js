@@ -240,6 +240,10 @@ app.get('/roadmap/:userId', async (req, res) => {
       <!DOCTYPE html>
       <html>
         <head>
+          <script>
+            window.LEARNWORLDS_CLIENT_ID = '${process.env.LEARNWORLDS_CLIENT_ID}';
+            window.LEARNWORLDS_CLIENT_SECRET = '${process.env.LEARNWORLDS_CLIENT_SECRET}';
+          </script>
           <title>Course Roadmap</title>
           <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
           <style>
@@ -350,6 +354,35 @@ app.get('/roadmap/:userId', async (req, res) => {
   } catch (err) {
     console.error('Error fetching roadmap:', err);
     res.status(500).send('Error loading roadmap');
+  }
+});
+
+// Add new endpoint to proxy the LearnWorlds API call
+app.get('/api/progress/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const progressResponse = await fetch(
+      `https://www.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`,
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Client-ID': process.env.LEARNWORLDS_CLIENT_ID,
+          'Client-Secret': process.env.LEARNWORLDS_CLIENT_SECRET
+        }
+      }
+    );
+
+    if (!progressResponse.ok) {
+      throw new Error('Failed to fetch progress from LearnWorlds');
+    }
+
+    const data = await progressResponse.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching progress:', error);
+    res.status(500).json({ error: 'Failed to fetch progress' });
   }
 });
 
