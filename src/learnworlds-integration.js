@@ -33,7 +33,7 @@
       processAllCourseCards();
       observeNewCards();
 
-      // Setup iframe with dynamic resizing
+      // Setup iframe with dynamic resizin 
       setupIframe();
     } catch (error) {
       console.error('Error:', error);
