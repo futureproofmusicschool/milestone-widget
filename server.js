@@ -404,7 +404,7 @@ app.get('/roadmap/:userId', (req, res) => {
 
         .timeline-line {
           position: absolute;
-          left: 20px;
+          left: 24px;
           top: 10px;
           bottom: 0;
           width: 2px;
@@ -414,7 +414,7 @@ app.get('/roadmap/:userId', (req, res) => {
         .course-item {
           position: relative;
           margin: 20px 0;
-          padding-left: 40px;
+          padding-left: 50px;
         }
 
         .course-item:first-child {
@@ -422,16 +422,16 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .course-dot {
-          width: 12px;
-          height: 12px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
           position: absolute;
-          left: 15px;
+          left: 13px;
           top: 50%;
           transform: translateY(-50%);
           z-index: 2;
           background: #000000;
-          border: 2px solid #A373F8;
+          border: 3px solid #A373F8;
           box-sizing: border-box;
         }
 
@@ -441,13 +441,19 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .course-content {
+          position: relative;
           background: rgba(163, 115, 248, 0.1);
           border: 1px solid rgba(163, 115, 248, 0.2);
           border-radius: 8px;
           padding: 15px;
           width: calc(100% - 60px);
           max-width: 600px;
-          position: relative; /* For absolute positioning of remove button */
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .course-content:hover {
+          transform: translateX(5px);
+          box-shadow: -4px 4px 12px rgba(163, 115, 248, 0.1);
         }
 
         .course-title {
@@ -480,6 +486,14 @@ app.get('/roadmap/:userId', (req, res) => {
           margin: 0 0 20px 0;
         }
 
+        .roadmap-label {
+          color: #A373F8;
+        }
+
+        .username {
+          color: #FFFFFF;
+        }
+
         .remove-button {
           position: absolute;
           top: 8px;
@@ -488,8 +502,8 @@ app.get('/roadmap/:userId', (req, res) => {
           height: 20px;
           border-radius: 50%;
           border: none;
-          background: rgba(163, 115, 248, 0.1);
-          color: #A373F8;
+          background: rgba(255, 255, 255, 0.1);
+          color: #FFFFFF;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -499,17 +513,31 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .remove-button:hover {
-          background: rgba(163, 115, 248, 0.2);
+          background: rgba(255, 255, 255, 0.2);
+          transform: scale(1.1);
         }
 
-        .remove-button:active {
-          transform: scale(0.95);
+        .total-progress {
+          width: calc(100% - 60px);
+          max-width: 600px;
+          margin-top: 30px;
+          padding: 0;
+          background: none;
+          border: none;
+        }
+
+        .total-progress-bar {
+          height: 8px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+          margin-top: 10px;
         }
       </style>
     </head>
     <body>
       <div class="header-container">
-        <h2>course roadmap for ${username}</h2>
+        <h2><span class="roadmap-label">course roadmap for </span><span class="username">${username}</span></h2>
       </div>
 
       <div class="loading-container" id="loading">
@@ -574,9 +602,9 @@ app.get('/roadmap/:userId', (req, res) => {
             const totalProgressContainer = document.getElementById('total-progress-container');
             totalProgressContainer.innerHTML = \`
               <div class="total-progress">
-                <strong>Total Progress: \${data.totalProgress}%</strong>
+                <strong>Total Progress: \${Math.round(data.totalProgress)}%</strong>
                 <div class="total-progress-bar">
-                  <div class="total-progress-fill" style="width: \${data.totalProgress}%"></div>
+                  <div class="total-progress-fill" style="width: \${Math.round(data.totalProgress)}%"></div>
                 </div>
               </div>
             \`;
