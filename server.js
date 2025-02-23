@@ -311,7 +311,7 @@ app.get('/roadmap/:userId', (req, res) => {
   <!DOCTYPE html>
   <html>
     <head>
-      <title>Roadmap Widget</title>
+      <title>Course Roadmap</title>
       <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
       <style>
         body {
@@ -320,6 +320,35 @@ app.get('/roadmap/:userId', (req, res) => {
           font-family: 'Source Sans Pro', sans-serif;
           background: #000;
           color: #F6F8FF;
+        }
+
+        .header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 30px;
+        }
+
+        .total-progress {
+          background: rgba(163, 115, 248, 0.1);
+          border: 1px solid rgba(163, 115, 248, 0.2);
+          border-radius: 8px;
+          padding: 15px;
+          min-width: 200px;
+          text-align: center;
+        }
+
+        .total-progress-bar {
+          height: 8px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .total-progress-fill {
+          height: 100%;
+          background: #A373F8;
+          transition: width 0.3s ease;
         }
 
         .loading-container {
@@ -355,34 +384,32 @@ app.get('/roadmap/:userId', (req, res) => {
           padding-top: 20px;
         }
 
-        /* Vertical line */
+        /* Timeline adjustments */
         .timeline-line {
           position: absolute;
-          left: 50%;
+          left: 20px;  /* Move line to left side */
           top: 0;
           bottom: 0;
           width: 2px;
           background: rgba(163, 115, 248, 0.3);
-          transform: translateX(-50%);
         }
 
         .course-item {
           position: relative;
           margin: 30px 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          padding-left: 40px;  /* Space for dot and some padding */
+          display: block;  /* Changed from flex */
         }
 
-        /* Course dot on the timeline */
         .course-dot {
           width: 12px;
           height: 12px;
           background: #A373F8;
           border-radius: 50%;
           position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
+          left: 15px;  /* Align with timeline */
+          top: 50%;
+          transform: translateY(-50%);
           z-index: 2;
         }
 
@@ -391,9 +418,8 @@ app.get('/roadmap/:userId', (req, res) => {
           border: 1px solid rgba(163, 115, 248, 0.2);
           border-radius: 8px;
           padding: 15px;
-          width: 80%;
-          max-width: 400px;
-          margin-left: 60%;
+          width: calc(100% - 60px);  /* Full width minus padding */
+          max-width: 600px;
         }
 
         .course-title {
@@ -420,35 +446,24 @@ app.get('/roadmap/:userId', (req, res) => {
           background: #A373F8;
           transition: width 0.3s ease;
         }
-
-        .total-progress {
-          margin-top: 40px;
-          text-align: center;
-        }
-
-        .total-progress-bar {
-          height: 8px;
-          background: rgba(163, 115, 248, 0.2);
-          border-radius: 4px;
-          overflow: hidden;
-          margin: 10px auto;
-          width: 80%;
-          max-width: 400px;
-        }
-
-        .total-progress-fill {
-          height: 100%;
-          background: #A373F8;
-          transition: width 0.3s ease;
-        }
       </style>
     </head>
     <body>
-      <h2>Your Learning Journey</h2>
+      <div class="header-container">
+        <h2>Course Roadmap for ${username}</h2>
+        <div class="total-progress">
+          <strong>Total Progress: \${totalProgress}%</strong>
+          <div class="total-progress-bar">
+            <div class="total-progress-fill" style="width: \${totalProgress}%"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="loading-container" id="loading">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading your progress...</div>
       </div>
+
       <div id="roadmap-content">
         <div class="timeline-line"></div>
       </div>
@@ -474,7 +489,6 @@ app.get('/roadmap/:userId', (req, res) => {
 
             let html = '<div class="timeline-line"></div>';
             
-            // Add course items
             data.userCourses.forEach(course => {
               html += \`
                 <div class="course-item">
@@ -493,16 +507,6 @@ app.get('/roadmap/:userId', (req, res) => {
                 </div>
               \`;
             });
-
-            // Add total progress
-            html += \`
-              <div class="total-progress">
-                <strong>Total Progress: \${data.totalProgress}%</strong>
-                <div class="total-progress-bar">
-                  <div class="total-progress-fill" style="width: \${data.totalProgress}%"></div>
-                </div>
-              </div>
-            \`;
 
             container.innerHTML = html;
             sendHeight();
