@@ -198,309 +198,169 @@ async function updateCourseProgress(userId, courseProgress) {
   }
 }
 
-// Update the roadmap endpoint to handle progress updates
-app.get('/roadmap/:userId', async (req, res) => {
+// We'll rename it to /api/roadmapData/:userId and make it return JSON only.
+app.get('/api/roadmapData/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
-    
-    // Define the API URL based on environment
-    const API_URL = process.env.NODE_ENV === 'production' 
-      ? 'https://learn-pathway-widget.vercel.app'
-      : 'http://localhost:3000';
 
-    // First get the sorting order from Sheet2
-    const orderResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet2!A2:B', // Start from row 2 to skip headers
-    });
-    
-    // Create a map of courseId to sort order, filtering out any empty rows
-    const courseOrder = new Map(
-      (orderResponse.data.values || [])
-        .filter(row => row[0] && row[1]) // Ensure both courseId and order exist
-        .map(([courseId, order]) => [courseId, parseInt(order, 10)])
-    );
-
-    console.log('Loaded course order:', Object.fromEntries(courseOrder));
-
-    // Get user's courses and progress from sheet
+    // 1) Load data from Google Sheets (no caching)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: 'Sheet1!A:E',
     });
 
-    // Map courses including progress from sheet
-    let userCourses = (response.data.values || [])
+    // 2) Build userCourses array
+    const values = response.data.values || [];
+    let userCourses = values
       .filter(row => row[0] === userId)
       .map(row => ({
         id: row[1],
         title: row[2] || row[1],
         progress: parseInt(row[4] || '0', 10),
-        sortOrder: courseOrder.get(row[1]) || 999999 // Default to high number if not found
       }));
 
-    // Handle Getting Started course
-    const hasGettingStarted = userCourses.some(course => course.id === 'getting-started');
+    // If 'getting-started' is missing, add it
+    const hasGettingStarted = userCourses.some(c => c.id === 'getting-started');
     if (!hasGettingStarted) {
       userCourses.unshift({
         id: 'getting-started',
         title: 'Getting Started',
-        progress: 0,
-        sortOrder: courseOrder.get('getting-started') || 0
+        progress: 0
       });
     }
 
-    // Sort courses by their order
-    userCourses.sort((a, b) => a.sortOrder - b.sortOrder);
+    // OPTIONAL: If you have sorting logic from Sheet2, you can still apply it here,
+    // just keep it all JSON-based.
 
-    // Calculate total progress from sheet data
-    const totalProgress = userCourses.length > 0
-      ? Math.round(userCourses.reduce((sum, course) => sum + (course.progress || 0), 0) / userCourses.length)
+    // 3) Calculate total progress
+    const totalProgress = userCourses.length
+      ? Math.round(userCourses.reduce((sum, c) => sum + c.progress, 0) / userCourses.length)
       : 0;
 
-    // Render a simple HTML page with your brand colors
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Course Roadmap</title>
-          <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
-          <style>
-            body {
-              font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-              margin: 0;
-              padding: 20px;
-              height: auto;
-              background: #000000;
-              color: #F6F8FF;
-            }
-            h1 {
-              text-align: center;
-              color: #F6F8FF;
-              text-transform: uppercase;
-              margin: 40px 0;
-              font-size: 1.7em;
-              font-weight: 700;
-            }
-            .course-list {
-              background: #111111;
-              border-radius: 8px;
-              padding: 20px;
-              margin-bottom: 20px;
-              height: auto;
-            }
-            .course-item {
-              padding: 15px 20px;
-              font-size: 1.1em;
-              color: #F6F8FF;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              transition: all 0.3s ease;
-            }
-            .course-item:hover {
-              background: #A373F8;
-              border-radius: 8px;
-              transform: translateX(5px);
-            }
-            .course-title {
-              font-weight: 600;
-              margin-right: 20px;
-            }
-            .course-progress {
-              font-size: 0.9em;
-              color: #A373F8;
-              white-space: nowrap;
-            }
-            .course-item:hover .course-progress {
-              color: #000000;
-            }
-            .course-item a {
-              color: inherit;
-              text-decoration: none;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              width: 100%;
-            }
-            .empty-message {
-              text-align: center;
-              color: #BBBDC5;
-              font-style: italic;
-              padding: 40px 0;
-            }
-            .total-progress-container {
-              margin-top: 30px;
-              padding-top: 20px;
-              border-top: 1px solid rgba(255,255,255,0.1);
-              text-align: right;
-            }
-            .total-progress {
-              font-size: 1.3em;
-              color: #FFFFFF;
-              font-weight: 600;
-              white-space: nowrap;
-            }
-            .course-content {
-              flex-grow: 1;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .delete-button {
-              background: none;
-              border: none;
-              color: #A373F8;
-              cursor: pointer;
-              padding: 0 0 0 20px;
-              font-size: 18px;
-              opacity: 0.8;
-              transition: opacity 0.2s;
-            }
-            .delete-button:hover {
-              opacity: 1;
-            }
-            .loading-container {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              min-height: 400px;
-            }
-            .loading-spinner {
-              width: 50px;
-              height: 50px;
-              border: 3px solid rgba(163, 115, 248, 0.3);
-              border-radius: 50%;
-              border-top-color: #A373F8;
-              animation: spin 1s ease-in-out infinite;
-              margin-bottom: 20px;
-            }
-            .loading-text {
-              color: #A373F8;
-              font-size: 16px;
-              font-family: 'Source Sans Pro', sans-serif;
-            }
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-            .course-list {
-              display: none; /* Hide initially */
-            }
-            .course-list.loaded {
-              display: block; /* Show when loaded */
-            }
-          </style>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-          <script>
-            // Show content after everything is loaded
-            function showContent() {
-              document.querySelector('.loading-container').style.display = 'none';
-              document.querySelector('.course-list').classList.add('loaded');
-              sendHeight();
-            }
-
-            function sendHeight() {
-              const totalHeight = document.body.offsetHeight;
-              window.parent.postMessage({ 
-                type: 'resize', 
-                height: totalHeight
-              }, '*');
-            }
-
-            // Wait for all content to load
-            window.addEventListener('load', () => {
-              // Short delay to ensure all content is rendered
-              setTimeout(showContent, 500);
-            });
-
-            // Watch for content changes
-            new MutationObserver(sendHeight).observe(document.body, {
-              childList: true,
-              subtree: true,
-              attributes: true
-            });
-
-            // Add delete functionality
-            function deleteCourse(courseId) {
-              fetch(\`${API_URL}/api/roadmap/${userId}/remove\`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ courseId })
-              })
-              .then(response => {
-                if (response.ok) {
-                  // Remove the course item from DOM
-                  const courseItem = document.querySelector(\`[data-course-id="\${courseId}"]\`);
-                  if (courseItem) {
-                    courseItem.remove();
-                    // Update total progress
-                    updateTotalProgress();
-                  }
-                }
-              })
-              .catch(error => console.error('Error:', error));
-            }
-
-            function updateTotalProgress() {
-              const progressElements = document.querySelectorAll('.course-progress');
-              let total = 0;
-              progressElements.forEach(el => {
-                total += parseInt(el.textContent);
-              });
-              const avg = progressElements.length ? Math.round(total / progressElements.length) : 0;
-              document.querySelector('.total-progress').textContent = \`Total Progress: \${avg}% Complete\`;
-            }
-          </script>
-        </head>
-        <body>
-          <h1>Course Roadmap for ${username}</h1>
-          
-          <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Loading your roadmap...</div>
-          </div>
-
-          <div class="course-list">
-            ${userCourses.length > 0 
-              ? `
-                ${userCourses.map(course => `
-                  <div class="course-item" data-course-id="${course.id}">
-                    <div class="course-content">
-                      <a href="https://futureproofmusicschool.com/path-player?courseid=${course.id}" 
-                         target="_blank" 
-                         rel="noopener noreferrer">
-                        <span class="course-title">${course.title}</span>
-                        <span class="course-progress">${course.progress}% Complete</span>
-                      </a>
-                    </div>
-                    ${course.id !== 'getting-started' ? 
-                      `<button class="delete-button" onclick="deleteCourse('${course.id}')">
-                        <i class="fas fa-times"></i>
-                      </button>` : 
-                      ''
-                    }
-                  </div>
-                `).join('')}
-                <div class="total-progress-container">
-                  <span class="total-progress">Total Progress: ${totalProgress}% Complete</span>
-                </div>
-                `
-              : '<div class="empty-message">No courses added to roadmap yet.</div>'
-            }
-          </div>
-        </body>
-      </html>
-    `;
-
-    res.send(html);
+    // Return just JSON data
+    return res.status(200).json({
+      userId,
+      username,
+      userCourses,
+      totalProgress
+    });
   } catch (err) {
-    console.error('Error fetching roadmap:', err);
-    res.status(500).send('Error loading roadmap');
+    console.error('Error fetching roadmap data:', err);
+    return res.status(500).json({ error: 'Error loading roadmap data' });
   }
+});
+
+// NEW route that returns immediate HTML with a spinner + client script
+// which then calls /api/roadmapData/:userId to fetch the real data.
+app.get('/roadmap/:userId', (req, res) => {
+  const { userId } = req.params;
+  const username = decodeURIComponent(req.query.username || '') || 'Student';
+
+  // Minimal HTML for the iframe:
+  const html = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Roadmap Widget</title>
+      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        body {
+          margin: 0; 
+          padding: 24px;
+          font-family: 'Source Sans Pro', sans-serif;
+          background: #000;
+          color: #F6F8FF;
+        }
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 300px;
+        }
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+          border: 3px solid rgba(163, 115, 248, 0.3);
+          border-radius: 50%;
+          border-top-color: #A373F8;
+          animation: spin 1s ease-in-out infinite;
+          margin-bottom: 20px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .loading-text {
+          color: #A373F8;
+          font-size: 16px;
+        }
+        #roadmap-content {
+          display: none; /* We hide actual content until data is loaded */
+        }
+        .course-item {
+          margin-bottom: 10px;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>Roadmap for ${username}</h2>
+      <div class="loading-container" id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading...</div>
+      </div>
+      <div id="roadmap-content"></div>
+
+      <script>
+        // As soon as this HTML arrives, start fetching fresh data from /api/roadmapData/:userId
+        const userId = "${userId}";
+        const apiURL = window.location.origin + "/api/roadmapData/" + userId;
+
+        fetch(apiURL)
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to fetch data');
+            return res.json();
+          })
+          .then((data) => {
+            // Hide loading UI
+            document.getElementById('loading').style.display = 'none';
+            // Show roadmap
+            const container = document.getElementById('roadmap-content');
+            container.style.display = 'block';
+
+            if (!data.userCourses || data.userCourses.length === 0) {
+              container.innerHTML = '<p>No courses yet.</p>';
+              return;
+            }
+
+            // Build the list
+            let html = '';
+            data.userCourses.forEach(course => {
+              html += `<div class="course-item">
+                <strong>${course.title}</strong> - ${course.progress}% Complete
+              </div>`;
+            });
+
+            html += `<p><strong>Total Progress:</strong> ${data.totalProgress}% Complete</p>`;
+
+            container.innerHTML = html;
+            // Adjust iframe height
+            sendHeight();
+          })
+          .catch(err => {
+            console.error('Error:', err);
+          });
+
+        function sendHeight() {
+          const totalHeight = document.body.offsetHeight;
+          window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
+        }
+      </script>
+    </body>
+  </html>
+  `;
+
+  res.send(html);
 });
 
 // Add new endpoint to proxy the LearnWorlds API call
