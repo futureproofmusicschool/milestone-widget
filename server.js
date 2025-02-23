@@ -381,14 +381,13 @@ app.get('/roadmap/:userId', (req, res) => {
         #roadmap-content {
           display: none;
           position: relative;
-          padding-top: 20px;
+          padding-top: 0;
         }
 
-        /* Timeline adjustments */
         .timeline-line {
           position: absolute;
-          left: 20px;  /* Move line to left side */
-          top: 0;
+          left: 20px;
+          top: 10px;
           bottom: 0;
           width: 2px;
           background: rgba(163, 115, 248, 0.3);
@@ -396,9 +395,12 @@ app.get('/roadmap/:userId', (req, res) => {
 
         .course-item {
           position: relative;
-          margin: 30px 0;
-          padding-left: 40px;  /* Space for dot and some padding */
-          display: block;  /* Changed from flex */
+          margin: 20px 0;
+          padding-left: 40px;
+        }
+
+        .course-item:first-child {
+          margin-top: 0;
         }
 
         .course-dot {
@@ -410,14 +412,14 @@ app.get('/roadmap/:userId', (req, res) => {
           top: 50%;
           transform: translateY(-50%);
           z-index: 2;
-          background: #000000;  /* Black center by default */
-          border: 2px solid #A373F8;  /* Purple outline */
+          background: #000000;
+          border: 2px solid #A373F8;
           box-sizing: border-box;
         }
 
         .course-dot.completed {
-          background: #FFFFFF;  /* White fill */
-          border: none;  /* No outline */
+          background: #A373F8;
+          border: none;
         }
 
         .course-content {
@@ -425,7 +427,7 @@ app.get('/roadmap/:userId', (req, res) => {
           border: 1px solid rgba(163, 115, 248, 0.2);
           border-radius: 8px;
           padding: 15px;
-          width: calc(100% - 60px);  /* Full width minus padding */
+          width: calc(100% - 60px);
           max-width: 600px;
         }
 
@@ -453,11 +455,16 @@ app.get('/roadmap/:userId', (req, res) => {
           background: #A373F8;
           transition: width 0.3s ease;
         }
+
+        h2 {
+          text-transform: lowercase;
+          margin: 0 0 20px 0;
+        }
       </style>
     </head>
     <body>
       <div class="header-container">
-        <h2>Course Roadmap for ${username}</h2>
+        <h2>course roadmap for ${username}</h2>
       </div>
 
       <div class="loading-container" id="loading">
