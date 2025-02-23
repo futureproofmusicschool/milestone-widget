@@ -315,12 +315,13 @@ app.get('/roadmap/:userId', (req, res) => {
       <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
       <style>
         body {
-          margin: 0; 
+          margin: 0;
           padding: 24px;
           font-family: 'Source Sans Pro', sans-serif;
           background: #000;
           color: #F6F8FF;
         }
+
         .loading-container {
           display: flex;
           flex-direction: column;
@@ -328,6 +329,7 @@ app.get('/roadmap/:userId', (req, res) => {
           justify-content: center;
           min-height: 300px;
         }
+
         .loading-spinner {
           width: 50px;
           height: 50px;
@@ -337,31 +339,121 @@ app.get('/roadmap/:userId', (req, res) => {
           animation: spin 1s ease-in-out infinite;
           margin-bottom: 20px;
         }
+
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+
         .loading-text {
           color: #A373F8;
           font-size: 16px;
         }
+
         #roadmap-content {
-          display: none; /* We hide actual content until data is loaded */
+          display: none;
+          position: relative;
+          padding-top: 20px;
         }
+
+        /* Vertical line */
+        .timeline-line {
+          position: absolute;
+          left: 50%;
+          top: 0;
+          bottom: 0;
+          width: 2px;
+          background: rgba(163, 115, 248, 0.3);
+          transform: translateX(-50%);
+        }
+
         .course-item {
+          position: relative;
+          margin: 30px 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Course dot on the timeline */
+        .course-dot {
+          width: 12px;
+          height: 12px;
+          background: #A373F8;
+          border-radius: 50%;
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 2;
+        }
+
+        .course-content {
+          background: rgba(163, 115, 248, 0.1);
+          border: 1px solid rgba(163, 115, 248, 0.2);
+          border-radius: 8px;
+          padding: 15px;
+          width: 80%;
+          max-width: 400px;
+          margin-left: 60%;
+        }
+
+        .course-title {
+          color: #A373F8;
+          text-decoration: none;
+          font-weight: 600;
+          display: block;
           margin-bottom: 10px;
+        }
+
+        .course-title:hover {
+          text-decoration: underline;
+        }
+
+        .progress-bar {
+          height: 6px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: #A373F8;
+          transition: width 0.3s ease;
+        }
+
+        .total-progress {
+          margin-top: 40px;
+          text-align: center;
+        }
+
+        .total-progress-bar {
+          height: 8px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+          margin: 10px auto;
+          width: 80%;
+          max-width: 400px;
+        }
+
+        .total-progress-fill {
+          height: 100%;
+          background: #A373F8;
+          transition: width 0.3s ease;
         }
       </style>
     </head>
     <body>
-      <h2>Roadmap for ${username}</h2>
+      <h2>Your Learning Journey</h2>
       <div class="loading-container" id="loading">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Loading...</div>
+        <div class="loading-text">Loading your progress...</div>
       </div>
-      <div id="roadmap-content"></div>
+      <div id="roadmap-content">
+        <div class="timeline-line"></div>
+      </div>
 
       <script>
-        // As soon as this HTML arrives, start fetching fresh data
         const userId = "${userId}";
         const apiURL = window.location.origin + "/api/roadmapData/" + userId;
 
@@ -380,19 +472,37 @@ app.get('/roadmap/:userId', (req, res) => {
               return;
             }
 
-            let html = '';
+            let html = '<div class="timeline-line"></div>';
+            
+            // Add course items
             data.userCourses.forEach(course => {
-              html += \`<div class="course-item">
-                <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   style="color: #A373F8; text-decoration: none; hover: { text-decoration: underline; }">
-                  <strong>\${course.title}</strong>
-                </a> - \${course.progress}% Complete
-              </div>\`;
+              html += \`
+                <div class="course-item">
+                  <div class="course-dot"></div>
+                  <div class="course-content">
+                    <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
+                       class="course-title" 
+                       target="_blank" 
+                       rel="noopener noreferrer">
+                      \${course.title}
+                    </a>
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: \${course.progress}%"></div>
+                    </div>
+                  </div>
+                </div>
+              \`;
             });
 
-            html += \`<p><strong>Total Progress:</strong> \${data.totalProgress}% Complete</p>\`;
+            // Add total progress
+            html += \`
+              <div class="total-progress">
+                <strong>Total Progress: \${data.totalProgress}%</strong>
+                <div class="total-progress-bar">
+                  <div class="total-progress-fill" style="width: \${data.totalProgress}%"></div>
+                </div>
+              </div>
+            \`;
 
             container.innerHTML = html;
             sendHeight();
