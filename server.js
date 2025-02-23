@@ -579,7 +579,7 @@ app.get('/roadmap/:userId', (req, res) => {
                   <div class="course-content">
                     <button 
                       class="remove-button" 
-                      onclick="removeCourse('\${course.id}')"
+                      onclick="removeCourse(event, '\${course.id}')"
                       \${course.id === 'getting-started' ? 'style="display:none;"' : ''}
                     >×</button>
                     <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
@@ -621,7 +621,7 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         // Add remove course function
-        async function removeCourse(courseId) {
+        async function removeCourse(event, courseId) {
           try {
             const response = await fetch(\`\${window.location.origin}/api/roadmap/\${userId}/remove\`, {
               method: 'POST',
@@ -665,7 +665,7 @@ app.get('/roadmap/:userId', (req, res) => {
             }, 300);
           } catch (error) {
             console.error('Error removing course:', error);
-            // Show a subtle error message that fades out
+            // Only show error message if the removal actually failed
             const errorMsg = document.createElement('div');
             errorMsg.style.cssText = \`
               position: fixed;
