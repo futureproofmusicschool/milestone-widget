@@ -108,6 +108,9 @@
     const courseId = getCourseIdFromCard(courseCard);
     if (!courseId) return;
 
+    // Skip mentor courses
+    if (courseId.toLowerCase().includes('mentor')) return;
+
     courseCard.style.position = 'relative';
     
     const buttonContainer = document.createElement('div');

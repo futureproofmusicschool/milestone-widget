@@ -348,24 +348,34 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .total-progress {
-          background: rgba(163, 115, 248, 0.1);
-          border: 1px solid rgba(163, 115, 248, 0.2);
-          border-radius: 8px;
-          padding: 15px;
-          min-width: 200px;
-          text-align: center;
+          width: calc(100% - 60px);  /* Match course card width */
+          max-width: 600px;
+          margin: 30px auto 0;
+          padding: 0;
+          background: none;
+          border: none;
+          position: relative;  /* For absolute positioning of text */
+        }
+
+        .total-progress-text {
+          position: absolute;
+          right: 0;
+          bottom: calc(100% + 5px);  /* Position above the bar with 5px gap */
+          margin: 0;
+          color: #FFFFFF;
         }
 
         .total-progress-bar {
           height: 8px;
-          background: rgba(163, 115, 248, 0.2);
+          background: rgba(255, 255, 255, 0.2);  /* White background with opacity */
           border-radius: 4px;
           overflow: hidden;
+          margin: 0;  /* Remove any margin */
         }
 
         .total-progress-fill {
           height: 100%;
-          background: #A373F8;
+          background: #FFFFFF;  /* Solid white fill */
           transition: width 0.3s ease;
         }
 
@@ -516,23 +526,6 @@ app.get('/roadmap/:userId', (req, res) => {
           background: rgba(255, 255, 255, 0.2);
           transform: scale(1.1);
         }
-
-        .total-progress {
-          width: calc(100% - 60px);
-          max-width: 600px;
-          margin-top: 30px;
-          padding: 0;
-          background: none;
-          border: none;
-        }
-
-        .total-progress-bar {
-          height: 8px;
-          background: rgba(163, 115, 248, 0.2);
-          border-radius: 4px;
-          overflow: hidden;
-          margin-top: 10px;
-        }
       </style>
     </head>
     <body>
@@ -602,7 +595,7 @@ app.get('/roadmap/:userId', (req, res) => {
             const totalProgressContainer = document.getElementById('total-progress-container');
             totalProgressContainer.innerHTML = \`
               <div class="total-progress">
-                <strong>Total Progress: \${Math.round(data.totalProgress)}%</strong>
+                <strong class="total-progress-text">Total Progress: \${Math.round(data.totalProgress)}%</strong>
                 <div class="total-progress-bar">
                   <div class="total-progress-fill" style="width: \${Math.round(data.totalProgress)}%"></div>
                 </div>
@@ -654,7 +647,7 @@ app.get('/roadmap/:userId', (req, res) => {
               // Update total progress display
               document.querySelector('#total-progress-container').innerHTML = \`
                 <div class="total-progress">
-                  <strong>Total Progress: \${Math.round(totalProgress)}%</strong>
+                  <strong class="total-progress-text">Total Progress: \${Math.round(totalProgress)}%</strong>
                   <div class="total-progress-bar">
                     <div class="total-progress-fill" style="width: \${Math.round(totalProgress)}%"></div>
                   </div>
