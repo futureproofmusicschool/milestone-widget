@@ -28,6 +28,11 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({ version: 'v4', auth });
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;  // From your Google Sheet's URL
+const sortOrderCache = {
+  data: null,
+  lastFetch: 0,
+  expiryTime: 1000 * 60 * 60 // Cache for 1 hour
+};
 
 // Add a health check endpoint
 app.get('/', (req, res) => {
@@ -201,19 +206,59 @@ async function updateCourseProgress(userId, courseProgress) {
   }
 }
 
+// Add a function to get sort order
+async function getSortOrder() {
+  const now = Date.now();
+  
+  // Return cached data if it's still fresh
+  if (sortOrderCache.data && (now - sortOrderCache.lastFetch < sortOrderCache.expiryTime)) {
+    return sortOrderCache.data;
+  }
+
+  try {
+    // Fetch sort order from Sheet2
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Sheet2!A:B'  // Get course_id and sort_order columns
+    });
+
+    const values = response.data.values || [];
+    
+    // Create a map of courseId -> sortOrder
+    const sortOrder = new Map();
+    values.slice(1).forEach(row => {  // slice(1) to skip header row
+      if (row[0] && row[1]) {  // Only add if both courseId and sortOrder exist
+        sortOrder.set(row[0], parseInt(row[1], 10));
+      }
+    });
+
+    // Update cache
+    sortOrderCache.data = sortOrder;
+    sortOrderCache.lastFetch = now;
+
+    return sortOrder;
+  } catch (error) {
+    console.error('Error fetching sort order:', error);
+    return new Map();  // Return empty map if fetch fails
+  }
+}
+
 // We'll rename it to /api/roadmapData/:userId and make it return JSON only.
 app.get('/api/roadmapData/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const username = decodeURIComponent(req.query.username || '') || 'Student';
 
-    // 1) Load data from Google Sheets (no caching)
+    // Get sort order first
+    const sortOrder = await getSortOrder();
+
+    // Load data from Google Sheets
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: 'Sheet1!A:E',
     });
 
-    // 2) Build userCourses array
+    // Build userCourses array
     const values = response.data.values || [];
     let userCourses = values
       .filter(row => row[0] === userId)
@@ -221,6 +266,7 @@ app.get('/api/roadmapData/:userId', async (req, res) => {
         id: row[1],
         title: row[2] || row[1],
         progress: parseInt(row[4] || '0', 10),
+        sortOrder: sortOrder.get(row[1]) || 999  // Default to high number if not found
       }));
 
     // If 'getting-started' is missing, add it
@@ -229,19 +275,19 @@ app.get('/api/roadmapData/:userId', async (req, res) => {
       userCourses.unshift({
         id: 'getting-started',
         title: 'Getting Started',
-        progress: 0
+        progress: 0,
+        sortOrder: 1  // Always first
       });
     }
 
-    // OPTIONAL: If you have sorting logic from Sheet2, you can still apply it here,
-    // just keep it all JSON-based.
+    // Sort courses by sortOrder
+    userCourses.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
 
-    // 3) Calculate total progress
+    // Calculate total progress
     const totalProgress = userCourses.length
       ? Math.round(userCourses.reduce((sum, c) => sum + c.progress, 0) / userCourses.length)
       : 0;
 
-    // Return just JSON data
     return res.status(200).json({
       userId,
       username,
