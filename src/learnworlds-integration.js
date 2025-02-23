@@ -4,11 +4,12 @@
   let userCoursesCache = null;
 
   document.addEventListener('DOMContentLoaded', initializeRoadmapButtons);
+  window.addEventListener('load', setupIframeMessaging);
 
   async function initializeRoadmapButtons() {
     const userId = "{{USER.ID}}";
     if (!userId) {
-      console.log('No user ID found, skipping progress fetch');
+      console.log('No user ID found, skipping initialization');
       return;
     }
 
@@ -23,7 +24,6 @@
       // Fetch progress (this will update the sheet)
       console.log('Fetching progress for user:', userId);
       const progressResponse = await fetch(`${API_URL}/api/progress/${userId}`);
-      console.log('Progress response:', progressResponse.status);
       if (!progressResponse.ok) {
         console.error('Progress fetch failed:', await progressResponse.text());
       }
@@ -33,10 +33,56 @@
       processAllCourseCards();
       observeNewCards();
 
-      // Setup iframe with dynamic resizin 
+      // Setup iframe
       setupIframe();
     } catch (error) {
       console.error('Error:', error);
+    }
+  }
+
+  function setupIframeMessaging() {
+    const iframe = document.getElementById('pathway-widget');
+    if (!iframe) return;
+
+    // Handle all iframe messaging in one place
+    window.addEventListener('message', (event) => {
+      // Add origin check in production
+      // if (event.origin !== API_URL) return;
+
+      if (event.data?.type === 'resize' && event.data?.height) {
+        const newHeight = Math.max(event.data.height + 100, 400);
+        iframe.style.height = `${newHeight}px`;
+      }
+
+      if (event.data?.type === 'READY') {
+        sendUserDataToIframe();
+      }
+    });
+
+    // Initial user data send
+    sendUserDataToIframe();
+  }
+
+  function sendUserDataToIframe() {
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: "USER_DATA",
+        data: {
+          username: "{{USER.NAME}}",
+          userId: "{{USER.ID}}"
+        }
+      }, "*");
+    }
+  }
+
+  function setupIframe() {
+    const iframe = document.getElementById('pathway-widget');
+    if (iframe) {
+      iframe.style.height = '800px';
+      iframe.style.minHeight = '400px';
+      iframe.style.overflow = 'hidden';
+      iframe.src = `${API_URL}/roadmap/{{USER.ID}}?username={{USER.NAME}}`;
     }
   }
 
@@ -53,7 +99,6 @@
       });
     });
 
-    // Add buttons
     courseCards.forEach(card => addButtonToCourseCard(card));
   }
 
@@ -234,26 +279,5 @@
       childList: true,
       subtree: true
     });
-  }
-
-  function setupIframe() {
-    const iframe = document.getElementById('pathway-widget');
-    if (iframe) {
-      // Set initial height larger to prevent flicker
-      iframe.style.height = '800px';
-      iframe.style.minHeight = '400px';
-      iframe.style.overflow = 'hidden';
-      
-      // Listen for resize messages from the iframe
-      window.addEventListener('message', (event) => {
-        if (event.data?.type === 'resize' && event.data?.height) {
-          // Add generous padding to ensure everything is visible
-          const newHeight = Math.max(event.data.height + 100, 400);
-          iframe.style.height = `${newHeight}px`;
-        }
-      });
-
-      iframe.src = `${API_URL}/roadmap/${userId}?username={{USER.NAME}}`;
-    }
   }
 })();
