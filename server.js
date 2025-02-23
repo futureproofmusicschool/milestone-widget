@@ -404,13 +404,20 @@ app.get('/roadmap/:userId', (req, res) => {
         .course-dot {
           width: 12px;
           height: 12px;
-          background: #A373F8;
           border-radius: 50%;
           position: absolute;
-          left: 15px;  /* Align with timeline */
+          left: 15px;
           top: 50%;
           transform: translateY(-50%);
           z-index: 2;
+          background: #000000;  /* Black center by default */
+          border: 2px solid #A373F8;  /* Purple outline */
+          box-sizing: border-box;
+        }
+
+        .course-dot.completed {
+          background: #FFFFFF;  /* White fill */
+          border: none;  /* No outline */
         }
 
         .course-content {
@@ -451,12 +458,6 @@ app.get('/roadmap/:userId', (req, res) => {
     <body>
       <div class="header-container">
         <h2>Course Roadmap for ${username}</h2>
-        <div class="total-progress">
-          <strong>Total Progress: \${totalProgress}%</strong>
-          <div class="total-progress-bar">
-            <div class="total-progress-fill" style="width: \${totalProgress}%"></div>
-          </div>
-        </div>
       </div>
 
       <div class="loading-container" id="loading">
@@ -467,6 +468,8 @@ app.get('/roadmap/:userId', (req, res) => {
       <div id="roadmap-content">
         <div class="timeline-line"></div>
       </div>
+
+      <div id="total-progress-container"></div>
 
       <script>
         const userId = "${userId}";
@@ -492,7 +495,7 @@ app.get('/roadmap/:userId', (req, res) => {
             data.userCourses.forEach(course => {
               html += \`
                 <div class="course-item">
-                  <div class="course-dot"></div>
+                  <div class="course-dot \${course.progress === 100 ? 'completed' : ''}"></div>
                   <div class="course-content">
                     <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
                        class="course-title" 
@@ -509,6 +512,18 @@ app.get('/roadmap/:userId', (req, res) => {
             });
 
             container.innerHTML = html;
+
+            // Add total progress after courses are loaded
+            const totalProgressContainer = document.getElementById('total-progress-container');
+            totalProgressContainer.innerHTML = \`
+              <div class="total-progress">
+                <strong>Total Progress: \${data.totalProgress}%</strong>
+                <div class="total-progress-bar">
+                  <div class="total-progress-fill" style="width: \${data.totalProgress}%"></div>
+                </div>
+              </div>
+            \`;
+
             sendHeight();
           })
           .catch(err => {
