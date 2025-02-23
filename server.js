@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import { config } from 'dotenv';
 import { google } from 'googleapis';
-import fetch from 'node-fetch';  // Add this if you're using fetch
 import bodyParser from 'body-parser';
+// fetch is built-in on Node 18+
+// If you truly want node-fetch, uncomment here:
+// import fetch from 'node-fetch';
 
 config(); // Initialize dotenv
 

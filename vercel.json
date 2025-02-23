@@ -5,7 +5,7 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "engine": "18.x"
+        "nodeVersion": "18.x"
       }
     }
   ],
