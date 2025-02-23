@@ -337,7 +337,12 @@ app.get('/roadmap/:userId', (req, res) => {
             let html = '';
             data.userCourses.forEach(course => {
               html += \`<div class="course-item">
-                <strong>\${course.title}</strong> - \${course.progress}% Complete
+                <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   style="color: #A373F8; text-decoration: none; hover: { text-decoration: underline; }">
+                  <strong>\${course.title}</strong>
+                </a> - \${course.progress}% Complete
               </div>\`;
             });
 
