@@ -622,8 +622,6 @@ app.get('/roadmap/:userId', (req, res) => {
 
         // Add remove course function
         async function removeCourse(courseId) {
-          if (!confirm('Remove this course from your roadmap?')) return;
-
           try {
             const response = await fetch(\`\${window.location.origin}/api/roadmap/\${userId}/remove\`, {
               method: 'POST',
@@ -635,16 +633,23 @@ app.get('/roadmap/:userId', (req, res) => {
 
             if (!response.ok) throw new Error('Failed to remove course');
 
-            // Remove the course item from DOM
+            // Remove the course item from DOM with a fade-out effect
             const courseItem = event.target.closest('.course-item');
+            courseItem.style.transition = 'opacity 0.3s ease';
             courseItem.style.opacity = '0';
+            
             setTimeout(() => {
               courseItem.remove();
+              
               // Recalculate total progress
               const progressBars = document.querySelectorAll('.progress-fill');
-              const totalProgress = Array.from(progressBars).reduce((sum, bar) => {
-                return sum + (parseInt(bar.style.width) || 0);
-              }, 0) / progressBars.length;
+              let totalProgress = 0;
+              
+              if (progressBars.length > 0) {
+                totalProgress = Array.from(progressBars).reduce((sum, bar) => {
+                  return sum + (parseInt(bar.style.width) || 0);
+                }, 0) / progressBars.length;
+              }
               
               // Update total progress display
               document.querySelector('#total-progress-container').innerHTML = \`
@@ -660,7 +665,24 @@ app.get('/roadmap/:userId', (req, res) => {
             }, 300);
           } catch (error) {
             console.error('Error removing course:', error);
-            alert('Failed to remove course. Please try again.');
+            // Show a subtle error message that fades out
+            const errorMsg = document.createElement('div');
+            errorMsg.style.cssText = \`
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              background: rgba(255, 0, 0, 0.1);
+              color: #ff6b6b;
+              padding: 10px 20px;
+              border-radius: 4px;
+              transition: opacity 0.3s ease;
+            \`;
+            errorMsg.textContent = 'Failed to remove course';
+            document.body.appendChild(errorMsg);
+            setTimeout(() => {
+              errorMsg.style.opacity = '0';
+              setTimeout(() => errorMsg.remove(), 300);
+            }, 2000);
           }
         }
       </script>
