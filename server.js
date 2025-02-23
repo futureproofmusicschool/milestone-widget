@@ -135,31 +135,49 @@ app.post('/api/roadmap/:userId/remove', async (req, res) => {
   try {
     const { userId } = req.params;
     const { courseId } = req.body;
-    
-    // Get current data - update range to include all columns
+
+    if (!courseId) {
+      return res.status(400).json({ error: 'Course ID is required' });
+    }
+
+    // Get current data
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:D', // Changed from A:C to A:D
+      range: 'Sheet1!A:E',
     });
 
-    // Find the row to remove
     const values = response.data.values || [];
+    
+    // Find the row to remove
     const rowIndex = values.findIndex(row => 
       row[0] === userId && row[1] === courseId
     );
 
-    if (rowIndex !== -1) {
-      // Clear the row - update range to include all columns
-      await sheets.spreadsheets.values.clear({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `Sheet1!A${rowIndex + 1}:D${rowIndex + 1}`, // Changed from C to D
-      });
+    if (rowIndex === -1) {
+      return res.status(404).json({ error: 'Course not found in roadmap' });
     }
 
-    res.status(200).json({ message: 'Course removed successfully' });
-  } catch (err) {
-    console.error('Error removing course:', err);
-    res.status(500).json({ error: 'Failed to remove course' });
+    // Delete the row
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      resource: {
+        requests: [{
+          deleteDimension: {
+            range: {
+              sheetId: 0, // Assuming Sheet1 is id 0
+              dimension: 'ROWS',
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1
+            }
+          }
+        }]
+      }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error removing course:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -429,6 +447,7 @@ app.get('/roadmap/:userId', (req, res) => {
           padding: 15px;
           width: calc(100% - 60px);
           max-width: 600px;
+          position: relative; /* For absolute positioning of remove button */
         }
 
         .course-title {
@@ -459,6 +478,32 @@ app.get('/roadmap/:userId', (req, res) => {
         h2 {
           text-transform: lowercase;
           margin: 0 0 20px 0;
+        }
+
+        .remove-button {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(163, 115, 248, 0.1);
+          color: #A373F8;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          transition: all 0.2s ease;
+        }
+
+        .remove-button:hover {
+          background: rgba(163, 115, 248, 0.2);
+        }
+
+        .remove-button:active {
+          transform: scale(0.95);
         }
       </style>
     </head>
@@ -504,6 +549,11 @@ app.get('/roadmap/:userId', (req, res) => {
                 <div class="course-item">
                   <div class="course-dot \${course.progress === 100 ? 'completed' : ''}"></div>
                   <div class="course-content">
+                    <button 
+                      class="remove-button" 
+                      onclick="removeCourse('\${course.id}')"
+                      \${course.id === 'getting-started' ? 'style="display:none;"' : ''}
+                    >×</button>
                     <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
                        class="course-title" 
                        target="_blank" 
@@ -540,6 +590,50 @@ app.get('/roadmap/:userId', (req, res) => {
         function sendHeight() {
           const totalHeight = document.body.offsetHeight;
           window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
+        }
+
+        // Add remove course function
+        async function removeCourse(courseId) {
+          if (!confirm('Remove this course from your roadmap?')) return;
+
+          try {
+            const response = await fetch(\`\${window.location.origin}/api/roadmap/\${userId}/remove\`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ courseId })
+            });
+
+            if (!response.ok) throw new Error('Failed to remove course');
+
+            // Remove the course item from DOM
+            const courseItem = event.target.closest('.course-item');
+            courseItem.style.opacity = '0';
+            setTimeout(() => {
+              courseItem.remove();
+              // Recalculate total progress
+              const progressBars = document.querySelectorAll('.progress-fill');
+              const totalProgress = Array.from(progressBars).reduce((sum, bar) => {
+                return sum + (parseInt(bar.style.width) || 0);
+              }, 0) / progressBars.length;
+              
+              // Update total progress display
+              document.querySelector('#total-progress-container').innerHTML = \`
+                <div class="total-progress">
+                  <strong>Total Progress: \${Math.round(totalProgress)}%</strong>
+                  <div class="total-progress-bar">
+                    <div class="total-progress-fill" style="width: \${Math.round(totalProgress)}%"></div>
+                  </div>
+                </div>
+              \`;
+              
+              sendHeight();
+            }, 300);
+          } catch (error) {
+            console.error('Error removing course:', error);
+            alert('Failed to remove course. Please try again.');
+          }
         }
       </script>
     </body>
