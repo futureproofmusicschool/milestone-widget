@@ -315,7 +315,7 @@ app.get('/roadmap/:userId', (req, res) => {
       <div id="roadmap-content"></div>
 
       <script>
-        // As soon as this HTML arrives, start fetching fresh data from /api/roadmapData/:userId
+        // As soon as this HTML arrives, start fetching fresh data
         const userId = "${userId}";
         const apiURL = window.location.origin + "/api/roadmapData/" + userId;
 
@@ -325,9 +325,7 @@ app.get('/roadmap/:userId', (req, res) => {
             return res.json();
           })
           .then((data) => {
-            // Hide loading UI
             document.getElementById('loading').style.display = 'none';
-            // Show roadmap
             const container = document.getElementById('roadmap-content');
             container.style.display = 'block';
 
@@ -336,18 +334,16 @@ app.get('/roadmap/:userId', (req, res) => {
               return;
             }
 
-            // Build the list
             let html = '';
             data.userCourses.forEach(course => {
-              html += `<div class="course-item">
-                <strong>${course.title}</strong> - ${course.progress}% Complete
-              </div>`;
+              html += \`<div class="course-item">
+                <strong>\${course.title}</strong> - \${course.progress}% Complete
+              </div>\`;
             });
 
-            html += `<p><strong>Total Progress:</strong> ${data.totalProgress}% Complete</p>`;
+            html += \`<p><strong>Total Progress:</strong> \${data.totalProgress}% Complete</p>\`;
 
             container.innerHTML = html;
-            // Adjust iframe height
             sendHeight();
           })
           .catch(err => {
