@@ -30,7 +30,7 @@
 
       // Add styles and buttons
       addStyles();
-      processAllCourseCards();
+      await processAllCourseCards();
       observeNewCards();
 
       // Setup iframe
@@ -102,7 +102,7 @@
     courseCards.forEach(card => addButtonToCourseCard(card));
   }
 
-  function addButtonToCourseCard(courseCard) {
+  async function addButtonToCourseCard(courseCard) {
     if (courseCard.querySelector('.roadmap-button-container')) return;
 
     const courseId = getCourseIdFromCard(courseCard);
@@ -116,7 +116,7 @@
     const button = document.createElement('button');
     button.className = 'roadmap-button add';
     
-    updateButtonState(button, isInRoadmap(courseId));
+    updateButtonState(button, await isInRoadmap(courseId));
 
     button.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -151,17 +151,17 @@
           );
           if (!response.ok) throw new Error('Failed to add course');
         }
-        
-        if (removing) {
-          userCoursesCache.delete(courseId);
-        } else {
-          userCoursesCache.add(courseId);
+
+        // Immediately refresh the roadmap widget
+        const iframe = document.getElementById('pathway-widget');
+        if (iframe) {
+          iframe.src = iframe.src; // This forces a refresh
         }
         
+        // Update button state
         updateButtonState(button, !removing);
       } catch (error) {
         console.error('Error:', error);
-      } finally {
         button.disabled = false;
       }
     });
