@@ -348,34 +348,35 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .total-progress {
-          width: calc(100% - 60px);  /* Match course card width */
+          width: calc(100% - 60px);
           max-width: 600px;
-          margin: 30px auto 0;
-          padding: 0;
+          margin: 0 auto;
+          padding: 0 0 24px 0;
           background: none;
           border: none;
-          position: relative;  /* For absolute positioning of text */
+          position: relative;
+          margin-left: 50px;
         }
 
         .total-progress-text {
           position: absolute;
           right: 0;
-          bottom: calc(100% + 5px);  /* Position above the bar with 5px gap */
+          bottom: calc(100% + 10px);
           margin: 0;
           color: #FFFFFF;
         }
 
         .total-progress-bar {
           height: 8px;
-          background: rgba(255, 255, 255, 0.2);  /* White background with opacity */
+          background: rgba(255, 255, 255, 0.2);
           border-radius: 4px;
           overflow: hidden;
-          margin: 0;  /* Remove any margin */
+          margin: 0;
         }
 
         .total-progress-fill {
           height: 100%;
-          background: #FFFFFF;  /* Solid white fill */
+          background: #FFFFFF;
           transition: width 0.3s ease;
         }
 
@@ -429,6 +430,10 @@ app.get('/roadmap/:userId', (req, res) => {
 
         .course-item:first-child {
           margin-top: 0;
+        }
+
+        .course-item:last-child {
+          margin-bottom: 40px;
         }
 
         .course-dot {
