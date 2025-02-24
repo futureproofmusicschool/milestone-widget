@@ -350,13 +350,11 @@ app.get('/roadmap/:userId', (req, res) => {
         .total-progress {
           width: calc(100% - 60px);
           max-width: 600px;
-          margin: 0 auto;
+          margin: 0 0 0 50px;
           padding: 0 0 24px 0;
           background: none;
           border: none;
           position: relative;
-          margin-left: 50px;
-          padding-right: 15px;  /* Add right padding to match course cards */
         }
 
         .total-progress-text {
@@ -373,6 +371,7 @@ app.get('/roadmap/:userId', (req, res) => {
           border-radius: 4px;
           overflow: hidden;
           margin: 0;
+          width: 100%;
         }
 
         .total-progress-fill {
