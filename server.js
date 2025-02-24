@@ -356,6 +356,7 @@ app.get('/roadmap/:userId', (req, res) => {
           border: none;
           position: relative;
           margin-left: 50px;
+          padding-right: 15px;  /* Add right padding to match course cards */
         }
 
         .total-progress-text {
@@ -433,7 +434,7 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .course-item:last-child {
-          margin-bottom: 40px;
+          margin-bottom: 30px;  /* Reduced from 40px */
         }
 
         .course-dot {
@@ -615,7 +616,11 @@ app.get('/roadmap/:userId', (req, res) => {
 
         function sendHeight() {
           const totalHeight = document.body.offsetHeight;
-          window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
+          // Remove any extra padding from the calculation
+          window.parent.postMessage({ 
+            type: 'resize', 
+            height: totalHeight - 24  // Subtract bottom padding
+          }, '*');
         }
 
         // Add remove course function

@@ -44,23 +44,12 @@
     const iframe = document.getElementById('pathway-widget');
     if (!iframe) return;
 
-    // Handle all iframe messaging in one place
     window.addEventListener('message', (event) => {
-      // Add origin check in production
-      // if (event.origin !== API_URL) return;
-
       if (event.data?.type === 'resize' && event.data?.height) {
-        const newHeight = Math.max(event.data.height + 100, 400);
-        iframe.style.height = `${newHeight}px`;
-      }
-
-      if (event.data?.type === 'READY') {
-        sendUserDataToIframe();
+        // Set exact height without extra padding
+        iframe.style.height = `${event.data.height}px`;
       }
     });
-
-    // Initial user data send
-    sendUserDataToIframe();
   }
 
   function sendUserDataToIframe() {
