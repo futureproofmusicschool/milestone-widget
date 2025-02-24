@@ -347,14 +347,22 @@ app.get('/roadmap/:userId', (req, res) => {
           margin-bottom: 30px;
         }
 
-        .total-progress {
+        .total-progress-container {
+          background: transparent;
+          border-radius: 8px;
+          padding: 15px;
           width: calc(100% - 60px);
           max-width: 600px;
-          margin: 0 0 0 50px;
+          margin: 30px 0 0 50px;
+          position: relative;
+        }
+
+        .total-progress {
+          width: 100%;
+          position: relative;
           padding: 0 0 24px 0;
           background: none;
           border: none;
-          position: relative;
         }
 
         .total-progress-text {
@@ -599,10 +607,12 @@ app.get('/roadmap/:userId', (req, res) => {
             // Add total progress after courses are loaded
             const totalProgressContainer = document.getElementById('total-progress-container');
             totalProgressContainer.innerHTML = \`
-              <div class="total-progress">
-                <strong class="total-progress-text">Total Progress: \${Math.round(data.totalProgress)}%</strong>
-                <div class="total-progress-bar">
-                  <div class="total-progress-fill" style="width: \${Math.round(data.totalProgress)}%"></div>
+              <div class="total-progress-container">
+                <div class="total-progress">
+                  <strong class="total-progress-text">Total Progress: \${Math.round(data.totalProgress)}%</strong>
+                  <div class="total-progress-bar">
+                    <div class="total-progress-fill" style="width: \${Math.round(data.totalProgress)}%"></div>
+                  </div>
                 </div>
               </div>
             \`;
@@ -655,10 +665,12 @@ app.get('/roadmap/:userId', (req, res) => {
               
               // Update total progress display
               document.querySelector('#total-progress-container').innerHTML = \`
-                <div class="total-progress">
-                  <strong class="total-progress-text">Total Progress: \${Math.round(totalProgress)}%</strong>
-                  <div class="total-progress-bar">
-                    <div class="total-progress-fill" style="width: \${Math.round(totalProgress)}%"></div>
+                <div class="total-progress-container">
+                  <div class="total-progress">
+                    <strong class="total-progress-text">Total Progress: \${Math.round(totalProgress)}%</strong>
+                    <div class="total-progress-bar">
+                      <div class="total-progress-fill" style="width: \${Math.round(totalProgress)}%"></div>
+                    </div>
                   </div>
                 </div>
               \`;
