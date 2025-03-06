@@ -330,7 +330,7 @@ app.get('/roadmap/:userId', (req, res) => {
       <style>
         body {
           margin: 0;
-          padding: 24px;
+          padding: 16px; /* Reduced from 24px */
           font-family: 'Source Sans Pro', sans-serif;
           background: #000;
           color: #F6F8FF;
@@ -340,17 +340,16 @@ app.get('/roadmap/:userId', (req, res) => {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 30px;
+          margin-bottom: 15px; /* Reduced from 30px */
         }
 
         .total-progress-container {
+          margin-top: 10px;
           background: transparent;
           border-radius: 8px;
-          padding: 15px;
-          width: calc(100% - 60px);
+          padding: 10px 15px;
+          width: calc(100% - 30px);
           max-width: 600px;
-          margin: 30px 0 0 50px;
-          position: relative;
         }
 
         .total-progress {
@@ -359,6 +358,7 @@ app.get('/roadmap/:userId', (req, res) => {
           padding: 0 0 24px 0;
           background: none;
           border: none;
+          margin-bottom: 5px; /* Reduced spacing */
         }
 
         .total-progress-text {
@@ -367,6 +367,9 @@ app.get('/roadmap/:userId', (req, res) => {
           bottom: calc(100% + 10px);
           margin: 0;
           color: #FFFFFF;
+          font-size: 14px; /* Reduced from original size */
+          display: block;
+          margin-bottom: 5px; /* Reduced spacing */
         }
 
         .total-progress-bar {
@@ -389,7 +392,7 @@ app.get('/roadmap/:userId', (req, res) => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 300px;
+          padding: 15px 0; /* Reduced from original value */
         }
 
         .loading-spinner {
@@ -408,14 +411,15 @@ app.get('/roadmap/:userId', (req, res) => {
 
         .loading-text {
           color: #A373F8;
-          font-size: 16px;
+          margin-top: 10px;
+          font-size: 14px;
         }
 
         #roadmap-content {
           position: relative;
-          padding-top: 10px;
-          padding-bottom: 10px;
-          display: none; /* Change back to none for initial state */
+          padding-top: 5px; /* Reduced from 10px */
+          padding-bottom: 5px; /* Reduced from 10px */
+          display: none;
         }
 
         .timeline-line {
@@ -432,12 +436,12 @@ app.get('/roadmap/:userId', (req, res) => {
 
         .course-item {
           position: relative;
-          margin: 35px 0;
+          margin: 20px 0; /* Reduced from 35px */
           padding-left: 0;
           display: flex;
           justify-content: center;
           width: 100%;
-          min-height: 80px;
+          min-height: 60px; /* Reduced from 80px */
         }
 
         .course-item:first-child {
@@ -445,12 +449,12 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .course-item:last-child {
-          margin-bottom: 30px;  /* Reduced from 40px */
+          margin-bottom: 20px; /* Reduced from 30px */
         }
         
         .course-dot {
-          width: 30px;
-          height: 30px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
           position: absolute;
           left: 50%;
@@ -458,7 +462,7 @@ app.get('/roadmap/:userId', (req, res) => {
           transform: translate(-50%, -50%);
           z-index: 2;
           background: #000000;
-          border: 3px solid #A373F8;
+          border: 2px solid #A373F8;
           box-sizing: border-box;
           display: flex;
           align-items: center;
@@ -484,7 +488,7 @@ app.get('/roadmap/:userId', (req, res) => {
           background: rgba(163, 115, 248, 0.1);
           border: 1px solid rgba(163, 115, 248, 0.2);
           border-radius: 8px;
-          padding: 12px;
+          padding: 8px 12px; /* Reduced top/bottom padding */
           width: calc(100% * 0.4 - 50px);
           max-width: 280px;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -517,9 +521,10 @@ app.get('/roadmap/:userId', (req, res) => {
           text-decoration: none;
           font-weight: 600;
           display: block;
-          margin-bottom: 8px;
+          margin-bottom: 4px; /* Reduced from 8px */
           font-size: 14px;
           padding-right: 15px;
+          line-height: 1.2; /* Added to compress text height */
         }
 
         .course-title:hover {
@@ -527,10 +532,10 @@ app.get('/roadmap/:userId', (req, res) => {
         }
         
         .progress-text {
-          font-size: 12px;
+          font-size: 11px; /* Reduced from 12px */
           color: #A373F8;
           font-weight: 600;
-          margin-top: 5px;
+          margin-top: 2px; /* Reduced from 5px */
         }
 
         .progress-bar {
@@ -543,7 +548,8 @@ app.get('/roadmap/:userId', (req, res) => {
 
         h2 {
           text-transform: lowercase;
-          margin: 0 0 20px 0;
+          margin: 0 0 5px 0; /* Reduced bottom margin */
+          font-size: 18px; /* Reduced from original size */
         }
 
         .roadmap-label {
@@ -661,8 +667,7 @@ app.get('/roadmap/:userId', (req, res) => {
             let html = '<div class="timeline-line"></div>';
             
             data.userCourses.forEach((course, index) => {
-              const isEven = index % 2 === 0;
-              const side = isEven ? 'left' : 'right';
+              const side = index % 2 === 0 ? 'left' : 'right';
               
               html += \`
                 <div class="course-item">
