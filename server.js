@@ -452,6 +452,18 @@ app.get('/roadmap/:userId', (req, res) => {
           background: #000000;
           border: 3px solid #A373F8;
           box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+
+        .course-dot:before {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: conic-gradient(#A373F8 var(--progress), transparent var(--progress));
         }
 
         .course-dot.completed {
@@ -486,18 +498,20 @@ app.get('/roadmap/:userId', (req, res) => {
         .course-title:hover {
           text-decoration: underline;
         }
+        
+        .progress-text {
+          font-size: 12px;
+          color: #A373F8;
+          font-weight: 600;
+          margin-top: 5px;
+        }
 
         .progress-bar {
-          height: 6px;
-          background: rgba(163, 115, 248, 0.2);
-          border-radius: 3px;
-          overflow: hidden;
+          display: none; /* Hide the horizontal progress bar */
         }
 
         .progress-fill {
-          height: 100%;
-          background: #A373F8;
-          transition: width 0.3s ease;
+          display: none; /* Hide the horizontal progress fill */
         }
 
         h2 {
@@ -588,7 +602,7 @@ app.get('/roadmap/:userId', (req, res) => {
             data.userCourses.forEach(course => {
               html += \`
                 <div class="course-item">
-                  <div class="course-dot \${course.progress === 100 ? 'completed' : ''}"></div>
+                  <div class="course-dot \${course.progress === 100 ? 'completed' : ''}" style="--progress: \${course.progress}%;"></div>
                   <div class="course-content">
                     <button 
                       class="remove-button" 
@@ -600,9 +614,7 @@ app.get('/roadmap/:userId', (req, res) => {
                        rel="noopener noreferrer">
                       \${course.title}
                     </a>
-                    <div class="progress-bar">
-                      <div class="progress-fill" style="width: \${course.progress}%"></div>
-                    </div>
+                    <div class="progress-text">\${course.progress}%</div>
                   </div>
                 </div>
               \`;
@@ -682,13 +694,13 @@ app.get('/roadmap/:userId', (req, res) => {
               courseItem.remove();
               
               // Recalculate total progress
-              const progressBars = document.querySelectorAll('.progress-fill');
+              const progressElements = document.querySelectorAll('.progress-text');
               let totalProgress = 0;
               
-              if (progressBars.length > 0) {
-                totalProgress = Array.from(progressBars).reduce((sum, bar) => {
-                  return sum + (parseInt(bar.style.width) || 0);
-                }, 0) / progressBars.length;
+              if (progressElements.length > 0) {
+                totalProgress = Array.from(progressElements).reduce((sum, el) => {
+                  return sum + (parseInt(el.textContent) || 0);
+                }, 0) / progressElements.length;
               }
               
               // Update total progress display
