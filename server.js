@@ -352,41 +352,49 @@ app.get('/roadmap/:userId', (req, res) => {
           max-width: 600px;
           margin-left: auto;
           margin-right: 0;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
         }
 
         .total-progress {
-          width: 100%;
           position: relative;
-          padding: 0 0 24px 0;
+          padding: 0;
           background: none;
           border: none;
-          margin-bottom: 5px; /* Reduced spacing */
+          margin-bottom: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 15px;
         }
 
         .total-progress-text {
-          position: absolute;
-          right: 0;
-          bottom: calc(100% + 10px);
-          margin: 0;
           color: #FFFFFF;
-          font-size: 14px; /* Reduced from original size */
-          display: block;
-          margin-bottom: 5px; /* Reduced spacing */
-        }
-
-        .total-progress-bar {
-          height: 8px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 4px;
-          overflow: hidden;
+          font-size: 16px;
           margin: 0;
-          width: 100%;
         }
 
-        .total-progress-fill {
+        .total-progress-circle {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          position: relative;
+          background: #000000;
+          border: 2px solid #FFFFFF;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+
+        .total-progress-circle:before {
+          content: '';
+          position: absolute;
+          width: 100%;
           height: 100%;
-          background: #FFFFFF;
-          transition: width 0.3s ease;
+          background: conic-gradient(#FFFFFF var(--progress), transparent var(--progress));
         }
 
         .loading-container {
@@ -699,9 +707,7 @@ app.get('/roadmap/:userId', (req, res) => {
               <div class="total-progress-container">
                 <div class="total-progress">
                   <strong class="total-progress-text">Total Progress: \${Math.round(data.totalProgress)}%</strong>
-                  <div class="total-progress-bar">
-                    <div class="total-progress-fill" style="width: \${Math.round(data.totalProgress)}%"></div>
-                  </div>
+                  <div class="total-progress-circle" style="--progress: \${Math.round(data.totalProgress)}%;"></div>
                 </div>
               </div>
             \`;
@@ -779,9 +785,7 @@ app.get('/roadmap/:userId', (req, res) => {
                 <div class="total-progress-container">
                   <div class="total-progress">
                     <strong class="total-progress-text">Total Progress: \${Math.round(totalProgress)}%</strong>
-                    <div class="total-progress-bar">
-                      <div class="total-progress-fill" style="width: \${Math.round(totalProgress)}%"></div>
-                    </div>
+                    <div class="total-progress-circle" style="--progress: \${Math.round(totalProgress)}%;"></div>
                   </div>
                 </div>
               \`;
