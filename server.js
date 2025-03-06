@@ -88,18 +88,19 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 app.post('/api/roadmap/:userId/add', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { courseId, courseTitle } = req.body; // Remove progress from destructuring
+    const { courseId, courseTitle } = req.body;
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:D', // Now just storing: userId, courseId, courseTitle, timestamp
+      range: 'Sheet1!A:E', // Now storing: userId, courseId, courseTitle, timestamp, progress
       valueInputOption: 'RAW',
       resource: {
         values: [[
           userId,
           courseId,
           courseTitle,
-          new Date().toISOString()
+          new Date().toISOString(),
+          "0" // Initial progress value
         ]]
       }
     });
@@ -182,9 +183,9 @@ async function updateCourseProgress(userId, courseProgress) {
         const courseId = row[1];
         const newProgress = courseProgress[courseId];
         
-        if (newProgress !== undefined && newProgress !== row[3]) {
+        if (newProgress !== undefined && newProgress !== row[4]) {
           updates.push({
-            range: `Sheet1!D${index + 1}`,
+            range: `Sheet1!E${index + 1}`,
             values: [[newProgress.toString()]]
           });
         }
@@ -754,25 +755,37 @@ app.get('/api/progress/:userId', async (req, res) => {
     });
 
     if (!progressResponse.ok) {
-      throw new Error(`Failed to fetch progress: ${await progressResponse.text()}`);
+      console.error('LearnWorlds API error status:', progressResponse.status);
+      console.error('LearnWorlds API error headers:', Object.fromEntries([...progressResponse.headers.entries()]));
+      const errorText = await progressResponse.text();
+      console.error('LearnWorlds API error response:', errorText);
+      throw new Error(`Failed to fetch progress: ${errorText}`);
     }
 
     const data = await progressResponse.json();
+    console.log('LearnWorlds API response data:', JSON.stringify(data, null, 2));
+    
+    if (!data.data || !Array.isArray(data.data)) {
+      console.error('Unexpected response format from LearnWorlds API:', data);
+      throw new Error('Invalid response format from LearnWorlds API');
+    }
+    
+    console.log(`Found ${data.data.length} courses with progress data`);
     
     // Update progress in Google Sheet
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Sheet1!A:E',  // Changed to include column E
+      range: 'Sheet1!A:E',
     });
 
     const values = response.data.values || [];
-    console.log('Current sheet data:', values);
+    console.log('Current sheet data rows:', values.length);
 
     const updates = [];
 
     // For each course in the API response, update its progress in the sheet
     data.data.forEach(course => {
-      console.log('Processing course:', course);
+      console.log('Processing course:', course.course_id, 'progress:', course.progress_rate);
       const rowIndex = values.findIndex(row => 
         row[0] === userId && row[1] === course.course_id
       );
@@ -785,10 +798,12 @@ app.get('/api/progress/:userId', async (req, res) => {
           values: [[course.progress_rate]]
         });
         console.log('Added update for row:', rowIndex + 1, 'progress:', course.progress_rate);
+      } else {
+        console.log('Course not found in roadmap, skipping:', course.course_id);
       }
     });
 
-    console.log('Updates to make:', updates);
+    console.log('Updates to make:', updates.length);
 
     // Batch update the progress values
     if (updates.length > 0) {
@@ -799,7 +814,9 @@ app.get('/api/progress/:userId', async (req, res) => {
           data: updates
         }
       });
-      console.log('Updated sheet with progress values');
+      console.log('Updated sheet with progress values for', updates.length, 'courses');
+    } else {
+      console.log('No progress updates to make');
     }
 
     res.json(data);
