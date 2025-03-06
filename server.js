@@ -412,24 +412,32 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         #roadmap-content {
-          display: none;
           position: relative;
-          padding-top: 0;
+          padding-top: 10px;
+          padding-bottom: 10px;
+          display: none; /* Change back to none for initial state */
         }
 
         .timeline-line {
           position: absolute;
-          left: 24px;
-          top: 10px;
+          left: 50%;
+          top: 0;
           bottom: 0;
-          width: 2px;
-          background: rgba(163, 115, 248, 0.3);
+          width: 3px;
+          background: #A373F8;
+          z-index: 1;
+          transform: translateX(-50%);
+          opacity: 0.3;
         }
 
         .course-item {
           position: relative;
-          margin: 20px 0;
-          padding-left: 50px;
+          margin: 35px 0;
+          padding-left: 0;
+          display: flex;
+          justify-content: center;
+          width: 100%;
+          min-height: 80px;
         }
 
         .course-item:first-child {
@@ -439,15 +447,15 @@ app.get('/roadmap/:userId', (req, res) => {
         .course-item:last-child {
           margin-bottom: 30px;  /* Reduced from 40px */
         }
-
+        
         .course-dot {
           width: 24px;
           height: 24px;
           border-radius: 50%;
           position: absolute;
-          left: 13px;
+          left: 50%;
           top: 50%;
-          transform: translateY(-50%);
+          transform: translate(-50%, -50%);
           z-index: 2;
           background: #000000;
           border: 3px solid #A373F8;
@@ -477,12 +485,29 @@ app.get('/roadmap/:userId', (req, res) => {
           border: 1px solid rgba(163, 115, 248, 0.2);
           border-radius: 8px;
           padding: 15px;
-          width: calc(100% - 60px);
-          max-width: 600px;
+          width: calc(100% * 2/3 - 35px);
+          max-width: 400px;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-
-        .course-content:hover {
+        
+        .course-content.left {
+          margin-right: 35px;
+          transform-origin: right center;
+          margin-left: auto;
+        }
+        
+        .course-content.right {
+          margin-left: 35px;
+          transform-origin: left center;
+          margin-right: auto;
+        }
+        
+        .course-content.left:hover {
+          transform: translateX(-5px);
+          box-shadow: 4px 4px 12px rgba(163, 115, 248, 0.1);
+        }
+        
+        .course-content.right:hover {
           transform: translateX(5px);
           box-shadow: -4px 4px 12px rgba(163, 115, 248, 0.1);
         }
@@ -529,25 +554,59 @@ app.get('/roadmap/:userId', (req, res) => {
 
         .remove-button {
           position: absolute;
-          top: 8px;
-          right: 8px;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
+          top: 10px;
+          right: 10px;
+          background: none;
           border: none;
-          background: rgba(255, 255, 255, 0.1);
-          color: #FFFFFF;
+          color: rgba(163, 115, 248, 0.5);
+          font-size: 18px;
           cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          transition: all 0.2s ease;
+          padding: 0;
+          margin: 0;
+          width: 24px;
+          height: 24px;
+          line-height: 24px;
+          text-align: center;
+          transition: color 0.2s ease;
+        }
+        
+        .course-content.left .remove-button {
+          right: 10px;
+        }
+        
+        .course-content.right .remove-button {
+          right: 10px;
         }
 
         .remove-button:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: scale(1.1);
+          color: rgba(163, 115, 248, 1);
+        }
+
+        @media (max-width: 768px) {
+          .course-content {
+            width: calc(100% - 60px);
+            max-width: none;
+          }
+          
+          .course-content.left, 
+          .course-content.right {
+            margin-left: 35px;
+            margin-right: auto;
+          }
+          
+          .timeline-line {
+            left: 24px;
+            transform: none;
+          }
+          
+          .course-dot {
+            left: 24px;
+            transform: translateY(-50%);
+          }
+          
+          .course-item {
+            justify-content: flex-start;
+          }
         }
       </style>
     </head>
@@ -599,11 +658,14 @@ app.get('/roadmap/:userId', (req, res) => {
 
             let html = '<div class="timeline-line"></div>';
             
-            data.userCourses.forEach(course => {
+            data.userCourses.forEach((course, index) => {
+              const isEven = index % 2 === 0;
+              const side = isEven ? 'left' : 'right';
+              
               html += \`
                 <div class="course-item">
                   <div class="course-dot \${course.progress === 100 ? 'completed' : ''}" style="--progress: \${course.progress}%;"></div>
-                  <div class="course-content">
+                  <div class="course-content \${side}">
                     <button 
                       class="remove-button" 
                       onclick="removeCourse(event, '\${course.id}')"
