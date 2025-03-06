@@ -19,7 +19,6 @@
       if (!response.ok) throw new Error('Failed to fetch roadmap');
       const data = await response.json();
       userCoursesCache = new Set(data.courses);
-      userCoursesCache.add('getting-started');
 
       // Fetch progress (this will update the sheet)
       console.log('Fetching progress for user:', userId);

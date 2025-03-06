@@ -59,38 +59,16 @@ app.get('/api/roadmap/:userId', async (req, res) => {
 
     const values = response.data.values || [];
     
-    // Check if this user has any courses (including Getting Started)
+    // Get all courses for this user
     const userRows = values.filter(row => row[0] === userId);
-    const hasGettingStarted = userRows.some(row => row[1] === 'getting-started');
-
-    // If this is user's first time (no Getting Started course), add it
-    if (!hasGettingStarted) {
-      console.log('First time user, adding Getting Started course...');
-      
-      try {
-        await sheets.spreadsheets.values.append({
-          spreadsheetId: SPREADSHEET_ID,
-          range: 'Sheet1!A:D', // Changed from A:E since we don't store progress
-          valueInputOption: 'RAW',
-          resource: {
-            values: [[
-              userId,
-              'getting-started',
-              'Getting Started',
-              new Date().toISOString()
-            ]]
-          }
-        });
-        
-        // Add it to our current results without progress
-        userRows.push([userId, 'getting-started', 'Getting Started', new Date().toISOString()]);
-      } catch (error) {
-        console.error('Error adding Getting Started course:', error);
-      }
-    }
-
-    // Map all courses to just their IDs for the response
-    const userCourses = userRows.map(row => row[1]);
+    
+    // Transform sheet data to the format we need
+    const userCourses = userRows.map(row => ({
+      id: row[1],
+      title: row[2] || row[1],
+      progress: parseInt(row[4] || '0', 10),
+      sortOrder: sortOrderCache.data?.get(row[1]) || 999  // Default to high number if not found
+    }));
 
     res.status(200).json({ courses: userCourses });
   } catch (err) {
@@ -287,19 +265,8 @@ app.get('/api/roadmapData/:userId', async (req, res) => {
         sortOrder: sortOrder.get(row[1]) || 999  // Default to high number if not found
       }));
 
-    // If 'getting-started' is missing, add it
-    const hasGettingStarted = userCourses.some(c => c.id === 'getting-started');
-    if (!hasGettingStarted) {
-      userCourses.unshift({
-        id: 'getting-started',
-        title: 'Getting Started',
-        progress: 0,
-        sortOrder: 1  // Always first
-      });
-    }
-
-    // Sort courses by sortOrder
-    userCourses.sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+    // Sort courses by the specified order
+    userCourses.sort((a, b) => a.sortOrder - b.sortOrder);
 
     // Calculate total progress
     const totalProgress = userCourses.length
@@ -586,7 +553,6 @@ app.get('/roadmap/:userId', (req, res) => {
                     <button 
                       class="remove-button" 
                       onclick="removeCourse(event, '\${course.id}')"
-                      \${course.id === 'getting-started' ? 'style="display:none;"' : ''}
                     >×</button>
                     <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
                        class="course-title" 
