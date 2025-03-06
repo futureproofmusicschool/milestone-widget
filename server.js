@@ -449,8 +449,8 @@ app.get('/roadmap/:userId', (req, res) => {
         }
         
         .course-dot {
-          width: 24px;
-          height: 24px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           position: absolute;
           left: 50%;
@@ -484,20 +484,20 @@ app.get('/roadmap/:userId', (req, res) => {
           background: rgba(163, 115, 248, 0.1);
           border: 1px solid rgba(163, 115, 248, 0.2);
           border-radius: 8px;
-          padding: 15px;
-          width: calc(100% * 2/3 - 35px);
-          max-width: 400px;
+          padding: 12px;
+          width: calc(100% * 0.4 - 50px);
+          max-width: 280px;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
         .course-content.left {
-          margin-right: 35px;
+          margin-right: 50px;
           transform-origin: right center;
           margin-left: auto;
         }
         
         .course-content.right {
-          margin-left: 35px;
+          margin-left: 50px;
           transform-origin: left center;
           margin-right: auto;
         }
@@ -517,7 +517,9 @@ app.get('/roadmap/:userId', (req, res) => {
           text-decoration: none;
           font-weight: 600;
           display: block;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
+          font-size: 14px;
+          padding-right: 15px;
         }
 
         .course-title:hover {
@@ -584,13 +586,13 @@ app.get('/roadmap/:userId', (req, res) => {
 
         @media (max-width: 768px) {
           .course-content {
-            width: calc(100% - 60px);
+            width: calc(100% - 70px);
             max-width: none;
           }
           
           .course-content.left, 
           .course-content.right {
-            margin-left: 35px;
+            margin-left: 50px;
             margin-right: auto;
           }
           
