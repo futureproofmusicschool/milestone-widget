@@ -350,6 +350,8 @@ app.get('/roadmap/:userId', (req, res) => {
           padding: 10px 15px;
           width: calc(100% - 30px);
           max-width: 600px;
+          margin-left: auto;
+          margin-right: 0;
         }
 
         .total-progress {
@@ -549,7 +551,7 @@ app.get('/roadmap/:userId', (req, res) => {
         h2 {
           text-transform: lowercase;
           margin: 0 0 5px 0; /* Reduced bottom margin */
-          font-size: 18px; /* Reduced from original size */
+          font-size: 24px; /* Increased by ~33% from 18px */
         }
 
         .roadmap-label {
