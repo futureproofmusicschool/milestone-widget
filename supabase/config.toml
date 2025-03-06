@@ -1,5 +1,0 @@
-
-project_id = "duhedfsjirpkzckqmgzf"
-
-[functions.learnworlds-auth]
-verify_jwt = false
