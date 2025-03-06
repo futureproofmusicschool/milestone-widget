@@ -219,6 +219,7 @@ async function getSortOrder() {
     });
 
     const values = response.data.values || [];
+    console.log('Sort order data from Sheet2:', values);
     
     // Create a map of courseId -> sortOrder
     const sortOrder = new Map();
@@ -227,11 +228,13 @@ async function getSortOrder() {
         sortOrder.set(row[0], parseInt(row[1], 10));
       }
     });
+    
+    console.log('Processed sort order map:', Object.fromEntries(sortOrder));
 
     // Update cache
     sortOrderCache.data = sortOrder;
     sortOrderCache.lastFetch = now;
-
+    
     return sortOrder;
   } catch (error) {
     console.error('Error fetching sort order:', error);
@@ -266,7 +269,12 @@ app.get('/api/roadmapData/:userId', async (req, res) => {
       }));
 
     // Sort courses by the specified order
-    userCourses.sort((a, b) => a.sortOrder - b.sortOrder);
+    userCourses.sort((a, b) => {
+      // Handle undefined or null values by using a high default number
+      const aOrder = a.sortOrder !== undefined ? a.sortOrder : 999;
+      const bOrder = b.sortOrder !== undefined ? b.sortOrder : 999;
+      return aOrder - bOrder;
+    });
 
     // Calculate total progress
     const totalProgress = userCourses.length
