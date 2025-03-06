@@ -31,8 +31,13 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;  // From your Google Sheet's 
 const sortOrderCache = {
   data: null,
   lastFetch: 0,
-  expiryTime: 1000 * 60 * 60 // Cache for 1 hour
+  expiryTime: 1000 * 60 * 5 // Cache for 5 minutes (reduced from 1 hour)
 };
+
+// Clear cache on server start to ensure fresh data
+console.log('Clearing sort order cache on server start');
+sortOrderCache.data = null;
+sortOrderCache.lastFetch = 0;
 
 // Add a health check endpoint
 app.get('/', (req, res) => {
@@ -208,6 +213,7 @@ async function getSortOrder() {
   
   // Return cached data if it's still fresh
   if (sortOrderCache.data && (now - sortOrderCache.lastFetch < sortOrderCache.expiryTime)) {
+    console.log('Using cached sort order:', Object.fromEntries(sortOrderCache.data));
     return sortOrderCache.data;
   }
 
@@ -219,17 +225,23 @@ async function getSortOrder() {
     });
 
     const values = response.data.values || [];
-    console.log('Sort order data from Sheet2:', values);
+    console.log('Sort order data from Sheet2 (raw):', values);
     
     // Create a map of courseId -> sortOrder
     const sortOrder = new Map();
     values.slice(1).forEach(row => {  // slice(1) to skip header row
       if (row[0] && row[1]) {  // Only add if both courseId and sortOrder exist
-        sortOrder.set(row[0], parseInt(row[1], 10));
+        // Store courseId in lowercase for case-insensitive matching
+        sortOrder.set(row[0].toLowerCase(), parseInt(row[1], 10));
+        console.log(`Setting sort order for "${row[0]}" to ${parseInt(row[1], 10)}`);
       }
     });
     
     console.log('Processed sort order map:', Object.fromEntries(sortOrder));
+    // Explicitly log all entries for easier debugging
+    for (const [key, value] of sortOrder.entries()) {
+      console.log(`Sort order - Course: "${key}" = ${value}`);
+    }
 
     // Update cache
     sortOrderCache.data = sortOrder;
@@ -261,20 +273,28 @@ app.get('/api/roadmapData/:userId', async (req, res) => {
     const values = response.data.values || [];
     let userCourses = values
       .filter(row => row[0] === userId)
-      .map(row => ({
-        id: row[1],
-        title: row[2] || row[1],
-        progress: parseInt(row[4] || '0', 10),
-        sortOrder: sortOrder.get(row[1]) || 999  // Default to high number if not found
-      }));
+      .map(row => {
+        const course = {
+          id: row[1],
+          title: row[2] || row[1],
+          progress: parseInt(row[4] || '0', 10),
+          sortOrder: row[1] ? sortOrder.get(row[1].toLowerCase()) || 999 : 999  // Case-insensitive lookup
+        };
+        console.log(`Course ${course.title} (${course.id}) has sort order: ${course.sortOrder}`);
+        return course;
+      });
+
+    console.log('Before sorting, courses:', userCourses.map(c => `${c.title} (order: ${c.sortOrder})`));
 
     // Sort courses by the specified order
     userCourses.sort((a, b) => {
-      // Handle undefined or null values by using a high default number
-      const aOrder = a.sortOrder !== undefined ? a.sortOrder : 999;
-      const bOrder = b.sortOrder !== undefined ? b.sortOrder : 999;
+      // Convert to numbers and handle undefined or null values
+      const aOrder = Number(a.sortOrder) || 999;
+      const bOrder = Number(b.sortOrder) || 999;
       return aOrder - bOrder;
     });
+
+    console.log('After sorting, courses:', userCourses.map(c => `${c.title} (order: ${c.sortOrder})`));
 
     // Calculate total progress
     const totalProgress = userCourses.length
@@ -536,6 +556,17 @@ app.get('/roadmap/:userId', (req, res) => {
         const userId = "${userId}";
         const apiURL = window.location.origin + "/api/roadmapData/" + userId;
 
+        // Add window onload event to ensure proper sizing
+        window.onload = function() {
+          // Call sendHeight after everything is loaded
+          setTimeout(sendHeight, 300);
+          
+          // Add resize listener
+          window.addEventListener('resize', function() {
+            sendHeight();
+          });
+        };
+
         fetch(apiURL)
           .then(res => {
             if (!res.ok) throw new Error('Failed to fetch data');
@@ -592,18 +623,40 @@ app.get('/roadmap/:userId', (req, res) => {
             \`;
 
             sendHeight();
+            // Call sendHeight again after a longer delay to ensure all content is rendered
+            setTimeout(sendHeight, 500);
           })
           .catch(err => {
             console.error('Error:', err);
           });
 
         function sendHeight() {
-          const totalHeight = document.body.offsetHeight;
-          // Remove any extra padding from the calculation
-          window.parent.postMessage({ 
-            type: 'resize', 
-            height: totalHeight - 24  // Subtract bottom padding
-          }, '*');
+          // Allow a small delay for rendering to complete
+          setTimeout(() => {
+            // Get the actual content height
+            const contentEl = document.getElementById('roadmap-content');
+            const progressEl = document.getElementById('total-progress-container');
+            const headerEl = document.querySelector('.header-container');
+            
+            // Calculate total height needed
+            let totalHeight = 30; // Base padding
+            
+            if (headerEl) totalHeight += headerEl.offsetHeight;
+            if (contentEl) totalHeight += contentEl.offsetHeight;
+            if (progressEl) totalHeight += progressEl.offsetHeight;
+            
+            // Ensure minimum height (adjust as needed)
+            const minHeight = 500;
+            totalHeight = Math.max(totalHeight, minHeight);
+            
+            console.log('Sending height:', totalHeight);
+            
+            // Send message to parent
+            window.parent.postMessage({ 
+              type: 'resize', 
+              height: totalHeight
+            }, '*');
+          }, 100);
         }
 
         // Add remove course function
