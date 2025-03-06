@@ -1,4 +1,42 @@
-# Welcome to your Lovable project
+# Learn Pathway Widget
+
+A server-rendered widget that displays a user's learning pathway and course progress. The widget is served directly from an Express server without a separate React frontend.
+
+## Project Structure
+
+- `server.js` - Express server that handles API requests and serves the HTML widget
+- `vercel.json` - Vercel deployment configuration
+- `.env` - Environment variables (Google Sheets credentials, etc.)
+- Package files (`package.json`, `package-lock.json`, `.npmrc`) - Node.js dependencies
+
+## Tech Stack
+
+- Express.js - Server
+- Google Sheets API - Data storage
+- Vanilla JavaScript - Client-side interactivity
+- HTML/CSS - Widget rendering
+
+## API Endpoints
+
+- `/roadmap/:userId` - Get the HTML widget for a specific user
+- `/api/roadmap/:userId` - Get a user's saved courses (JSON)
+- `/api/roadmap/:userId/add` - Add a course to a user's roadmap
+- `/api/roadmap/:userId/update` - Update a course's progress
+- `/api/roadmap/:userId/remove` - Remove a course from a user's roadmap
+
+## Setup and Development
+
+1. Install dependencies:
+```
+npm install
+```
+
+2. Set up environment variables in `.env`
+
+3. Run the server:
+```
+node server.js
+```
 
 ## Project info
 
@@ -49,16 +87,6 @@ npm run dev
 - Select the "Codespaces" tab.
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
 
 ## How can I deploy this project?
 
