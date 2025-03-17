@@ -558,24 +558,6 @@ app.get('/roadmap/:userId', (req, res) => {
           display: none; /* Hide the horizontal progress fill */
         }
 
-        h2 {
-          text-transform: lowercase;
-          margin: 0;
-          font-size: 12px; /* Half the current size (was 24px) */
-          color: #FFFFFF; /* All white text */
-          position: absolute; /* Position it at bottom left */
-          bottom: 10px;
-          left: 16px;
-        }
-
-        .roadmap-label {
-          color: #FFFFFF; /* Changed from #A373F8 to white */
-        }
-
-        .username {
-          color: #FFFFFF; /* Already white, no change needed */
-        }
-
         .remove-button {
           position: absolute;
           top: 10px;
@@ -642,10 +624,6 @@ app.get('/roadmap/:userId', (req, res) => {
 
       <div id="roadmap-content">
         <div class="timeline-line"></div>
-      </div>
-
-      <div class="header-container">
-        <h2><span class="roadmap-label">course roadmap for </span><span class="username">${username}</span></h2>
       </div>
 
       <!-- Remove the total progress container -->
@@ -745,12 +723,10 @@ app.get('/roadmap/:userId', (req, res) => {
             // Get the actual content height
             const contentEl = document.getElementById('roadmap-content');
             const progressEl = document.getElementById('total-progress-container');
-            const headerEl = document.querySelector('.header-container');
             
             // Calculate total height needed
             let totalHeight = 30; // Base padding
             
-            if (headerEl) totalHeight += headerEl.offsetHeight;
             if (contentEl) totalHeight += contentEl.offsetHeight;
             if (progressEl) totalHeight += progressEl.offsetHeight;
             
