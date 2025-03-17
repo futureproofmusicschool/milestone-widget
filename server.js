@@ -496,7 +496,7 @@ app.get('/roadmap/:userId', (req, res) => {
         .course-content {
           position: relative;
           background: rgba(163, 115, 248, 0.1);
-          border: 1px solid rgba(163, 115, 248, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 8px;
           padding: 8px 12px; /* Reduced top/bottom padding */
           width: calc(100% * 0.4 - 50px);
@@ -527,7 +527,7 @@ app.get('/roadmap/:userId', (req, res) => {
         }
 
         .course-title {
-          color: #A373F8;
+          color: #FFFFFF;
           text-decoration: none;
           font-weight: 600;
           display: block;
