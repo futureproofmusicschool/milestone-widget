@@ -502,6 +502,24 @@ app.get('/roadmap/:userId', (req, res) => {
           width: calc(100% * 0.4 - 50px);
           max-width: 280px;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
+          overflow: hidden; /* Add this to contain the progress overlay */
+        }
+        
+        /* Add a new class for the progress overlay */
+        .course-progress-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          background-color: rgba(255, 255, 255, 0.15); /* Translucent white overlay */
+          z-index: 1;
+          pointer-events: none; /* Allows clicks to pass through to elements below */
+        }
+        
+        /* Ensure text is above the overlay */
+        .course-title, .progress-text, .remove-button {
+          position: relative;
+          z-index: 2;
         }
         
         .course-content.left {
@@ -688,6 +706,7 @@ app.get('/roadmap/:userId', (req, res) => {
                 <div class="course-item">
                   <div class="course-dot \${course.progress === 100 ? 'completed' : ''}" style="--progress: \${course.progress}%;"></div>
                   <div class="course-content \${side}">
+                    <div class="course-progress-overlay" style="width: \${course.progress}%;"></div>
                     <button 
                       class="remove-button" 
                       onclick="removeCourse(event, '\${course.id}')"
@@ -720,6 +739,17 @@ app.get('/roadmap/:userId', (req, res) => {
             sendHeight();
             // Call sendHeight again after a longer delay to ensure all content is rendered
             setTimeout(sendHeight, 500);
+
+            // Update the HTML for each course when recalculating the view
+            const newCourseItems = document.querySelectorAll('.course-item');
+            newCourseItems.forEach((item, index) => {
+              const progressText = item.querySelector('.progress-text');
+              const progress = parseInt(progressText.textContent) || 0;
+              const progressOverlay = item.querySelector('.course-progress-overlay');
+              if (progressOverlay) {
+                progressOverlay.style.width = \`\${progress}%\`;
+              }
+            });
           })
           .catch(err => {
             console.error('Error:', err);
@@ -794,6 +824,16 @@ app.get('/roadmap/:userId', (req, res) => {
                   </div>
                 </div>
               \`;
+              
+              // Make sure progress overlays are updated on remaining course items
+              document.querySelectorAll('.course-item').forEach((item) => {
+                const progressText = item.querySelector('.progress-text');
+                const progress = parseInt(progressText.textContent) || 0;
+                const progressOverlay = item.querySelector('.course-progress-overlay');
+                if (progressOverlay) {
+                  progressOverlay.style.width = \`\${progress}%\`;
+                }
+              });
               
               sendHeight();
             }, 300);
