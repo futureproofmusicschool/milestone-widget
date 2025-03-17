@@ -706,7 +706,7 @@ app.get('/roadmap/:userId', (req, res) => {
 
             container.innerHTML = html;
 
-            // Add total progress after courses are loaded
+            // Total progress is hidden now, but we'll still calculate it for internal use
             const totalProgressContainer = document.getElementById('total-progress-container');
             totalProgressContainer.innerHTML = \`
               <div class="total-progress-container">
@@ -785,7 +785,7 @@ app.get('/roadmap/:userId', (req, res) => {
                 }, 0) / progressElements.length;
               }
               
-              // Update total progress display
+              // Update total progress display (hidden but we'll still update it)
               document.querySelector('#total-progress-container').innerHTML = \`
                 <div class="total-progress-container">
                   <div class="total-progress">
