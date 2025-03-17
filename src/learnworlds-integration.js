@@ -18,7 +18,13 @@
       const response = await fetch(`${API_URL}/api/roadmap/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch roadmap');
       const data = await response.json();
-      userCoursesCache = new Set(data.courses);
+      
+      // Create a Set of course IDs instead of course objects for proper lookup
+      userCoursesCache = new Set(data.courses.map(course => course.id));
+      console.log('Roadmap courses loaded:', Array.from(userCoursesCache));
+
+      // Setup iframe first to ensure roadmap widget loads
+      setupIframe();
 
       // Fetch progress (this will update the sheet)
       console.log('Fetching progress for user:', userId);
@@ -31,9 +37,6 @@
       addStyles();
       await processAllCourseCards();
       observeNewCards();
-
-      // Setup iframe
-      setupIframe();
     } catch (error) {
       console.error('Error:', error);
     }
