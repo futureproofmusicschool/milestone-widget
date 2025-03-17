@@ -558,16 +558,20 @@ app.get('/roadmap/:userId', (req, res) => {
 
         h2 {
           text-transform: lowercase;
-          margin: 0 0 5px 0; /* Reduced bottom margin */
-          font-size: 24px; /* Increased by ~33% from 18px */
+          margin: 0;
+          font-size: 12px; /* Half the current size (was 24px) */
+          color: #FFFFFF; /* All white text */
+          position: absolute; /* Position it at bottom left */
+          bottom: 10px;
+          left: 16px;
         }
 
         .roadmap-label {
-          color: #A373F8;
+          color: #FFFFFF; /* Changed from #A373F8 to white */
         }
 
         .username {
-          color: #FFFFFF;
+          color: #FFFFFF; /* Already white, no change needed */
         }
 
         .remove-button {
@@ -629,10 +633,6 @@ app.get('/roadmap/:userId', (req, res) => {
       </style>
     </head>
     <body>
-      <div class="header-container">
-        <h2><span class="roadmap-label">course roadmap for </span><span class="username">${username}</span></h2>
-      </div>
-
       <div class="loading-container" id="loading">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading your progress...</div>
@@ -642,7 +642,12 @@ app.get('/roadmap/:userId', (req, res) => {
         <div class="timeline-line"></div>
       </div>
 
-      <div id="total-progress-container"></div>
+      <div class="header-container">
+        <h2><span class="roadmap-label">course roadmap for </span><span class="username">${username}</span></h2>
+      </div>
+
+      <!-- Remove the total progress container -->
+      <div id="total-progress-container" style="display: none;"></div>
 
       <script>
         const userId = "${userId}";
