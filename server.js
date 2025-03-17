@@ -533,9 +533,10 @@ app.get('/roadmap/:userId', (req, res) => {
           font-weight: 600;
           display: block;
           margin-bottom: 4px; /* Reduced from 8px */
-          font-size: 14px;
+          font-size: 17px; /* Increased by ~20% from 14px */
           padding-right: 15px;
           line-height: 1.2; /* Added to compress text height */
+          text-transform: uppercase; /* Added to make all titles uppercase */
         }
 
         .course-title:hover {
