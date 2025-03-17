@@ -474,23 +474,6 @@ app.get('/roadmap/:userId', (req, res) => {
           background: #000000;
           border: 2px solid #A373F8;
           box-sizing: border-box;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-        }
-
-        .course-dot:before {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background: conic-gradient(#A373F8 var(--progress), transparent var(--progress));
-        }
-
-        .course-dot.completed {
-          background: #A373F8;
-          border: none;
         }
 
         .course-content {
@@ -704,7 +687,7 @@ app.get('/roadmap/:userId', (req, res) => {
               
               html += \`
                 <div class="course-item">
-                  <div class="course-dot \${course.progress === 100 ? 'completed' : ''}" style="--progress: \${course.progress}%;"></div>
+                  <div class="course-dot"></div>
                   <div class="course-content \${side}">
                     <div class="course-progress-overlay" style="width: \${course.progress}%;"></div>
                     <button 
