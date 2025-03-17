@@ -494,7 +494,7 @@ app.get('/roadmap/:userId', (req, res) => {
           top: 0;
           left: 0;
           height: 100%;
-          background-color: rgba(255, 255, 255, 0.15); /* Translucent white overlay */
+          background-color: rgba(163, 115, 248, 0.2); /* Changed from white to faint purple */
           z-index: 1;
           pointer-events: none; /* Allows clicks to pass through to elements below */
         }
