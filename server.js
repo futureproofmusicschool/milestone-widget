@@ -531,12 +531,12 @@ app.get('/roadmap/:userId', (req, res) => {
           color: #FFFFFF;
           text-decoration: none;
           font-weight: 600;
-          display: block;
-          margin-bottom: 4px; /* Reduced from 8px */
-          font-size: 17px; /* Increased by ~20% from 14px */
+          display: inline-block;
+          margin-bottom: 4px;
+          font-size: 17px;
           padding-right: 15px;
-          line-height: 1.2; /* Added to compress text height */
-          text-transform: uppercase; /* Added to make all titles uppercase */
+          line-height: 1.2;
+          text-transform: uppercase;
         }
 
         .course-title:hover {
@@ -574,6 +574,7 @@ app.get('/roadmap/:userId', (req, res) => {
           line-height: 24px;
           text-align: center;
           transition: color 0.2s ease;
+          z-index: 10;
         }
         
         .course-content.left .remove-button {
