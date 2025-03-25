@@ -13,7 +13,7 @@ const app = express();
 
 // Add CORS middleware
 app.use(cors({
-  origin: 'https://www.futureproofmusicschool.com',
+  origin: ['https://www.futureproofmusicschool.com', 'https://learn.futureproofmusicschool.com'],
   methods: ['GET', 'POST'],
   credentials: true
 }));

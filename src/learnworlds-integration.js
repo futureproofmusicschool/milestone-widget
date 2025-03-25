@@ -3,8 +3,15 @@
   const API_URL = 'https://learn-pathway-widget.vercel.app';
   let userCoursesCache = null;
 
-  document.addEventListener('DOMContentLoaded', initializeRoadmapButtons);
-  window.addEventListener('load', setupIframeMessaging);
+  console.log('LearnWorlds integration script loaded', {
+    currentDomain: window.location.hostname,
+    path: window.location.pathname
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded, initializing roadmap buttons');
+    initializeRoadmapButtons();
+  });
 
   async function initializeRoadmapButtons() {
     const userId = "{{USER.ID}}";
@@ -12,6 +19,8 @@
       console.log('No user ID found, skipping initialization');
       return;
     }
+
+    console.log('Initializing roadmap buttons for user:', userId);
 
     try {
       // First get user's courses
@@ -78,26 +87,48 @@
   }
 
   function processAllCourseCards() {
-    const selectors = ['.course-card', '.lw-course-card', '[data-course-id]', '[href*="courseid="]', '.catalog-item'];
+    const selectors = [
+      '.course-card', 
+      '.lw-course-card', 
+      '[data-course-id]', 
+      '[href*="courseid="]', 
+      '.catalog-item',
+      // Add new selectors that might be used on the new domain
+      '.course-listing-item',
+      '.course-container',
+      '.lw-course-container',
+      // CSS path to potentially identify course cards
+      'div[class*="course"]'
+    ];
+    
     const courseCards = new Set();
-
+    
+    console.log('Looking for course cards with selectors:', selectors);
+    
     selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(card => {
+      const found = document.querySelectorAll(selector);
+      console.log(`Found ${found.length} elements with selector: ${selector}`);
+      found.forEach(card => {
         const fullCard = card.closest('.course-card') || card.closest('.lw-course-card') || card;
         if (fullCard) {
           courseCards.add(fullCard);
         }
       });
     });
-
+    
+    console.log(`Processing ${courseCards.size} unique course cards`);
     courseCards.forEach(card => addButtonToCourseCard(card));
   }
 
   async function addButtonToCourseCard(courseCard) {
     if (courseCard.querySelector('.roadmap-button-container')) return;
-
+    
     const courseId = getCourseIdFromCard(courseCard);
-    if (!courseId) return;
+    console.log('Adding button to course card, Course ID:', courseId);
+    if (!courseId) {
+      console.log('No course ID found for card:', courseCard);
+      return;
+    }
 
     // Skip mentor courses
     if (courseId.toLowerCase().includes('mentor')) return;
@@ -171,17 +202,24 @@
       courseCard.closest('[data-course-id]'),
       courseCard
     ];
-
+    
     for (const element of possibleElements) {
       if (!element) continue;
       const dataId = element.getAttribute('data-course-id');
-      if (dataId) return dataId;
+      if (dataId) {
+        console.log('Found course ID from data-course-id:', dataId);
+        return dataId;
+      }
       const href = element.getAttribute('href');
       if (href) {
         const match = href.match(/courseid=([^&]+)/);
-        if (match) return match[1];
+        if (match) {
+          console.log('Found course ID from href:', match[1]);
+          return match[1];
+        }
       }
     }
+    console.log('Failed to extract course ID from card:', courseCard);
     return null;
   }
 
