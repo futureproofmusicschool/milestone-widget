@@ -674,7 +674,7 @@ app.get('/roadmap/:userId', (req, res) => {
                       class="remove-button" 
                       onclick="removeCourse(event, '\${course.id}')"
                     >×</button>
-                    <a href="https://www.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
+                    <a href="https://learn.futureproofmusicschool.com/path-player?courseid=\${course.id}" 
                        class="course-title" 
                        target="_blank" 
                        rel="noopener noreferrer">
@@ -835,7 +835,7 @@ app.get('/api/progress/:userId', async (req, res) => {
     console.log('Server: Progress endpoint called for user:', userId);
     
     // Get progress from LearnWorlds API  
-    const apiUrl = `https://futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
+    const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
     console.log('Server: Calling LearnWorlds API at:', apiUrl);
 
     const progressResponse = await fetch(apiUrl, {
