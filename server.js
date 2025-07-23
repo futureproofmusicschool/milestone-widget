@@ -656,7 +656,7 @@ app.get('/roadmap/:userId', (req, res) => {
             container.style.display = 'block';
 
             if (!data.userCourses || data.userCourses.length === 0) {
-              container.innerHTML = '<div style="text-align: center; padding: 30px 20px; color: #FFFFFF;"><p>No courses added yet.</p><p>Use the Add/Remove buttons on the course cards below to add courses to your Course Roadmap.</p></div>';
+              container.innerHTML = '<div style="text-align: center; padding: 30px 20px; color: #FFFFFF;"><p>No courses added yet.</p><p>If you\'ve just submitted your Onboarding Form and you don\'t see anything here, our system is still thinking about what courses to recommend, just refresh the page in a few minutes.</p><p>Use the Add/Remove buttons on the course cards below to add courses to your Course Roadmap.</p></div>';
               return;
             }
 
