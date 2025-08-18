@@ -919,5 +919,535 @@ app.get('/api/progress/:userId', async (req, res) => {
   }
 });
 
+// ============================================
+// NEW MILESTONE ROADMAP ENDPOINTS
+// ============================================
+
+/**
+ * Get user's milestone roadmap plan and progress
+ */
+app.get('/api/milestone-roadmap/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log('Fetching milestone roadmap for user:', userId);
+    
+    // Read from FMS_Users spreadsheet
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'FMS_Users!A:F', // Get columns A-F to find user and their data
+    });
+
+    const rows = response.data.values || [];
+    
+    // Find the user's row (assuming userId is in column A)
+    const userRowIndex = rows.findIndex(row => row[0] === userId);
+    
+    if (userRowIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const userRow = rows[userRowIndex];
+    
+    // Column E (index 4) = roadmap_plan, Column F (index 5) = roadmap_progress
+    const roadmapPlan = userRow[4] ? JSON.parse(userRow[4]) : null;
+    const roadmapProgress = userRow[5] ? JSON.parse(userRow[5]) : null;
+    
+    res.json({
+      userId,
+      username: userRow[1] || 'Student',
+      roadmapPlan,
+      roadmapProgress
+    });
+    
+  } catch (error) {
+    console.error('Error fetching milestone roadmap:', error);
+    res.status(500).json({ error: 'Failed to fetch roadmap data' });
+  }
+});
+
+/**
+ * Update milestone progress (mark complete)
+ */
+app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { milestoneNumber } = req.body;
+    
+    console.log(`Marking milestone ${milestoneNumber} complete for user ${userId}`);
+    
+    // First, get current data
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'FMS_Users!A:F',
+    });
+
+    const rows = response.data.values || [];
+    const userRowIndex = rows.findIndex(row => row[0] === userId);
+    
+    if (userRowIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Get current progress or create new
+    let progress = rows[userRowIndex][5] ? JSON.parse(rows[userRowIndex][5]) : {
+      userId,
+      currentMilestone: 1,
+      milestonesCompleted: [],
+      milestoneProgress: {}
+    };
+    
+    // Update progress
+    if (!progress.milestonesCompleted.includes(milestoneNumber)) {
+      progress.milestonesCompleted.push(milestoneNumber);
+      progress.milestonesCompleted.sort((a, b) => a - b);
+    }
+    
+    // Update current milestone to the next incomplete one
+    progress.currentMilestone = Math.min(milestoneNumber + 1, 12);
+    
+    // Add completion timestamp
+    progress.milestoneProgress[milestoneNumber] = {
+      ...progress.milestoneProgress[milestoneNumber],
+      completed: true,
+      completedDate: new Date().toISOString()
+    };
+    
+    // Update the sheet (column F, which is index 5)
+    const updateRange = `FMS_Users!F${userRowIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: updateRange,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[JSON.stringify(progress)]]
+      }
+    });
+    
+    res.json({ success: true, progress });
+    
+  } catch (error) {
+    console.error('Error updating milestone progress:', error);
+    res.status(500).json({ error: 'Failed to update progress' });
+  }
+});
+
+/**
+ * Render milestone roadmap widget
+ */
+app.get('/milestone-roadmap/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const username = decodeURIComponent(req.query.username || '') || 'Student';
+  
+  // Generate the HTML for the milestone roadmap
+  const html = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Your Learning Journey</title>
+      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: 'Source Sans Pro', sans-serif;
+          background: #000;
+          color: #FFFFFF;
+          padding: 20px;
+          min-height: 100vh;
+        }
+        
+        .loading {
+          text-align: center;
+          padding: 50px;
+          color: #A373F8;
+        }
+        
+        .header {
+          margin-bottom: 30px;
+          padding: 20px;
+          background: linear-gradient(135deg, #000 0%, #0a0a0a 100%);
+          border-radius: 12px;
+          border: 1px solid rgba(163, 115, 248, 0.2);
+        }
+        
+        .header h1 {
+          font-size: 24px;
+          margin-bottom: 10px;
+        }
+        
+        .north-star {
+          color: #F6F8FF;
+          font-size: 16px;
+          margin-bottom: 15px;
+          opacity: 0.9;
+        }
+        
+        .progress-stats {
+          display: flex;
+          gap: 20px;
+          font-size: 14px;
+          color: #A373F8;
+        }
+        
+        .timeline {
+          position: relative;
+          padding: 20px 0;
+        }
+        
+        .timeline-line {
+          position: absolute;
+          left: 50%;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background: #A373F8;
+          opacity: 0.3;
+          transform: translateX(-50%);
+        }
+        
+        .milestone {
+          position: relative;
+          margin: 30px 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .milestone-dot {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #000;
+          border: 3px solid #A373F8;
+          z-index: 2;
+        }
+        
+        .milestone.completed .milestone-dot {
+          background: #A373F8;
+        }
+        
+        .milestone-content {
+          background: rgba(163, 115, 248, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          padding: 15px 20px;
+          width: 40%;
+          transition: all 0.3s ease;
+        }
+        
+        .milestone:nth-child(odd) .milestone-content {
+          margin-right: auto;
+          margin-left: 55%;
+        }
+        
+        .milestone:nth-child(even) .milestone-content {
+          margin-left: auto;
+          margin-right: 55%;
+        }
+        
+        .milestone-content:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(163, 115, 248, 0.2);
+        }
+        
+        .milestone-title {
+          font-weight: 600;
+          font-size: 16px;
+          margin-bottom: 5px;
+        }
+        
+        .milestone.completed .milestone-title {
+          text-decoration: line-through;
+          opacity: 0.7;
+        }
+        
+        .current-indicator {
+          text-align: center;
+          margin: 20px 0;
+          color: #A373F8;
+          font-weight: 600;
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+        }
+        
+        .current-milestone-detail {
+          background: rgba(163, 115, 248, 0.15);
+          border: 2px solid #A373F8;
+          border-radius: 12px;
+          padding: 30px;
+          margin: 30px auto;
+          max-width: 600px;
+        }
+        
+        .current-milestone-detail h2 {
+          color: #A373F8;
+          margin-bottom: 20px;
+        }
+        
+        .milestone-section {
+          margin: 20px 0;
+        }
+        
+        .milestone-section h3 {
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 10px;
+          opacity: 0.7;
+        }
+        
+        .practices-list {
+          list-style: none;
+          padding-left: 0;
+        }
+        
+        .practices-list li {
+          padding: 8px 0;
+          padding-left: 25px;
+          position: relative;
+        }
+        
+        .practices-list li:before {
+          content: "•";
+          color: #A373F8;
+          position: absolute;
+          left: 0;
+        }
+        
+        .milestone-goal {
+          background: rgba(0, 0, 0, 0.5);
+          padding: 15px;
+          border-radius: 8px;
+          border-left: 3px solid #A373F8;
+          margin: 15px 0;
+        }
+        
+        .complete-button {
+          background: #A373F8;
+          color: #000;
+          border: none;
+          padding: 12px 30px;
+          border-radius: 6px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 20px;
+        }
+        
+        .complete-button:hover {
+          background: #8b5df6;
+          transform: translateY(-2px);
+        }
+        
+        .complete-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .course-recommendation {
+          background: rgba(163, 115, 248, 0.1);
+          border: 1px solid rgba(163, 115, 248, 0.3);
+          padding: 15px;
+          border-radius: 8px;
+          margin-top: 20px;
+        }
+        
+        .course-link {
+          color: #A373F8;
+          text-decoration: none;
+          font-weight: 600;
+          display: inline-block;
+          margin-top: 10px;
+        }
+        
+        .course-link:hover {
+          text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+          .timeline-line {
+            left: 30px;
+          }
+          
+          .milestone-dot {
+            left: 30px;
+          }
+          
+          .milestone-content {
+            width: calc(100% - 60px);
+            margin-left: 60px !important;
+            margin-right: 0 !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div id="app">
+        <div class="loading">Loading your learning journey...</div>
+      </div>
+      
+      <script>
+        const userId = '${userId}';
+        const username = '${username}';
+        
+        async function loadRoadmap() {
+          try {
+            const response = await fetch(\`/api/milestone-roadmap/\${userId}\`);
+            const data = await response.json();
+            
+            if (!response.ok) {
+              throw new Error(data.error || 'Failed to load roadmap');
+            }
+            
+            renderRoadmap(data);
+          } catch (error) {
+            console.error('Error loading roadmap:', error);
+            document.getElementById('app').innerHTML = '<div class="loading">Error loading roadmap. Please refresh the page.</div>';
+          }
+        }
+        
+        function renderRoadmap(data) {
+          const { roadmapPlan, roadmapProgress } = data;
+          
+          if (!roadmapPlan || !roadmapPlan.monthly_plan) {
+            document.getElementById('app').innerHTML = '<div class="loading">No roadmap found. Please complete your onboarding form.</div>';
+            return;
+          }
+          
+          const progress = roadmapProgress || {
+            currentMilestone: 1,
+            milestonesCompleted: [],
+            milestoneProgress: {}
+          };
+          
+          const currentMilestone = progress.currentMilestone || 1;
+          const completed = progress.milestonesCompleted || [];
+          
+          let html = \`
+            <div class="header">
+              <h1>Welcome back, \${username}!</h1>
+              <div class="north-star">Your Goal: "\${roadmapPlan.northstar}"</div>
+              <div class="progress-stats">
+                <span>🎯 Milestone \${currentMilestone} of 12</span>
+                <span>✅ \${completed.length} Completed</span>
+                <span>📊 \${Math.round((completed.length / 12) * 100)}% Progress</span>
+              </div>
+            </div>
+            
+            <div class="timeline">
+              <div class="timeline-line"></div>
+          \`;
+          
+          // Render timeline
+          roadmapPlan.monthly_plan.forEach((milestone, index) => {
+            const num = index + 1;
+            const isCompleted = completed.includes(num);
+            const isCurrent = num === currentMilestone;
+            
+            if (isCurrent) {
+              html += '<div class="current-indicator">═══ YOU ARE HERE ═══</div>';
+            }
+            
+            html += \`
+              <div class="milestone \${isCompleted ? 'completed' : ''} \${isCurrent ? 'current' : ''}">
+                <div class="milestone-dot"></div>
+                <div class="milestone-content">
+                  <div class="milestone-title">
+                    \${isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')} 
+                    Milestone \${num}: \${milestone.focus}
+                  </div>
+                </div>
+              </div>
+            \`;
+          });
+          
+          html += '</div>';
+          
+          // Render current milestone details
+          const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
+          if (currentMilestoneData) {
+            html += \`
+              <div class="current-milestone-detail">
+                <h2>MILESTONE \${currentMilestone}: \${currentMilestoneData.focus}</h2>
+                
+                <div class="milestone-section">
+                  <h3>Weekly Practices</h3>
+                  <ul class="practices-list">
+                    \${currentMilestoneData.weekly_practices.map(practice => 
+                      \`<li>\${practice}</li>\`
+                    ).join('')}
+                  </ul>
+                </div>
+                
+                <div class="milestone-section">
+                  <div class="milestone-goal">
+                    <h3>Goal</h3>
+                    \${currentMilestoneData.milestone}
+                  </div>
+                </div>
+                
+                \${currentMilestoneData.course_rec ? \`
+                  <div class="course-recommendation">
+                    <h3>Recommended Course</h3>
+                    <div>\${currentMilestoneData.course_rec.title}</div>
+                    <div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">
+                      \${currentMilestoneData.course_rec.benefit}
+                    </div>
+                    <a href="\${currentMilestoneData.course_rec.url}" class="course-link" target="_blank">
+                      Start Course →
+                    </a>
+                  </div>
+                \` : ''}
+                
+                <button class="complete-button" onclick="markComplete(\${currentMilestone})">
+                  ☐ Mark Milestone Complete
+                </button>
+              </div>
+            \`;
+          }
+          
+          document.getElementById('app').innerHTML = html;
+        }
+        
+        async function markComplete(milestoneNumber) {
+          if (!confirm('Mark this milestone as complete?')) return;
+          
+          try {
+            const response = await fetch(\`/api/milestone-roadmap/\${userId}/complete\`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ milestoneNumber })
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to update progress');
+            }
+            
+            // Reload the roadmap to show updated progress
+            loadRoadmap();
+          } catch (error) {
+            console.error('Error marking complete:', error);
+            alert('Failed to update progress. Please try again.');
+          }
+        }
+        
+        // Load roadmap on page load
+        loadRoadmap();
+      </script>
+    </body>
+  </html>
+  `;
+  
+  res.send(html);
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
