@@ -16,6 +16,7 @@ A server-rendered widget that displays learning pathways and course progress. Th
 - Vanilla JavaScript - Client-side interactivity
 - HTML/CSS - Widget rendering
 
+
 ## Widget
 
 ### Course Roadmap Widget (`/roadmap/:userId`)
