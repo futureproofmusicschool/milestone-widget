@@ -11,14 +11,33 @@ config(); // Initialize dotenv
 
 const app = express();
 
-// Add CORS middleware
+// Add CORS middleware with more permissive settings
 app.use(cors({
-  origin: ['https://www.futureproofmusicschool.com', 'https://learn.futureproofmusicschool.com'],
-  methods: ['GET', 'POST'],
-  credentials: true
+  origin: [
+    'https://www.futureproofmusicschool.com', 
+    'https://learn.futureproofmusicschool.com',
+    'https://learn-pathway-widget-goals.vercel.app',
+    'http://localhost:3000'
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
 }));
 
 app.use(bodyParser.json());
+
+// Allow iframe embedding
+app.use((req, res, next) => {
+  // Remove X-Frame-Options to allow embedding
+  res.removeHeader('X-Frame-Options');
+  // Set CSP to allow framing from specific domains
+  res.setHeader(
+    'Content-Security-Policy',
+    "frame-ancestors 'self' https://learn.futureproofmusicschool.com https://www.futureproofmusicschool.com https://*.learnworlds.com;"
+  );
+  next();
+});
 
 // Google Sheets setup
 const auth = new google.auth.GoogleAuth({
@@ -923,10 +942,30 @@ app.get('/api/progress/:userId', async (req, res) => {
 // NEW MILESTONE ROADMAP ENDPOINTS
 // ============================================
 
+// Handle preflight requests for milestone endpoints
+app.options('/api/milestone-roadmap/:userId', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
+});
+
+app.options('/api/milestone-roadmap/:userId/complete', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
+});
+
 /**
  * Get user's milestone roadmap plan and progress
  */
 app.get('/api/milestone-roadmap/:userId', async (req, res) => {
+  // Set CORS headers explicitly for this endpoint
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
   try {
     const { userId } = req.params;
     console.log('Fetching milestone roadmap for user:', userId);
@@ -969,6 +1008,11 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
  * Update milestone progress (mark complete)
  */
 app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
+  // Set CORS headers explicitly for this endpoint
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
   try {
     const { userId } = req.params;
     const { milestoneNumber } = req.body;
