@@ -1082,6 +1082,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
   const { userId } = req.params;
   const username = decodeURIComponent(req.query.username || '') || 'Student';
   
+  // Remove any X-Frame-Options that might be set
+  res.removeHeader('X-Frame-Options');
+  res.setHeader('X-Frame-Options', 'ALLOWALL');
+  
   // Generate the HTML for the milestone roadmap
   const html = `
   <!DOCTYPE html>
@@ -1340,11 +1344,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
       
       <script>
         const userId = '${userId}';
-        const username = '${username}';
+        const username = '${username.replace(/'/g, "\\'")}';
         
         async function loadRoadmap() {
           try {
-            const response = await fetch(\`/api/milestone-roadmap/\${userId}\`);
+            const response = await fetch('/api/milestone-roadmap/' + userId);
             const data = await response.json();
             
             if (!response.ok) {
@@ -1375,20 +1379,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const currentMilestone = progress.currentMilestone || 1;
           const completed = progress.milestonesCompleted || [];
           
-          let html = \`
-            <div class="header">
-              <h1>Welcome back, \${username}!</h1>
-              <div class="north-star">Your Goal: "\${roadmapPlan.northstar}"</div>
-              <div class="progress-stats">
-                <span>🎯 Milestone \${currentMilestone} of 12</span>
-                <span>✅ \${completed.length} Completed</span>
-                <span>📊 \${Math.round((completed.length / 12) * 100)}% Progress</span>
-              </div>
-            </div>
-            
-            <div class="timeline">
-              <div class="timeline-line"></div>
-          \`;
+          let html = '<div class="header">' +
+            '<h1>Welcome back, ' + username + '!</h1>' +
+            '<div class="north-star">Your Goal: "' + roadmapPlan.northstar + '"</div>' +
+            '<div class="progress-stats">' +
+              '<span>🎯 Milestone ' + currentMilestone + ' of 12</span>' +
+              '<span>✅ ' + completed.length + ' Completed</span>' +
+              '<span>📊 ' + Math.round((completed.length / 12) * 100) + '% Progress</span>' +
+            '</div>' +
+            '</div>' +
+            '<div class="timeline">' +
+              '<div class="timeline-line"></div>';
           
           // Render timeline
           roadmapPlan.monthly_plan.forEach((milestone, index) => {
@@ -1400,17 +1401,15 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               html += '<div class="current-indicator">═══ YOU ARE HERE ═══</div>';
             }
             
-            html += \`
-              <div class="milestone \${isCompleted ? 'completed' : ''} \${isCurrent ? 'current' : ''}">
-                <div class="milestone-dot"></div>
-                <div class="milestone-content">
-                  <div class="milestone-title">
-                    \${isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')} 
-                    Milestone \${num}: \${milestone.focus}
-                  </div>
-                </div>
-              </div>
-            \`;
+            html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
+              '<div class="milestone-dot"></div>' +
+              '<div class="milestone-content">' +
+                '<div class="milestone-title">' +
+                  (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
+                  'Milestone ' + num + ': ' + milestone.focus +
+                '</div>' +
+              '</div>' +
+            '</div>';
           });
           
           html += '</div>';
@@ -1418,44 +1417,41 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Render current milestone details
           const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
           if (currentMilestoneData) {
-            html += \`
-              <div class="current-milestone-detail">
-                <h2>MILESTONE \${currentMilestone}: \${currentMilestoneData.focus}</h2>
-                
-                <div class="milestone-section">
-                  <h3>Weekly Practices</h3>
-                  <ul class="practices-list">
-                    \${currentMilestoneData.weekly_practices.map(practice => 
-                      \`<li>\${practice}</li>\`
-                    ).join('')}
-                  </ul>
-                </div>
-                
-                <div class="milestone-section">
-                  <div class="milestone-goal">
-                    <h3>Goal</h3>
-                    \${currentMilestoneData.milestone}
-                  </div>
-                </div>
-                
-                \${currentMilestoneData.course_rec ? \`
-                  <div class="course-recommendation">
-                    <h3>Recommended Course</h3>
-                    <div>\${currentMilestoneData.course_rec.title}</div>
-                    <div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">
-                      \${currentMilestoneData.course_rec.benefit}
-                    </div>
-                    <a href="\${currentMilestoneData.course_rec.url}" class="course-link" target="_blank">
-                      Start Course →
-                    </a>
-                  </div>
-                \` : ''}
-                
-                <button class="complete-button" onclick="markComplete(\${currentMilestone})">
-                  ☐ Mark Milestone Complete
-                </button>
-              </div>
-            \`;
+            html += '<div class="current-milestone-detail">' +
+              '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
+              '<div class="milestone-section">' +
+                '<h3>Weekly Practices</h3>' +
+                '<ul class="practices-list">';
+            
+            currentMilestoneData.weekly_practices.forEach(practice => {
+              html += '<li>' + practice + '</li>';
+            });
+            
+            html += '</ul></div>' +
+              '<div class="milestone-section">' +
+                '<div class="milestone-goal">' +
+                  '<h3>Goal</h3>' +
+                  currentMilestoneData.milestone +
+                '</div>' +
+              '</div>';
+            
+            if (currentMilestoneData.course_rec) {
+              html += '<div class="course-recommendation">' +
+                '<h3>Recommended Course</h3>' +
+                '<div>' + currentMilestoneData.course_rec.title + '</div>' +
+                '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
+                  currentMilestoneData.course_rec.benefit +
+                '</div>' +
+                '<a href="' + currentMilestoneData.course_rec.url + '" class="course-link" target="_blank">' +
+                  'Start Course →' +
+                '</a>' +
+              '</div>';
+            }
+            
+            html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
+              '☐ Mark Milestone Complete' +
+              '</button>' +
+            '</div>';
           }
           
           document.getElementById('app').innerHTML = html;
@@ -1465,7 +1461,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (!confirm('Mark this milestone as complete?')) return;
           
           try {
-            const response = await fetch(\`/api/milestone-roadmap/\${userId}/complete\`, {
+            const response = await fetch('/api/milestone-roadmap/' + userId + '/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ milestoneNumber })
