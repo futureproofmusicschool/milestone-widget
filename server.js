@@ -970,10 +970,10 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     const { userId } = req.params;
     console.log('Fetching milestone roadmap for user:', userId);
     
-    // Read from FMS_Users spreadsheet
+    // Read from spreadsheet - using sheet1 as the tab name (lowercase)
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'FMS_Users!A:F', // Get columns A-F to find user and their data
+      range: 'sheet1!A:F', // Get columns A-F to find user and their data
     });
 
     const rows = response.data.values || [];
@@ -1022,7 +1022,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     // First, get current data
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'FMS_Users!A:F',
+      range: 'sheet1!A:F',
     });
 
     const rows = response.data.values || [];
@@ -1057,7 +1057,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     };
     
     // Update the sheet (column F, which is index 5)
-    const updateRange = `FMS_Users!F${userRowIndex + 1}`;
+    const updateRange = `sheet1!F${userRowIndex + 1}`;
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: updateRange,
