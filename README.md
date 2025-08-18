@@ -2,6 +2,8 @@
 
 A server-rendered widget that displays learning pathways and course progress. The widget is served directly from an Express server without a separate React frontend.
 
+**New Feature**: 12-Milestone Learning Journey Roadmap - A personalized, self-paced learning path with milestone tracking.
+
 ## Project Structure
 
 - `server.js` - Express server that handles API requests and serves the HTML widget
@@ -17,15 +19,25 @@ A server-rendered widget that displays learning pathways and course progress. Th
 - HTML/CSS - Widget rendering
 
 
-## Widget
+## Widgets
 
-### Course Roadmap Widget (`/roadmap/:userId`)
+### 1. Course Roadmap Widget (`/roadmap/:userId`)
 Displays a user's learning pathway with course progress in a timeline format.
 
 **Features:**
 - Course progress tracking with visual timeline
 - Add/remove courses functionality
 - Real-time progress updates from LearnWorlds API
+
+### 2. Milestone Journey Widget (`/milestone-roadmap/:userId`) 🆕
+Displays a personalized 12-milestone learning journey with self-paced progression.
+
+**Features:**
+- Visual timeline with 12 milestones
+- Current milestone detail view with weekly practices
+- Mark milestone complete functionality
+- Course recommendations per milestone
+- Progress tracking saved to Google Sheets
 
 
 
@@ -39,6 +51,11 @@ Displays a user's learning pathway with course progress in a timeline format.
 - `/api/progress/:userId` - Proxy LearnWorlds API for progress data
 - `/api/roadmapData/:userId` - Get complete roadmap data including progress (JSON)
 
+### Milestone Journey APIs 🆕
+- `/milestone-roadmap/:userId` - Get the HTML widget for milestone journey
+- `/api/milestone-roadmap/:userId` - Get user's roadmap plan and progress (JSON)
+- `/api/milestone-roadmap/:userId/complete` - Mark a milestone as complete
+
 ## Data Sources
 
 ### Course Roadmap Data
@@ -46,19 +63,35 @@ Displays a user's learning pathway with course progress in a timeline format.
   - Sheet1: Course data (userId, courseId, courseTitle, timestamp, progress)
   - Sheet2: Course sort order (courseId, sortOrder)
 
+### Milestone Journey Data 🆕
+- **FMS_Users Sheet**: Main user data spreadsheet
+  - Column A: User ID
+  - Column B: Username
+  - Column E: Roadmap plan (JSON from AI generation)
+  - Column F: Roadmap progress (JSON tracking completion)
 
-## Embedding the Widget
+
+## Embedding the Widgets
 
 ### Course Roadmap Widget
 ```html
-<iframe src="https://your-domain.vercel.app/roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
+<iframe src="https://learn-pathway-widget.vercel.app/roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
         width="100%" 
         height="800" 
         frameborder="0">
 </iframe>
 ```
 
-The widget automatically adjusts its height and communicates with the parent frame for optimal display.
+### Milestone Journey Widget 🆕
+```html
+<iframe src="https://learn-pathway-widget.vercel.app/milestone-roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
+        width="100%" 
+        height="800" 
+        frameborder="0">
+</iframe>
+```
+
+Both widgets automatically adjust their height and communicate with the parent frame for optimal display.
 
 ## Setup and Development
 
