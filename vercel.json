@@ -3,9 +3,9 @@
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node@3",
+      "use": "@vercel/node",
       "config": {
-        "nodeVersion": "18.x"
+        "maxDuration": 30
       }
     }
   ],
@@ -14,10 +14,5 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ],
-  "functions": {
-    "server.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 } 
