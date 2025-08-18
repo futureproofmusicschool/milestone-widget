@@ -27,15 +27,19 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// Allow iframe embedding
+// Allow iframe embedding - override any Vercel defaults
 app.use((req, res, next) => {
-  // Remove X-Frame-Options to allow embedding
-  res.removeHeader('X-Frame-Options');
-  // Set CSP to allow framing from specific domains
+  // Override X-Frame-Options
+  res.setHeader('X-Frame-Options', 'ALLOWALL');
+  // Set permissive CSP for iframe embedding
   res.setHeader(
     'Content-Security-Policy',
-    "frame-ancestors 'self' https://learn.futureproofmusicschool.com https://www.futureproofmusicschool.com https://*.learnworlds.com;"
+    "frame-ancestors *;"
   );
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   next();
 });
 
