@@ -1345,10 +1345,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
       <script>
         const userId = '${userId}';
         const username = '${username.replace(/'/g, "\\'")}';
+        const apiBaseUrl = window.location.origin;
         
         async function loadRoadmap() {
           try {
-            const response = await fetch('/api/milestone-roadmap/' + userId);
+            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId);
             const data = await response.json();
             
             if (!response.ok) {
@@ -1461,7 +1462,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (!confirm('Mark this milestone as complete?')) return;
           
           try {
-            const response = await fetch('/api/milestone-roadmap/' + userId + '/complete', {
+            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId + '/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ milestoneNumber })
