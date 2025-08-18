@@ -9,6 +9,7 @@ A server-rendered widget that displays learning pathways and course progress. Th
 - `.env` - Environment variables (Google Sheets credentials, etc.)
 - Package files (`package.json`, `package-lock.json`, `.npmrc`) - Node.js dependencies
 
+
 ## Tech Stack
 
 - Express.js - Server
