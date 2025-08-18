@@ -60,6 +60,8 @@ sortOrderCache.lastFetch = 0;
 
 // Add a health check endpoint
 app.get('/', (req, res) => {
+  // Remove X-Frame-Options for root as well
+  res.removeHeader('X-Frame-Options');
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
@@ -1082,9 +1084,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
   const { userId } = req.params;
   const username = decodeURIComponent(req.query.username || '') || 'Student';
   
-  // Remove any X-Frame-Options that might be set
+  // Remove X-Frame-Options to allow iframe embedding
   res.removeHeader('X-Frame-Options');
-  res.setHeader('X-Frame-Options', 'ALLOWALL');
+  // Don't set any X-Frame-Options at all to avoid conflicts
   
   // Generate the HTML for the milestone roadmap
   const html = `
