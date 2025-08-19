@@ -975,6 +975,10 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     console.log('Fetching milestone roadmap for user:', userId);
+    try {
+      const maskedId = (process.env.SPREADSHEET_ID || '').slice(0, 6) + '...' + (process.env.SPREADSHEET_ID || '').slice(-4);
+      console.log('Milestone API: SPREADSHEET_ID:', maskedId, 'Range: sheet1!A:F');
+    } catch (_) {}
     
     // Read from spreadsheet - using sheet1 as the tab name (lowercase)
     const response = await sheets.spreadsheets.values.get({
@@ -983,19 +987,44 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     });
 
     const rows = response.data.values || [];
+    console.log('Milestone API: rows fetched:', rows.length);
+    if (rows.length > 0) {
+      console.log('Milestone API: header row preview:', JSON.stringify(rows[0]));
+    }
     
     // Find the user's row (assuming userId is in column A)
     const userRowIndex = rows.findIndex(row => row[0] === userId);
+    console.log('Milestone API: userRowIndex:', userRowIndex, 'for userId:', userId);
     
     if (userRowIndex === -1) {
+      console.log('Milestone API: Available first 10 userIds in column A:', rows.slice(0, 10).map(r => r[0]));
       return res.status(404).json({ error: 'User not found' });
     }
     
     const userRow = rows[userRowIndex];
+    console.log('Milestone API: userRow length:', userRow.length, 'preview first 6 cols:', JSON.stringify(userRow.slice(0, 6)));
     
     // Column E (index 4) = roadmap_plan, Column F (index 5) = roadmap_progress
-    const roadmapPlan = userRow[4] ? JSON.parse(userRow[4]) : null;
-    const roadmapProgress = userRow[5] ? JSON.parse(userRow[5]) : null;
+    const rawPlan = userRow[4];
+    const rawProgress = userRow[5];
+    console.log('Milestone API: rawPlan type/len:', typeof rawPlan, rawPlan ? rawPlan.length : 0);
+    if (rawPlan) console.log('Milestone API: rawPlan preview:', rawPlan.slice(0, 180));
+    console.log('Milestone API: rawProgress type/len:', typeof rawProgress, rawProgress ? rawProgress.length : 0);
+    if (rawProgress) console.log('Milestone API: rawProgress preview:', rawProgress.slice(0, 180));
+
+    let roadmapPlan = null;
+    let roadmapProgress = null;
+    try {
+      roadmapPlan = rawPlan ? JSON.parse(rawPlan) : null;
+    } catch (e) {
+      console.error('Milestone API: Failed to parse roadmapPlan JSON:', e.message);
+    }
+    try {
+      roadmapProgress = rawProgress ? JSON.parse(rawProgress) : null;
+    } catch (e) {
+      console.error('Milestone API: Failed to parse roadmapProgress JSON:', e.message);
+    }
+    console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'has monthly_plan:', !!(roadmapPlan && roadmapPlan.monthly_plan));
     
     res.json({
       userId,
@@ -1355,8 +1384,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         async function loadRoadmap() {
           try {
-            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId);
+            const url = apiBaseUrl + '/api/milestone-roadmap/' + userId;
+            console.log('[Client] Fetching milestone data from:', url);
+            const response = await fetch(url);
+            console.log('[Client] Response status:', response.status);
             const data = await response.json();
+            console.log('[Client] Response JSON keys:', Object.keys(data || {}));
+            if (data && data.roadmapPlan) {
+              console.log('[Client] roadmapPlan present. monthly_plan length:', Array.isArray(data.roadmapPlan.monthly_plan) ? data.roadmapPlan.monthly_plan.length : 'n/a');
+            } else {
+              console.log('[Client] No roadmapPlan in response');
+            }
             
             if (!response.ok) {
               throw new Error(data.error || 'Failed to load roadmap');
