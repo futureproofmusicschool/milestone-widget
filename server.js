@@ -1687,8 +1687,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
       <script>
         const userId = '${userId}';
         const username = '${username.replace(/'/g, "\\'")}';
-        // Use the main app's API, not the milestone widget's own domain
-        const apiBaseUrl = 'https://learn-pathway-widget.vercel.app';
+        const apiBaseUrl = window.location.origin;
         
         async function loadRoadmap() {
           try {
