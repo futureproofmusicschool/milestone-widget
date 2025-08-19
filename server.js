@@ -1928,7 +1928,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
               '<div class="milestone-dot"></div>' +
-              '<div class="milestone-content clickable" onclick="navigateFromPath(' + num + ')">' +
+              '<div class="milestone-content clickable" onclick="showMilestoneDetail(' + num + ')">' +
                 '<div class="milestone-title">' +
                   (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
                   'Milestone ' + num + ': ' + milestone.focus +
@@ -1949,18 +1949,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           updateNavArrows();
           // Resize after DOM update
           sendHeight();
-        }
-
-        // When clicking a milestone from the path view, scroll to top first, then load detail
-        function navigateFromPath(milestoneNumber) {
-          try {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } catch (_) {
-            window.scrollTo(0, 0);
-          }
-          setTimeout(function(){
-            showMilestoneDetail(milestoneNumber);
-          }, 250);
         }
 
         function updateNavArrows() {
@@ -1990,6 +1978,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
 
         // Show the details for a selected milestone and return to the detail view
         function showMilestoneDetail(milestoneNumber) {
+          // Always scroll to top when switching into a milestone detail
+          try {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } catch (_) {
+            window.scrollTo(0, 0);
+          }
           const plan = window.ROADMAP_PLAN;
           const progress = window.ROADMAP_PROGRESS || { currentMilestone: 1 };
           if (!plan || !Array.isArray(plan.monthly_plan)) return;
