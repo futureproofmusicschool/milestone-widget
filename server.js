@@ -1515,9 +1515,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             }
             
             renderRoadmap(data);
+            // Ensure iframe resizes after initial render
+            sendHeight();
+            setTimeout(sendHeight, 300);
+            setTimeout(sendHeight, 800);
           } catch (error) {
             console.error('Error loading roadmap:', error);
             document.getElementById('app').innerHTML = '<div class="loading">Error loading roadmap. Please refresh the page.</div>';
+            sendHeight();
           }
         }
         
@@ -1526,6 +1531,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           if (!roadmapPlan || !roadmapPlan.monthly_plan) {
             document.getElementById('app').innerHTML = '<div class="loading">No roadmap found. Please complete your onboarding form.</div>';
+            sendHeight();
             return;
           }
           
@@ -1614,6 +1620,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
           
           document.getElementById('app').innerHTML = html;
+          // Resize after DOM update
+          sendHeight();
         }
         
         async function markComplete(milestoneNumber) {
@@ -1640,6 +1648,26 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         // Load roadmap on page load
         loadRoadmap();
+
+        // Send height to parent so the iframe expands to fit content
+        function sendHeight() {
+          try {
+            const totalHeight = Math.max(
+              document.body.scrollHeight,
+              document.documentElement.scrollHeight,
+              document.body.offsetHeight,
+              document.documentElement.offsetHeight,
+              document.body.clientHeight,
+              document.documentElement.clientHeight
+            );
+            window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
+          } catch (e) {
+            // no-op
+          }
+        }
+        window.addEventListener('resize', () => {
+          sendHeight();
+        });
       </script>
     </body>
   </html>
