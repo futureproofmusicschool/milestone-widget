@@ -58,6 +58,62 @@ const sortOrderCache = {
   expiryTime: 1000 * 60 * 5 // Cache for 5 minutes (reduced from 1 hour)
 };
 
+// ============================================
+// LearnWorlds Auth (Client Credentials)
+// Per docs: https://www.learnworlds.dev/docs/api/b6b6c2d4906e9-authentication
+// ============================================
+const lwTokenCache = {
+  accessToken: null,
+  expiresAt: 0
+};
+
+async function getLearnWorldsAccessToken() {
+  const clientId = process.env.LEARNWORLDS_CLIENT_ID;
+  const clientSecret = process.env.LEARNWORLDS_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    const msg = 'LearnWorlds client credentials missing (LEARNWORLDS_CLIENT_ID / LEARNWORLDS_CLIENT_SECRET)';
+    console.error(msg, { hasId: !!clientId, hasSecret: !!clientSecret });
+    throw new Error(msg);
+  }
+
+  // Return cached token if still valid (renew 60s before expiry)
+  if (lwTokenCache.accessToken && Date.now() < (lwTokenCache.expiresAt - 60_000)) {
+    return lwTokenCache.accessToken;
+  }
+
+  const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/oauth2/token';
+  const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  const body = new URLSearchParams({ grant_type: 'client_credentials' }).toString();
+
+  console.log('[LW] Fetching new access token');
+  const resp = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${authHeader}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json'
+    },
+    body
+  });
+
+  if (!resp.ok) {
+    const status = resp.status;
+    const headersObj = Object.fromEntries([...resp.headers.entries()]);
+    const bodyText = await resp.text();
+    console.error('[LW] Token fetch failed', { status, headers: headersObj, body: bodyText?.slice(0, 500) });
+    throw new Error('Failed to obtain LearnWorlds access token');
+  }
+
+  const data = await resp.json();
+  const accessToken = data.access_token;
+  const expiresIn = Number(data.expires_in || 3600);
+  lwTokenCache.accessToken = accessToken;
+  lwTokenCache.expiresAt = Date.now() + expiresIn * 1000;
+  console.log('[LW] Obtained token. Expires in (s):', expiresIn);
+  return accessToken;
+}
+
 // Utility to parse JSON that may be double-encoded
 function parseJsonPossiblyDoubleEncoded(text) {
   if (!text || typeof text !== 'string') return null;
@@ -940,22 +996,26 @@ app.get('/api/progress/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     console.log('Server: Progress endpoint called for user:', userId);
-    const hasToken = !!process.env.LEARNWORLDS_ACCESS_TOKEN;
+    // Require client credentials; token will be generated dynamically
     const hasClient = !!process.env.LEARNWORLDS_CLIENT_ID;
-    if (!hasToken || !hasClient) {
-      console.error('LearnWorlds credentials missing. hasToken:', hasToken, 'hasClient:', hasClient);
-      return res.status(500).json({ error: 'Missing LearnWorlds credentials on server', hasToken, hasClient });
+    const hasSecret = !!process.env.LEARNWORLDS_CLIENT_SECRET;
+    if (!hasClient || !hasSecret) {
+      console.error('LearnWorlds client credentials missing. hasClient:', hasClient, 'hasSecret:', hasSecret);
+      return res.status(500).json({ error: 'Missing LearnWorlds client credentials on server', hasClient, hasSecret });
     }
     
     // Get progress from LearnWorlds API  
     const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
     console.log('Server: Calling LearnWorlds API at:', apiUrl);
 
+    // Get dynamic access token
+    const accessToken = await getLearnWorldsAccessToken();
+
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Bearer ${process.env.LEARNWORLDS_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
       }
     });
@@ -1038,20 +1098,23 @@ app.get('/api/progress/:userId', async (req, res) => {
 app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
   try {
     const { userId, courseId } = req.params;
-    if (!process.env.LEARNWORLDS_ACCESS_TOKEN || !process.env.LEARNWORLDS_CLIENT_ID) {
-      console.error('LW single-course: Missing credentials');
-      return res.status(500).json({ error: 'Missing LearnWorlds credentials' });
+    if (!process.env.LEARNWORLDS_CLIENT_ID || !process.env.LEARNWORLDS_CLIENT_SECRET) {
+      console.error('LW single-course: Missing client credentials');
+      return res.status(500).json({ error: 'Missing LearnWorlds client credentials' });
     }
 
     // Use the per-course progress endpoint per LearnWorlds docs
     const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${encodeURIComponent(userId)}/courses/${encodeURIComponent(courseId)}/progress`;
     console.log('[LW] GET single-course progress', { userId, courseId, apiUrl });
 
+    // Get dynamic access token
+    const accessToken = await getLearnWorldsAccessToken();
+
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Authorization': `Bearer ${process.env.LEARNWORLDS_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
       }
     });
