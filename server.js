@@ -89,12 +89,13 @@ async function getLearnWorldsAccessToken() {
     client_secret: clientSecret
   }).toString();
 
-  console.log('[LW] Fetching new access token');
+  console.log('[LW] Fetching new access token', { clientId: clientId?.slice(0, 8) + '...', bodyPreview: body.slice(0, 100) });
   const resp = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Lw-Client': clientId
     },
     body
   });
