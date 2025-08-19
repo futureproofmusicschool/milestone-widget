@@ -79,10 +79,20 @@
   function setupIframe() {
     const iframe = document.getElementById('pathway-widget');
     if (iframe) {
+      const existingSrc = iframe.getAttribute('src') || '';
+      // If the page author already set the iframe to the Milestone widget, do NOT overwrite it
+      if (existingSrc.includes('/milestone-roadmap/') || existingSrc.includes('milestone-widget.vercel.app')) {
+        console.log('LearnWorlds integration: detected Milestone iframe src, not overriding. src=', existingSrc);
+        setupIframeMessaging();
+        return;
+      }
+
       iframe.style.height = '800px';
       iframe.style.minHeight = '400px';
       iframe.style.overflow = 'hidden';
+      // Default behavior: load Course Roadmap only when no explicit Milestone src was provided
       iframe.src = `${API_URL}/roadmap/{{USER.ID}}?username={{USER.NAME}}`;
+      setupIframeMessaging();
     }
   }
 
