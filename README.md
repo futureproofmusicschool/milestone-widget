@@ -4,7 +4,6 @@ A server-rendered widget that displays learning pathways and course progress. Th
 
 **New Feature**: 12-Milestone Learning Journey Roadmap - A personalized, self-paced learning path with milestone tracking.
 
-
 ## Project Structure
 
 - `server.js` - Express server that handles API requests and serves the HTML widget
