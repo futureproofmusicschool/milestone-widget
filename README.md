@@ -104,8 +104,8 @@ npm install
 ```
 GOOGLE_CREDENTIALS={"type":"service_account",...}
 SPREADSHEET_ID=your_course_spreadsheet_id
-LEARNWORLDS_ACCESS_TOKEN=your_learnworlds_token
 LEARNWORLDS_CLIENT_ID=your_learnworlds_client_id
+LEARNWORLDS_CLIENT_SECRET=your_learnworlds_client_secret
 VERCEL_PROTECTION_BYPASS=your_bypass_token
 ```
 

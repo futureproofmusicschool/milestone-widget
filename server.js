@@ -75,6 +75,7 @@ async function getLearnWorldsAccessToken() {
     hasClientId: !!clientId,
     hasClientSecret: !!clientSecret,
     clientIdLength: clientId?.length,
+    secretLength: clientSecret?.length,
     clientIdPreview: clientId ? clientId.slice(0, 10) + '...' : 'missing',
     envKeys: Object.keys(process.env).filter(k => k.includes('LEARN')).join(', ')
   });
@@ -124,7 +125,14 @@ async function getLearnWorldsAccessToken() {
     const status = resp.status;
     const headersObj = Object.fromEntries([...resp.headers.entries()]);
     const bodyText = await resp.text();
-    console.error('[LW] Token fetch failed', { status, headers: headersObj, body: bodyText?.slice(0, 500) });
+    console.error('[LW] Token fetch failed', { 
+      status, 
+      headers: headersObj, 
+      body: bodyText,
+      requestUrl: tokenUrl,
+      requestBody: body.replace(/client_secret=[^&]+/, 'client_secret=***'),
+      clientIdUsed: clientId
+    });
     throw new Error('Failed to obtain LearnWorlds access token');
   }
 
