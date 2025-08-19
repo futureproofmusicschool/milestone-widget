@@ -79,7 +79,9 @@ async function getLearnWorldsAccessToken() {
     clientIdLength: clientId?.length,
     secretLength: clientSecret?.length,
     clientIdPreview: clientId ? clientId.slice(0, 10) + '...' : 'missing',
-    envKeys: Object.keys(process.env).filter(k => k.includes('LEARN')).join(', ')
+    clientIdFull: clientId, // Temporarily log full ID to verify it's correct
+    envKeys: Object.keys(process.env).filter(k => k.includes('LEARN')).join(', '),
+    deploymentUrl: process.env.VERCEL_URL || 'unknown'
   });
 
   if (!clientId || !clientSecret) {
@@ -95,11 +97,13 @@ async function getLearnWorldsAccessToken() {
   }
 
   const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/oauth2/token';
-  const body = new URLSearchParams({
-    grant_type: 'client_credentials',
-    client_id: clientId,
-    client_secret: clientSecret
-  }).toString();
+  
+  // Manually construct the body to ensure proper encoding
+  const params = new URLSearchParams();
+  params.append('grant_type', 'client_credentials');
+  params.append('client_id', clientId.trim());
+  params.append('client_secret', clientSecret.trim());
+  const body = params.toString();
 
   console.log('[LW] Token request details', {
     url: tokenUrl,
