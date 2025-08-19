@@ -71,6 +71,37 @@ function parseJsonPossiblyDoubleEncoded(text) {
   }
 }
 
+function decodeHtmlEntities(str) {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+function extractJsonObjectFromText(text) {
+  if (typeof text !== 'string') return null;
+  const decoded = decodeHtmlEntities(text.trim());
+  const start = decoded.indexOf('{');
+  const end = decoded.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  const candidate = decoded.slice(start, end + 1);
+  try { return JSON.parse(candidate); } catch (_) { return null; }
+}
+
+function normalizeMonthlyPlanKeys(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj.monthly_plan)) return obj;
+  if (Array.isArray(obj.monthlyPlan)) {
+    return { ...obj, monthly_plan: obj.monthlyPlan };
+  }
+  return obj;
+}
+
 // Clear cache on server start to ensure fresh data
 console.log('Clearing sort order cache on server start');
 sortOrderCache.data = null;
@@ -1021,10 +1052,14 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     console.log('Milestone API: rawPlan len:', rawPlan ? String(rawPlan).length : 0);
     if (rawPlan) console.log('Milestone API: rawPlan preview:', String(rawPlan).slice(0, 180));
 
-    const roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan);
+    let roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan);
+    if (!roadmapPlan) {
+      roadmapPlan = extractJsonObjectFromText(rawPlan);
+    }
+    roadmapPlan = normalizeMonthlyPlanKeys(roadmapPlan);
     const roadmapProgress = parseJsonPossiblyDoubleEncoded(rawProgress);
     console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
-    console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)));
+    console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.monthly_plan) ? roadmapPlan.monthly_plan.length : 'n/a');
     
     res.json({
       userId,
