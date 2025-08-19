@@ -50,7 +50,8 @@ const auth = new google.auth.GoogleAuth({
 });
 
 const sheets = google.sheets({ version: 'v4', auth });
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID;  // From your Google Sheet's URL
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID;  // Course/legacy spreadsheet (Sheet1/Sheet2)
+const MILESTONE_SPREADSHEET_ID = process.env.MILESTONE_SPREADSHEET_ID || SPREADSHEET_ID; // Milestone plan spreadsheet (sheet1 with A-F headers)
 const sortOrderCache = {
   data: null,
   lastFetch: 0,
@@ -1057,13 +1058,14 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     const { userId } = req.params;
     console.log('Fetching milestone roadmap for user:', userId);
     try {
-      const maskedId = (process.env.SPREADSHEET_ID || '').slice(0, 6) + '...' + (process.env.SPREADSHEET_ID || '').slice(-4);
-      console.log('Milestone API: SPREADSHEET_ID:', maskedId, 'Range: sheet1!A:F');
+      const id = MILESTONE_SPREADSHEET_ID || '';
+      const maskedId = id.slice(0, 6) + '...' + id.slice(-4);
+      console.log('Milestone API: Using MILESTONE_SPREADSHEET_ID:', maskedId, 'Range: sheet1!A:F');
     } catch (_) {}
     
     // Read from spreadsheet - using sheet1 as the tab name (lowercase)
     const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
       range: 'sheet1!A:F', // Get columns A-F to find user and their data
     });
 
@@ -1114,7 +1116,7 @@ app.get('/api/milestone-debug/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
       range: 'sheet1!A:F',
     });
     const rows = response.data.values || [];
@@ -1168,7 +1170,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     
     // First, get current data
     const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
       range: 'sheet1!A:F',
     });
 
@@ -1206,7 +1208,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     // Update the sheet (column F, which is index 5)
     const updateRange = `sheet1!F${userRowIndex + 1}`;
     await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
       range: updateRange,
       valueInputOption: 'RAW',
       resource: {
