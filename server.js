@@ -1978,12 +1978,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
 
         // Show the details for a selected milestone and return to the detail view
         function showMilestoneDetail(milestoneNumber) {
-          // Always scroll to top when switching into a milestone detail
-          try {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          } catch (_) {
-            window.scrollTo(0, 0);
-          }
+          // Always attempt to scroll to top in iframe immediately
+          try { window.scrollTo(0, 0); } catch (_) {}
           const plan = window.ROADMAP_PLAN;
           const progress = window.ROADMAP_PROGRESS || { currentMilestone: 1 };
           if (!plan || !Array.isArray(plan.monthly_plan)) return;
@@ -2048,6 +2044,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (data && data.course_rec) {
             hydrateRecommendationProgress(data.course_rec);
           }
+          // Ask parent page to scroll the iframe into view
+          requestParentScrollTop();
+          setTimeout(requestParentScrollTop, 60);
+          // Also attempt another iframe scroll after layout settles
+          try { setTimeout(function(){ window.scrollTo(0, 0); }, 30); } catch(_) {}
           sendHeight();
           setTimeout(sendHeight, 200);
           setTimeout(sendHeight, 800);
@@ -2125,6 +2126,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             if (path) path.style.display = 'none';
             if (current) current.style.display = '';
             if (link) link.textContent = '🧭 My Path';
+            requestParentScrollTop();
+            setTimeout(requestParentScrollTop, 60);
           } else {
             if (current) current.style.display = 'none';
             if (path) path.style.display = '';
@@ -2150,6 +2153,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               document.documentElement.clientHeight
             );
             window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
+          } catch (e) {
+            // no-op
+          }
+        }
+        // Ask parent page to scroll to the top of the widget
+        function requestParentScrollTop() {
+          try {
+            window.parent.postMessage({ type: 'scrollToTop' }, '*');
           } catch (e) {
             // no-op
           }

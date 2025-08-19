@@ -60,6 +60,16 @@
         // Set exact height without extra padding
         iframe.style.height = `${event.data.height}px`;
       }
+      // Widget requests the parent page to scroll the iframe to the top
+      if (event.data?.type === 'scrollToTop') {
+        try {
+          const rect = iframe.getBoundingClientRect();
+          const absoluteTop = window.pageYOffset + rect.top;
+          window.scrollTo({ top: absoluteTop - 16, behavior: 'smooth' });
+        } catch (_) {
+          try { window.scrollTo(0, 0); } catch (_) {}
+        }
+      }
     });
   }
 
