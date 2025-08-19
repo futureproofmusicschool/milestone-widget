@@ -1637,6 +1637,30 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           margin: 30px auto;
           max-width: 600px;
         }
+        .current-view-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin: 0 auto;
+          max-width: 800px;
+        }
+        .nav-arrow {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 1px solid rgba(163, 115, 248, 0.4);
+          background: rgba(163, 115, 248, 0.15);
+          color: #A373F8;
+          font-size: 18px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+        .nav-arrow:hover { background: rgba(163, 115, 248, 0.25); }
+        .nav-arrow:disabled { opacity: 0.4; cursor: not-allowed; }
         
         .current-milestone-detail h2 {
           color: #A373F8;
@@ -1847,7 +1871,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Move the current milestone detail ABOVE the timeline
           const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
           if (currentMilestoneData) {
-            html += '<div id="current-view" class="current-milestone-detail">' +
+            html += '<div id="current-view-wrap" class="current-view-wrap">' +
+              '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
+              '<div id="current-view" class="current-milestone-detail">' +
               '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
               '<div class="milestone-section">' +
                 '<h3>Weekly Practices</h3>' +
@@ -1881,6 +1907,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
               '☐ Mark Milestone Complete' +
               '</button>' +
+            '</div>' +
+            '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
             '</div>';
           }
 
@@ -1915,8 +1943,36 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (currentMilestoneData && currentMilestoneData.course_rec) {
             hydrateRecommendationProgress(currentMilestoneData.course_rec);
           }
+          // Initialize nav arrows state
+          window.DISPLAYED_MILESTONE = currentMilestone;
+          updateNavArrows();
           // Resize after DOM update
           sendHeight();
+        }
+
+        function updateNavArrows() {
+          try {
+            const plan = window.ROADMAP_PLAN;
+            const total = Array.isArray(plan?.monthly_plan) ? plan.monthly_plan.length : 12;
+            const current = Number(window.DISPLAYED_MILESTONE || 1);
+            const prevBtn = document.getElementById('nav-prev');
+            const nextBtn = document.getElementById('nav-next');
+            if (prevBtn) prevBtn.disabled = current <= 1;
+            if (nextBtn) nextBtn.disabled = current >= total;
+          } catch (_) {}
+        }
+
+        function navigateMilestone(direction) {
+          const plan = window.ROADMAP_PLAN;
+          if (!plan || !Array.isArray(plan.monthly_plan)) return;
+          const total = plan.monthly_plan.length;
+          const current = Number(window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 1);
+          let next = current + Number(direction || 0);
+          if (next < 1) next = 1;
+          if (next > total) next = total;
+          if (next !== current) {
+            showMilestoneDetail(next);
+          }
         }
 
         // Show the details for a selected milestone and return to the detail view
@@ -1969,10 +2025,15 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             currentEl.innerHTML = inner;
           }
 
+          // Track currently displayed milestone
+          window.DISPLAYED_MILESTONE = Number(milestoneNumber);
+          updateNavArrows();
+
           // Switch back to detail view
           const path = document.getElementById('path-view');
+          const wrap = document.getElementById('current-view-wrap');
           if (path) path.style.display = 'none';
-          if (currentEl) currentEl.style.display = '';
+          if (wrap) wrap.style.display = '';
           const link = document.getElementById('toggle-link');
           if (link) link.textContent = '🧭 My Path';
 
@@ -2049,7 +2110,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // Toggle between current milestone and full path
         function toggleView(event) {
           if (event) event.preventDefault();
-          const current = document.getElementById('current-view');
+          const current = document.getElementById('current-view-wrap');
           const path = document.getElementById('path-view');
           const link = document.getElementById('toggle-link');
           const showingPath = path && path.style.display !== 'none';
