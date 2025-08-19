@@ -78,7 +78,7 @@ async function getLearnWorldsAccessToken() {
     hasClientSecret: !!clientSecret,
     clientIdLength: clientId?.length,
     secretLength: clientSecret?.length,
-    clientIdPreview: clientId ? clientId.slice(0, 20) + '...',
+    clientIdPreview: clientId ? clientId.slice(0, 20) + '...' : 'missing',
     envKeys: Object.keys(process.env).filter(k => k.includes('LEARN')).join(', '),
     deploymentUrl: process.env.VERCEL_URL || process.env.VERCEL_REGION || 'unknown',
     nodeVersion: process.version
