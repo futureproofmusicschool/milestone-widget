@@ -1026,6 +1026,33 @@ app.get('/api/progress/:userId', async (req, res) => {
   }
 });
 
+// Lightweight endpoint to get a single course's progress for a user
+app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+    const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
+    const progressResponse = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.LEARNWORLDS_ACCESS_TOKEN}`,
+        'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
+      }
+    });
+    if (!progressResponse.ok) {
+      const errorText = await progressResponse.text();
+      return res.status(progressResponse.status).json({ error: errorText });
+    }
+    const data = await progressResponse.json();
+    const entry = Array.isArray(data?.data) ? data.data.find(c => String(c.course_id) === String(courseId)) : null;
+    const pct = entry ? Math.round(Number(entry.progress_rate) || 0) : 0;
+    return res.json({ userId, courseId, progress: pct });
+  } catch (error) {
+    console.error('Error fetching single course progress:', error);
+    return res.status(500).json({ error: 'Failed to fetch course progress' });
+  }
+});
+
 // ============================================
 // NEW MILESTONE ROADMAP ENDPOINTS
 // ============================================
@@ -1673,20 +1700,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         async function hydrateRecommendationProgress(courseRec) {
           try {
             if (!courseRec || !courseRec.url) return;
-            let courseId = null;
-            try {
-              const u = new URL(courseRec.url);
-              courseId = u.searchParams.get('courseid') || u.searchParams.get('courseId');
-            } catch (_) {}
-            if (!courseId) courseId = courseRec.id || courseRec.course_id || null;
+            // Extract course ID exactly as used in SAMPLEPLAN and roadmap links
+            // Format: https://learn.futureproofmusicschool.com/path-player?courseid=XYZ
+            const match = courseRec.url.match(/courseid=([^&#]+)/);
+            const courseId = match ? match[1] : null;
             if (!courseId) return;
 
-            const resp = await fetch(apiBaseUrl + '/api/progress/' + userId);
+            // Query the backend single-course progress endpoint (mirrors Course Roadmap flow)
+            const resp = await fetch(apiBaseUrl + '/api/course-progress/' + userId + '/course/' + courseId);
             const data = await resp.json();
-            if (!resp.ok || !data || !Array.isArray(data.data)) return;
-            const entry = data.data.find(c => String(c.course_id) === String(courseId));
-            if (!entry) return;
-            const pct = Math.round(Number(entry.progress_rate) || 0);
+            if (!resp.ok) return;
+            const pct = Math.round(Number(data.progress) || 0);
             if (pct > 0) {
               const cta = document.getElementById('rec-cta');
               const prog = document.getElementById('rec-progress');
