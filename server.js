@@ -84,7 +84,7 @@ async function getLearnWorldsAccessToken() {
 
   const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/oauth2/token';
   const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-  const body = new URLSearchParams({ grant_type: 'client_credentials' }).toString();
+  const body = new URLSearchParams({ grant_type: 'client_credentials', client_id: clientId }).toString();
 
   console.log('[LW] Fetching new access token');
   const resp = await fetch(tokenUrl, {
@@ -92,7 +92,8 @@ async function getLearnWorldsAccessToken() {
     headers: {
       'Authorization': `Basic ${authHeader}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Lw-Client': clientId
     },
     body
   });
