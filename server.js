@@ -78,10 +78,10 @@ async function getLearnWorldsAccessToken() {
     hasClientSecret: !!clientSecret,
     clientIdLength: clientId?.length,
     secretLength: clientSecret?.length,
-    clientIdPreview: clientId ? clientId.slice(0, 10) + '...' : 'missing',
-    clientIdFull: clientId, // Temporarily log full ID to verify it's correct
+    clientIdPreview: clientId ? clientId.slice(0, 20) + '...',
     envKeys: Object.keys(process.env).filter(k => k.includes('LEARN')).join(', '),
-    deploymentUrl: process.env.VERCEL_URL || 'unknown'
+    deploymentUrl: process.env.VERCEL_URL || process.env.VERCEL_REGION || 'unknown',
+    nodeVersion: process.version
   });
 
   if (!clientId || !clientSecret) {
