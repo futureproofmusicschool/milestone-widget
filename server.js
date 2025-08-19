@@ -1466,6 +1466,36 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           border-radius: 8px;
           margin-top: 20px;
         }
+        .course-recommendation-link {
+          text-decoration: none;
+          color: inherit;
+          display: block;
+        }
+        .rec-progress {
+          margin-top: 10px;
+        }
+        .rec-progress-bar {
+          position: relative;
+          width: 100%;
+          height: 8px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        .rec-progress-fill {
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 0%;
+          background: #A373F8;
+        }
+        .rec-progress-text {
+          font-size: 14px;
+          color: #A373F8;
+          font-weight: 600;
+          margin-top: 6px;
+        }
         
         .course-link {
           color: #A373F8;
@@ -1585,13 +1615,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             if (currentMilestoneData.course_rec) {
               html += '<div class="course-recommendation">' +
-                '<h3>Recommended Course</h3>' +
-                '<div>' + currentMilestoneData.course_rec.title + '</div>' +
-                '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
-                  currentMilestoneData.course_rec.benefit +
-                '</div>' +
-                '<a href="' + currentMilestoneData.course_rec.url + '" class="course-link" target="_blank">' +
-                  'Start Course →' +
+                '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
+                  '<h3>Recommended Course</h3>' +
+                  '<div>' + currentMilestoneData.course_rec.title + '</div>' +
+                  '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
+                    currentMilestoneData.course_rec.benefit +
+                  '</div>' +
+                  '<div id="rec-cta" class="rec-cta" style="margin-top:10px; color:#A373F8; font-weight:700;">Start Course →</div>' +
+                  '<div id="rec-progress" class="rec-progress" style="display:none;">' +
+                    '<div class="rec-progress-bar"><div class="rec-progress-fill" id="rec-progress-fill" style="width:0%"></div></div>' +
+                    '<div class="rec-progress-text" id="rec-progress-text">0% Complete</div>' +
+                  '</div>' +
                 '</a>' +
               '</div>';
             }
@@ -1628,8 +1662,46 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           html += '</div></div>';
           
           document.getElementById('app').innerHTML = html;
+          // Hydrate recommendation progress (if any)
+          if (currentMilestoneData && currentMilestoneData.course_rec) {
+            hydrateRecommendationProgress(currentMilestoneData.course_rec);
+          }
           // Resize after DOM update
           sendHeight();
+        }
+
+        async function hydrateRecommendationProgress(courseRec) {
+          try {
+            if (!courseRec || !courseRec.url) return;
+            let courseId = null;
+            try {
+              const u = new URL(courseRec.url);
+              courseId = u.searchParams.get('courseid') || u.searchParams.get('courseId');
+            } catch (_) {}
+            if (!courseId) courseId = courseRec.id || courseRec.course_id || null;
+            if (!courseId) return;
+
+            const resp = await fetch(apiBaseUrl + '/api/progress/' + userId);
+            const data = await resp.json();
+            if (!resp.ok || !data || !Array.isArray(data.data)) return;
+            const entry = data.data.find(c => String(c.course_id) === String(courseId));
+            if (!entry) return;
+            const pct = Math.round(Number(entry.progress_rate) || 0);
+            if (pct > 0) {
+              const cta = document.getElementById('rec-cta');
+              const prog = document.getElementById('rec-progress');
+              const fill = document.getElementById('rec-progress-fill');
+              const text = document.getElementById('rec-progress-text');
+              if (cta) cta.style.display = 'none';
+              if (prog) prog.style.display = '';
+              if (fill) fill.style.width = pct + '%';
+              if (text) text.textContent = pct + '% Complete';
+              sendHeight();
+              setTimeout(sendHeight, 300);
+            }
+          } catch (e) {
+            // silent fail; keep Start Course CTA
+          }
         }
         
         async function markComplete(milestoneNumber) {
