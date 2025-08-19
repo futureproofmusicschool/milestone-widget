@@ -57,6 +57,20 @@ const sortOrderCache = {
   expiryTime: 1000 * 60 * 5 // Cache for 5 minutes (reduced from 1 hour)
 };
 
+// Utility to parse JSON that may be double-encoded
+function parseJsonPossiblyDoubleEncoded(text) {
+  if (!text || typeof text !== 'string') return null;
+  try {
+    const first = JSON.parse(text);
+    if (typeof first === 'string') {
+      try { return JSON.parse(first); } catch (_) { return null; }
+    }
+    return first;
+  } catch (_) {
+    return null;
+  }
+}
+
 // Clear cache on server start to ensure fresh data
 console.log('Clearing sort order cache on server start');
 sortOrderCache.data = null;
@@ -988,43 +1002,29 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
 
     const rows = response.data.values || [];
     console.log('Milestone API: rows fetched:', rows.length);
-    if (rows.length > 0) {
-      console.log('Milestone API: header row preview:', JSON.stringify(rows[0]));
-    }
-    
-    // Find the user's row (assuming userId is in column A)
-    const userRowIndex = rows.findIndex(row => row[0] === userId);
-    console.log('Milestone API: userRowIndex:', userRowIndex, 'for userId:', userId);
-    
+    if (rows.length === 0) return res.status(404).json({ error: 'Sheet empty' });
+
+    // Skip header row; columns are fixed A-F: A=user_id, B=username, E=roadmap_plan, F=roadmap_progress
+    const dataRows = rows.slice(1);
+    const indexInData = dataRows.findIndex(row => (row[0] || '').trim() === (userId || '').trim());
+    const userRowIndex = indexInData === -1 ? -1 : indexInData + 1; // absolute index in rows
+    console.log('Milestone API: userRowIndex:', userRowIndex, '(absolute), indexInData:', indexInData);
     if (userRowIndex === -1) {
-      console.log('Milestone API: Available first 10 userIds in column A:', rows.slice(0, 10).map(r => r[0]));
+      console.log('Milestone API: First 10 user_ids sample:', dataRows.slice(0, 10).map(r => r[0]));
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     const userRow = rows[userRowIndex];
-    console.log('Milestone API: userRow length:', userRow.length, 'preview first 6 cols:', JSON.stringify(userRow.slice(0, 6)));
-    
-    // Column E (index 4) = roadmap_plan, Column F (index 5) = roadmap_progress
+    // E (4) = roadmap_plan, F (5) = roadmap_progress
     const rawPlan = userRow[4];
     const rawProgress = userRow[5];
-    console.log('Milestone API: rawPlan type/len:', typeof rawPlan, rawPlan ? rawPlan.length : 0);
-    if (rawPlan) console.log('Milestone API: rawPlan preview:', rawPlan.slice(0, 180));
-    console.log('Milestone API: rawProgress type/len:', typeof rawProgress, rawProgress ? rawProgress.length : 0);
-    if (rawProgress) console.log('Milestone API: rawProgress preview:', rawProgress.slice(0, 180));
+    console.log('Milestone API: rawPlan len:', rawPlan ? String(rawPlan).length : 0);
+    if (rawPlan) console.log('Milestone API: rawPlan preview:', String(rawPlan).slice(0, 180));
 
-    let roadmapPlan = null;
-    let roadmapProgress = null;
-    try {
-      roadmapPlan = rawPlan ? JSON.parse(rawPlan) : null;
-    } catch (e) {
-      console.error('Milestone API: Failed to parse roadmapPlan JSON:', e.message);
-    }
-    try {
-      roadmapProgress = rawProgress ? JSON.parse(rawProgress) : null;
-    } catch (e) {
-      console.error('Milestone API: Failed to parse roadmapProgress JSON:', e.message);
-    }
-    console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'has monthly_plan:', !!(roadmapPlan && roadmapPlan.monthly_plan));
+    const roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan);
+    const roadmapProgress = parseJsonPossiblyDoubleEncoded(rawProgress);
+    console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
+    console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)));
     
     res.json({
       userId,
