@@ -249,6 +249,92 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'API is running' });
 });
 
+// Debug endpoint to test OAuth and LearnWorlds connection
+app.get('/api/debug/oauth', async (req, res) => {
+  const results = {
+    environment: {
+      deployment: process.env.VERCEL_URL || 'unknown',
+      hasClientId: !!process.env.LEARNWORLDS_CLIENT_ID,
+      hasClientSecret: !!process.env.LEARNWORLDS_CLIENT_SECRET,
+      clientIdLength: process.env.LEARNWORLDS_CLIENT_ID?.length,
+      clientIdPreview: process.env.LEARNWORLDS_CLIENT_ID?.slice(0, 20) + '...'
+    },
+    tokenRequest: null,
+    tokenResponse: null,
+    testApiCall: null
+  };
+
+  try {
+    // Step 1: Try to get OAuth token
+    const clientId = process.env.LEARNWORLDS_CLIENT_ID;
+    const clientSecret = process.env.LEARNWORLDS_CLIENT_SECRET;
+    
+    if (!clientId || !clientSecret) {
+      results.tokenRequest = { error: 'Missing credentials' };
+      return res.json(results);
+    }
+
+    const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/oauth2/token';
+    const params = new URLSearchParams();
+    params.append('grant_type', 'client_credentials');
+    params.append('client_id', clientId.trim());
+    params.append('client_secret', clientSecret.trim());
+    const body = params.toString();
+
+    results.tokenRequest = {
+      url: tokenUrl,
+      bodyLength: body.length,
+      bodyPreview: body.replace(/client_secret=[^&]+/, 'client_secret=***')
+    };
+
+    const tokenResp = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+        'Lw-Client': clientId
+      },
+      body
+    });
+
+    const tokenStatus = tokenResp.status;
+    const tokenHeaders = Object.fromEntries([...tokenResp.headers.entries()]);
+    const tokenBody = await tokenResp.text();
+
+    results.tokenResponse = {
+      status: tokenStatus,
+      headers: tokenHeaders,
+      body: tokenBody
+    };
+
+    if (tokenResp.ok) {
+      const tokenData = JSON.parse(tokenBody);
+      const accessToken = tokenData.access_token;
+      
+      // Step 2: Try a test API call with the token
+      const testUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/users';
+      const testResp = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Lw-Client': clientId,
+          'Accept': 'application/json'
+        }
+      });
+
+      results.testApiCall = {
+        url: testUrl,
+        status: testResp.status,
+        statusText: testResp.statusText
+      };
+    }
+  } catch (error) {
+    results.error = error.message;
+  }
+
+  res.json(results);
+});
+
 /**
  * Get a user's saved courses
  */
