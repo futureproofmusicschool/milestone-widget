@@ -14,10 +14,11 @@ A server-rendered widget that displays learning pathways and course progress. Th
 
 ## Tech Stack
 
-- Express.js - Server
+- Express.js - Server with CORS support for multiple domains
 - Google Sheets API - Data storage
+- LearnWorlds API - Course progress tracking via OAuth2
 - Vanilla JavaScript - Client-side interactivity
-- HTML/CSS - Widget rendering
+- HTML/CSS - Widget rendering with responsive design
 
 
 ## Widgets
@@ -34,10 +35,12 @@ Displays a user's learning pathway with course progress in a timeline format.
 Displays a personalized 12-milestone learning journey with self-paced progression.
 
 **Features:**
-- Visual timeline with 12 milestones
+- Visual timeline with 12 milestones  
 - Current milestone detail view with weekly practices
+- Toggle between current milestone and full path view
 - Mark milestone complete functionality
-- Course recommendations per milestone
+- Course recommendations with automatic progress tracking
+- Real-time progress display for recommended courses
 - Progress tracking saved to Google Sheets
 
 
@@ -56,6 +59,10 @@ Displays a personalized 12-milestone learning journey with self-paced progressio
 - `/milestone-roadmap/:userId` - Get the HTML widget for milestone journey
 - `/api/milestone-roadmap/:userId` - Get user's roadmap plan and progress (JSON)
 - `/api/milestone-roadmap/:userId/complete` - Mark a milestone as complete
+- `/api/course-progress/:userId/course/:courseId` - Get progress for a specific course
+
+### Debug Endpoints
+- `/api/debug/oauth` - Test OAuth connection and credentials
 
 ## Data Sources
 
@@ -65,7 +72,7 @@ Displays a personalized 12-milestone learning journey with self-paced progressio
   - Sheet2: Course sort order (courseId, sortOrder)
 
 ### Milestone Journey Data 🆕
-- **FMS_Users Sheet**: Main user data spreadsheet
+- **MILESTONE_SPREADSHEET_ID**: Milestone tracking spreadsheet (defaults to SPREADSHEET_ID if not set)
   - Column A: User ID
   - Column B: Username
   - Column E: Roadmap plan (JSON from AI generation)
@@ -92,6 +99,15 @@ Displays a personalized 12-milestone learning journey with self-paced progressio
 </iframe>
 ```
 
+For standalone deployment:
+```html
+<iframe src="https://milestone-widget.vercel.app/milestone-roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
+        width="100%" 
+        height="800" 
+        frameborder="0">
+</iframe>
+```
+
 Both widgets automatically adjust their height and communicate with the parent frame for optimal display.
 
 ## Setup and Development
@@ -105,10 +121,16 @@ npm install
 ```
 GOOGLE_CREDENTIALS={"type":"service_account",...}
 SPREADSHEET_ID=your_course_spreadsheet_id
-LEARNWORLDS_CLIENT_ID=your_learnworlds_client_id
-LEARNWORLDS_CLIENT_SECRET=your_learnworlds_client_secret
-VERCEL_PROTECTION_BYPASS=your_bypass_token
+MILESTONE_SPREADSHEET_ID=your_milestone_spreadsheet_id (optional, defaults to SPREADSHEET_ID)
+LEARNWORLDS_CLIENT_ID=your_learnworlds_oauth_client_id
+LEARNWORLDS_CLIENT_SECRET=your_learnworlds_oauth_client_secret
+VERCEL_PROTECTION_BYPASS=your_bypass_token (optional)
 ```
+
+**Important Notes:**
+- Use OAuth2 client credentials from LearnWorlds, NOT static access tokens
+- The OAuth token endpoint is: `https://{SCHOOLHOMEPAGE}/admin/api/oauth2/access_token`
+- Both deployments (main app and milestone widget) need the same environment variables
 
 3. Run the server:
 ```

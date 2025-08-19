@@ -1591,6 +1591,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           width: 40%;
           transition: all 0.3s ease;
         }
+        .milestone-content.clickable { cursor: pointer; }
         
         .milestone:nth-child(odd) .milestone-content {
           margin-right: auto;
@@ -1826,6 +1827,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           const currentMilestone = progress.currentMilestone || 1;
           const completed = progress.milestonesCompleted || [];
+
+          // Expose data for client-side interactions (e.g., clicking milestones)
+          window.ROADMAP_PLAN = roadmapPlan;
+          window.ROADMAP_PROGRESS = progress;
+          window.CURRENT_MILESTONE = currentMilestone;
           
           let html = '<div class="header">' +
             '<h1>Welcome back, ' + username + '!</h1>' +
@@ -1893,7 +1899,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
               '<div class="milestone-dot"></div>' +
-              '<div class="milestone-content">' +
+              '<div class="milestone-content clickable" onclick="showMilestoneDetail(' + num + ')">' +
                 '<div class="milestone-title">' +
                   (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
                   'Milestone ' + num + ': ' + milestone.focus +
@@ -1911,6 +1917,72 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
           // Resize after DOM update
           sendHeight();
+        }
+
+        // Show the details for a selected milestone and return to the detail view
+        function showMilestoneDetail(milestoneNumber) {
+          const plan = window.ROADMAP_PLAN;
+          const progress = window.ROADMAP_PROGRESS || { currentMilestone: 1 };
+          if (!plan || !Array.isArray(plan.monthly_plan)) return;
+          const idx = Number(milestoneNumber) - 1;
+          const data = plan.monthly_plan[idx];
+          if (!data) return;
+
+          const isCurrent = Number(milestoneNumber) === Number(progress.currentMilestone);
+          const currentEl = document.getElementById('current-view');
+          if (currentEl) {
+            let inner = '' +
+              '<h2>MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
+              '<div class="milestone-section">' +
+                '<h3>Weekly Practices</h3>' +
+                '<ul class="practices-list">';
+            (data.weekly_practices || []).forEach(function(practice){
+              inner += '<li>' + practice + '</li>';
+            });
+            inner += '</ul></div>' +
+              '<div class="milestone-section">' +
+                '<div class="milestone-goal">' +
+                  '<h3>Goal</h3>' +
+                  (data.milestone || '') +
+                '</div>' +
+              '</div>';
+            if (data.course_rec) {
+              inner += '<div class="course-recommendation">' +
+                '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
+                  '<h3>Recommended Course</h3>' +
+                  '<div>' + data.course_rec.title + '</div>' +
+                  '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
+                    data.course_rec.benefit +
+                  '</div>' +
+                  '<div id="rec-cta" class="rec-cta" style="margin-top:10px; color:#A373F8; font-weight:700;">Start Course →</div>' +
+                  '<div id="rec-progress" class="rec-progress" style="display:none;">' +
+                    '<div class="rec-progress-bar"><div class="rec-progress-fill" id="rec-progress-fill" style="width:0%"></div></div>' +
+                    '<div class="rec-progress-text" id="rec-progress-text">0% Complete</div>' +
+                  '</div>' +
+                '</a>' +
+              '</div>';
+            }
+            inner += '<button class="complete-button" ' + (isCurrent ? '' : 'disabled ') + 'onclick="markComplete(' + milestoneNumber + ')">' +
+              '☐ Mark Milestone Complete' +
+              '</button>';
+
+            currentEl.innerHTML = inner;
+          }
+
+          // Switch back to detail view
+          const path = document.getElementById('path-view');
+          if (path) path.style.display = 'none';
+          if (currentEl) currentEl.style.display = '';
+          const link = document.getElementById('toggle-link');
+          if (link) link.textContent = '🧭 My Path';
+
+          // Hydrate recommendation progress for the selected milestone
+          if (data && data.course_rec) {
+            hydrateRecommendationProgress(data.course_rec);
+          }
+          sendHeight();
+          setTimeout(sendHeight, 200);
+          setTimeout(sendHeight, 800);
         }
 
         async function hydrateRecommendationProgress(courseRec) {
@@ -1945,6 +2017,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
         
         async function markComplete(milestoneNumber) {
+          // Only allow completing the current milestone
+          try {
+            const progress = window.ROADMAP_PROGRESS || { currentMilestone: 1 };
+            if (Number(milestoneNumber) !== Number(progress.currentMilestone)) {
+              alert('You can only complete your current milestone.');
+              return;
+            }
+          } catch (_) {}
           if (!confirm('Mark this milestone as complete?')) return;
           
           try {
