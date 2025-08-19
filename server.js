@@ -1552,8 +1552,45 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<span>✅ ' + completed.length + ' Completed</span>' +
               '<span>📊 ' + Math.round((completed.length / 12) * 100) + '% Progress</span>' +
             '</div>' +
-            '</div>' +
-            '<div class="timeline">' +
+            '</div>';
+
+          // Move the current milestone detail ABOVE the timeline
+          const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
+          if (currentMilestoneData) {
+            html += '<div class="current-milestone-detail">' +
+              '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
+              '<div class="milestone-section">' +
+                '<h3>Weekly Practices</h3>' +
+                '<ul class="practices-list">';
+            currentMilestoneData.weekly_practices.forEach(practice => {
+              html += '<li>' + practice + '</li>';
+            });
+            html += '</ul></div>' +
+              '<div class="milestone-section">' +
+                '<div class="milestone-goal">' +
+                  '<h3>Goal</h3>' +
+                  currentMilestoneData.milestone +
+                '</div>' +
+              '</div>';
+            if (currentMilestoneData.course_rec) {
+              html += '<div class="course-recommendation">' +
+                '<h3>Recommended Course</h3>' +
+                '<div>' + currentMilestoneData.course_rec.title + '</div>' +
+                '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
+                  currentMilestoneData.course_rec.benefit +
+                '</div>' +
+                '<a href="' + currentMilestoneData.course_rec.url + '" class="course-link" target="_blank">' +
+                  'Start Course →' +
+                '</a>' +
+              '</div>';
+            }
+            html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
+              '☐ Mark Milestone Complete' +
+              '</button>' +
+            '</div>';
+          }
+
+          html += '<div class="timeline">' +
               '<div class="timeline-line"></div>';
           
           // Render timeline
@@ -1578,46 +1615,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           });
           
           html += '</div>';
-          
-          // Render current milestone details
-          const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
-          if (currentMilestoneData) {
-            html += '<div class="current-milestone-detail">' +
-              '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
-              '<div class="milestone-section">' +
-                '<h3>Weekly Practices</h3>' +
-                '<ul class="practices-list">';
-            
-            currentMilestoneData.weekly_practices.forEach(practice => {
-              html += '<li>' + practice + '</li>';
-            });
-            
-            html += '</ul></div>' +
-              '<div class="milestone-section">' +
-                '<div class="milestone-goal">' +
-                  '<h3>Goal</h3>' +
-                  currentMilestoneData.milestone +
-                '</div>' +
-              '</div>';
-            
-            if (currentMilestoneData.course_rec) {
-              html += '<div class="course-recommendation">' +
-                '<h3>Recommended Course</h3>' +
-                '<div>' + currentMilestoneData.course_rec.title + '</div>' +
-                '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
-                  currentMilestoneData.course_rec.benefit +
-                '</div>' +
-                '<a href="' + currentMilestoneData.course_rec.url + '" class="course-link" target="_blank">' +
-                  'Start Course →' +
-                '</a>' +
-              '</div>';
-            }
-            
-            html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
-              '☐ Mark Milestone Complete' +
-              '</button>' +
-            '</div>';
-          }
           
           document.getElementById('app').innerHTML = html;
           // Resize after DOM update
