@@ -17,6 +17,8 @@ app.use(cors({
     'https://www.futureproofmusicschool.com', 
     'https://learn.futureproofmusicschool.com',
     'https://learn-pathway-widget-goals.vercel.app',
+    'https://milestone-widget.vercel.app',
+    'https://learn-pathway-widget.vercel.app',
     'http://localhost:3000'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
