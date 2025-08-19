@@ -71,6 +71,14 @@ async function getLearnWorldsAccessToken() {
   const clientId = process.env.LEARNWORLDS_CLIENT_ID;
   const clientSecret = process.env.LEARNWORLDS_CLIENT_SECRET;
 
+  console.log('[LW] Token request init', {
+    hasClientId: !!clientId,
+    hasClientSecret: !!clientSecret,
+    clientIdLength: clientId?.length,
+    clientIdPreview: clientId ? clientId.slice(0, 10) + '...' : 'missing',
+    envKeys: Object.keys(process.env).filter(k => k.includes('LEARN')).join(', ')
+  });
+
   if (!clientId || !clientSecret) {
     const msg = 'LearnWorlds client credentials missing (LEARNWORLDS_CLIENT_ID / LEARNWORLDS_CLIENT_SECRET)';
     console.error(msg, { hasId: !!clientId, hasSecret: !!clientSecret });
@@ -79,6 +87,7 @@ async function getLearnWorldsAccessToken() {
 
   // Return cached token if still valid (renew 60s before expiry)
   if (lwTokenCache.accessToken && Date.now() < (lwTokenCache.expiresAt - 60_000)) {
+    console.log('[LW] Using cached token');
     return lwTokenCache.accessToken;
   }
 
@@ -89,7 +98,18 @@ async function getLearnWorldsAccessToken() {
     client_secret: clientSecret
   }).toString();
 
-  console.log('[LW] Fetching new access token', { clientId: clientId?.slice(0, 8) + '...', bodyPreview: body.slice(0, 100) });
+  console.log('[LW] Token request details', {
+    url: tokenUrl,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+      'Lw-Client': clientId?.slice(0, 10) + '...'
+    },
+    bodyLength: body.length,
+    bodyPreview: body.replace(/client_secret=[^&]+/, 'client_secret=***').slice(0, 200)
+  });
+
   const resp = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
