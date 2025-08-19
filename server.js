@@ -108,6 +108,36 @@ function normalizeMonthlyPlanKeys(obj) {
   return obj;
 }
 
+// Loose key matching utilities for plan normalization
+function normalizeKeyNameLoose(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function getLoose(obj, looseName) {
+  if (!obj || typeof obj !== 'object') return undefined;
+  const target = normalizeKeyNameLoose(looseName);
+  for (const k of Object.keys(obj)) {
+    if (normalizeKeyNameLoose(k) === target) return obj[k];
+  }
+  return undefined;
+}
+
+function normalizePlanObjectLoose(planObj) {
+  if (!planObj || typeof planObj !== 'object') return null;
+  const draft = { ...planObj };
+  let monthly = draft.monthly_plan;
+  if (monthly === undefined) monthly = draft.monthlyPlan;
+  if (monthly === undefined) monthly = getLoose(draft, 'monthly_plan');
+  if (typeof monthly === 'string') {
+    const parsed = parseJsonPossiblyDoubleEncoded(monthly) || extractJsonObjectFromText(monthly);
+    if (Array.isArray(parsed)) monthly = parsed;
+  }
+  if (Array.isArray(monthly)) draft.monthly_plan = monthly;
+  return draft;
+}
+
 // Clear cache on server start to ensure fresh data
 console.log('Clearing sort order cache on server start');
 sortOrderCache.data = null;
@@ -1058,11 +1088,10 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     console.log('Milestone API: rawPlan len:', rawPlan ? String(rawPlan).length : 0);
     if (rawPlan) console.log('Milestone API: rawPlan preview:', String(rawPlan).slice(0, 180));
 
-    let roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan);
-    if (!roadmapPlan) {
-      roadmapPlan = extractJsonObjectFromText(rawPlan);
-    }
+    let roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan)
+      || extractJsonObjectFromText(rawPlan);
     roadmapPlan = normalizeMonthlyPlanKeys(roadmapPlan);
+    roadmapPlan = normalizePlanObjectLoose(roadmapPlan);
     const roadmapProgress = parseJsonPossiblyDoubleEncoded(rawProgress);
     console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
     console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.monthly_plan) ? roadmapPlan.monthly_plan.length : 'n/a');
@@ -1077,6 +1106,48 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching milestone roadmap:', error);
     res.status(500).json({ error: 'Failed to fetch roadmap data' });
+  }
+});
+
+// Debug endpoint to introspect parsing of roadmap_plan for a user
+app.get('/api/milestone-debug/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'sheet1!A:F',
+    });
+    const rows = response.data.values || [];
+    const dataRows = rows.slice(1);
+    const indexInData = dataRows.findIndex(row => (row[0] || '').trim() === (userId || '').trim());
+    const absoluteIndex = indexInData === -1 ? -1 : indexInData + 1;
+    const userRow = absoluteIndex !== -1 ? rows[absoluteIndex] : [];
+    const rawPlan = userRow[4];
+    const rawProgress = userRow[5];
+
+    const decoded = decodeHtmlEntities(String(rawPlan || ''));
+    const betweenBraces = extractJsonObjectFromText(String(rawPlan || ''));
+    const parsed1 = parseJsonPossiblyDoubleEncoded(String(rawPlan || ''));
+    const planBefore = parsed1 || betweenBraces;
+    const planAfter = normalizePlanObjectLoose(normalizeMonthlyPlanKeys(planBefore));
+
+    const diagnostics = {
+      header: rows[0] || [],
+      absoluteIndex,
+      rawPlanLength: rawPlan ? String(rawPlan).length : 0,
+      rawPlanPreview: rawPlan ? String(rawPlan).slice(0, 220) : null,
+      decodedPreview: decoded ? decoded.slice(0, 220) : null,
+      keysBefore: planBefore ? Object.keys(planBefore) : [],
+      hasMonthlyPlanArrayBefore: !!(planBefore && Array.isArray(planBefore.monthly_plan)),
+      keysAfter: planAfter ? Object.keys(planAfter) : [],
+      hasMonthlyPlanArrayAfter: !!(planAfter && Array.isArray(planAfter.monthly_plan)),
+      monthlyPlanLength: planAfter && Array.isArray(planAfter.monthly_plan) ? planAfter.monthly_plan.length : null,
+      hasProgress: !!rawProgress,
+    };
+    res.json(diagnostics);
+  } catch (error) {
+    console.error('Milestone debug error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
