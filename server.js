@@ -143,8 +143,10 @@ async function getLearnWorldsAccessToken() {
   }
 
   const data = await resp.json();
-  const accessToken = data.access_token;
-  const expiresIn = Number(data.expires_in || 3600);
+  // LearnWorlds returns token in tokenData object
+  const tokenData = data.tokenData || data;
+  const accessToken = tokenData.access_token;
+  const expiresIn = Number(tokenData.expires_in || 3600);
   lwTokenCache.accessToken = accessToken;
   lwTokenCache.expiresAt = Date.now() + expiresIn * 1000;
   console.log('[LW] Obtained token. Expires in (s):', expiresIn);
@@ -308,7 +310,9 @@ app.get('/api/debug/oauth', async (req, res) => {
     };
 
     if (tokenResp.ok) {
-      const tokenData = JSON.parse(tokenBody);
+      const parsedResponse = JSON.parse(tokenBody);
+      // LearnWorlds returns token in tokenData object
+      const tokenData = parsedResponse.tokenData || parsedResponse;
       const accessToken = tokenData.access_token;
       
       // Step 2: Try a test API call with the token
