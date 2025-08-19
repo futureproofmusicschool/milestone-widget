@@ -95,6 +95,12 @@ function extractJsonObjectFromText(text) {
 
 function normalizeMonthlyPlanKeys(obj) {
   if (!obj || typeof obj !== 'object') return obj;
+  if (typeof obj.monthly_plan === 'string') {
+    try {
+      const parsed = JSON.parse(obj.monthly_plan);
+      if (Array.isArray(parsed)) obj.monthly_plan = parsed;
+    } catch (_) {}
+  }
   if (Array.isArray(obj.monthly_plan)) return obj;
   if (Array.isArray(obj.monthlyPlan)) {
     return { ...obj, monthly_plan: obj.monthlyPlan };
