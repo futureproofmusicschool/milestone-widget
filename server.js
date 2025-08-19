@@ -1289,6 +1289,16 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           font-size: 14px;
           color: #A373F8;
         }
+
+        .view-toggle {
+          color: #A373F8;
+          text-decoration: none;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .view-toggle:hover { text-decoration: underline; }
         
         .timeline {
           position: relative;
@@ -1551,13 +1561,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<span>🎯 Milestone ' + currentMilestone + ' of 12</span>' +
               '<span>✅ ' + completed.length + ' Completed</span>' +
               '<span>📊 ' + Math.round((completed.length / 12) * 100) + '% Progress</span>' +
+              '<a id="toggle-link" class="view-toggle" href="#" onclick="toggleView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
 
           // Move the current milestone detail ABOVE the timeline
           const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
           if (currentMilestoneData) {
-            html += '<div class="current-milestone-detail">' +
+            html += '<div id="current-view" class="current-milestone-detail">' +
               '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
               '<div class="milestone-section">' +
                 '<h3>Weekly Practices</h3>' +
@@ -1590,7 +1601,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>';
           }
 
-          html += '<div class="timeline">' +
+          html += '<div id="path-view" style="display:none;"><div class="timeline">' +
               '<div class="timeline-line"></div>';
           
           // Render timeline
@@ -1614,7 +1625,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>';
           });
           
-          html += '</div>';
+          html += '</div></div>';
           
           document.getElementById('app').innerHTML = html;
           // Resize after DOM update
@@ -1641,6 +1652,27 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             console.error('Error marking complete:', error);
             alert('Failed to update progress. Please try again.');
           }
+        }
+
+        // Toggle between current milestone and full path
+        function toggleView(event) {
+          if (event) event.preventDefault();
+          const current = document.getElementById('current-view');
+          const path = document.getElementById('path-view');
+          const link = document.getElementById('toggle-link');
+          const showingPath = path && path.style.display !== 'none';
+          if (showingPath) {
+            if (path) path.style.display = 'none';
+            if (current) current.style.display = '';
+            if (link) link.textContent = '🧭 My Path';
+          } else {
+            if (current) current.style.display = 'none';
+            if (path) path.style.display = '';
+            if (link) link.textContent = '🎯 Current Milestone';
+          }
+          sendHeight();
+          setTimeout(sendHeight, 200);
+          setTimeout(sendHeight, 800);
         }
         
         // Load roadmap on page load
