@@ -1706,11 +1706,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             const courseId = match ? match[1] : null;
             if (!courseId) return;
 
-            // Query the backend single-course progress endpoint (mirrors Course Roadmap flow)
-            const resp = await fetch(apiBaseUrl + '/api/course-progress/' + userId + '/course/' + courseId);
+            // Follow the same process used in the Course Roadmap: fetch full progress, then filter client-side
+            const resp = await fetch(apiBaseUrl + '/api/progress/' + userId);
             const data = await resp.json();
-            if (!resp.ok) return;
-            const pct = Math.round(Number(data.progress) || 0);
+            if (!resp.ok || !data || !Array.isArray(data.data)) return;
+            const entry = data.data.find(c => String(c.course_id) === String(courseId));
+            if (!entry) return;
+            const pct = Math.round(Number(entry.progress_rate) || 0);
             if (pct > 0) {
               const cta = document.getElementById('rec-cta');
               const prog = document.getElementById('rec-progress');
