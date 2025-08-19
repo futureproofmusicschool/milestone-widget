@@ -940,6 +940,12 @@ app.get('/api/progress/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     console.log('Server: Progress endpoint called for user:', userId);
+    const hasToken = !!process.env.LEARNWORLDS_ACCESS_TOKEN;
+    const hasClient = !!process.env.LEARNWORLDS_CLIENT_ID;
+    if (!hasToken || !hasClient) {
+      console.error('LearnWorlds credentials missing. hasToken:', hasToken, 'hasClient:', hasClient);
+      return res.status(500).json({ error: 'Missing LearnWorlds credentials on server', hasToken, hasClient });
+    }
     
     // Get progress from LearnWorlds API  
     const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
@@ -955,11 +961,13 @@ app.get('/api/progress/:userId', async (req, res) => {
     });
 
     if (!progressResponse.ok) {
-      console.error('LearnWorlds API error status:', progressResponse.status);
-      console.error('LearnWorlds API error headers:', Object.fromEntries([...progressResponse.headers.entries()]));
+      const status = progressResponse.status;
+      const headersObj = Object.fromEntries([...progressResponse.headers.entries()]);
+      console.error('LearnWorlds API error status:', status);
+      console.error('LearnWorlds API error headers:', headersObj);
       const errorText = await progressResponse.text();
-      console.error('LearnWorlds API error response:', errorText);
-      throw new Error(`Failed to fetch progress: ${errorText}`);
+      console.error('LearnWorlds API error response body:', errorText?.slice(0, 500));
+      return res.status(500).json({ error: 'LearnWorlds upstream error', status, headers: headersObj, body: errorText });
     }
 
     const data = await progressResponse.json();
@@ -1030,7 +1038,15 @@ app.get('/api/progress/:userId', async (req, res) => {
 app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
   try {
     const { userId, courseId } = req.params;
-    const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${userId}/progress`;
+    if (!process.env.LEARNWORLDS_ACCESS_TOKEN || !process.env.LEARNWORLDS_CLIENT_ID) {
+      console.error('LW single-course: Missing credentials');
+      return res.status(500).json({ error: 'Missing LearnWorlds credentials' });
+    }
+
+    // Use the per-course progress endpoint per LearnWorlds docs
+    const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${encodeURIComponent(userId)}/courses/${encodeURIComponent(courseId)}/progress`;
+    console.log('[LW] GET single-course progress', { userId, courseId, apiUrl });
+
     const progressResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
@@ -1039,13 +1055,23 @@ app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
         'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
       }
     });
+
     if (!progressResponse.ok) {
-      const errorText = await progressResponse.text();
-      return res.status(progressResponse.status).json({ error: errorText });
+      const status = progressResponse.status;
+      const headersObj = Object.fromEntries([...progressResponse.headers.entries()]);
+      const body = await progressResponse.text();
+      console.error('[LW] single-course progress error', { status, headers: headersObj, body: body?.slice(0, 500) });
+      return res.status(500).json({ error: 'LearnWorlds upstream error', status, headers: headersObj, body });
     }
+
     const data = await progressResponse.json();
-    const entry = Array.isArray(data?.data) ? data.data.find(c => String(c.course_id) === String(courseId)) : null;
-    const pct = entry ? Math.round(Number(entry.progress_rate) || 0) : 0;
+    console.log('[LW] single-course progress payload keys:', Object.keys(data || {}));
+    // Normalize result regardless of exact shape
+    const progressRate =
+      (data && typeof data.progress_rate !== 'undefined' && data.progress_rate)
+      || (data && data.data && typeof data.data.progress_rate !== 'undefined' && data.data.progress_rate)
+      || 0;
+    const pct = Math.round(Number(progressRate) || 0);
     return res.json({ userId, courseId, progress: pct });
   } catch (error) {
     console.error('Error fetching single course progress:', error);
@@ -1706,13 +1732,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             const courseId = match ? match[1] : null;
             if (!courseId) return;
 
-            // Follow the same process used in the Course Roadmap: fetch full progress, then filter client-side
-            const resp = await fetch(apiBaseUrl + '/api/progress/' + userId);
+            // Call our single-course progress endpoint that proxies LearnWorlds per-course API
+            const resp = await fetch(apiBaseUrl + '/api/course-progress/' + userId + '/course/' + courseId);
             const data = await resp.json();
-            if (!resp.ok || !data || !Array.isArray(data.data)) return;
-            const entry = data.data.find(c => String(c.course_id) === String(courseId));
-            if (!entry) return;
-            const pct = Math.round(Number(entry.progress_rate) || 0);
+            if (!resp.ok || !data) return;
+            const pct = Math.round(Number(data.progress) || 0);
             if (pct > 0) {
               const cta = document.getElementById('rec-cta');
               const prog = document.getElementById('rec-progress');
