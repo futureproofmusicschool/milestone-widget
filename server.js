@@ -96,7 +96,7 @@ async function getLearnWorldsAccessToken() {
     return lwTokenCache.accessToken;
   }
 
-  const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/oauth2/token';
+  const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/oauth2/access_token';
   
   // Manually construct the body to ensure proper encoding
   const params = new URLSearchParams();
@@ -274,7 +274,7 @@ app.get('/api/debug/oauth', async (req, res) => {
       return res.json(results);
     }
 
-    const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/v2/oauth2/token';
+    const tokenUrl = 'https://learn.futureproofmusicschool.com/admin/api/oauth2/access_token';
     const params = new URLSearchParams();
     params.append('grant_type', 'client_credentials');
     params.append('client_id', clientId.trim());
