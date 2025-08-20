@@ -1613,6 +1613,16 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           font-size: 16px;
           margin-bottom: 5px;
         }
+        .milestone-meta {
+          font-size: 14px;
+          opacity: 0.85;
+          margin-top: 6px;
+        }
+        .milestone-meta .label {
+          color: #A373F8;
+          font-weight: 700;
+          margin-right: 6px;
+        }
         
         .milestone.completed .milestone-title {
           text-decoration: line-through;
@@ -1933,6 +1943,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
                   'Milestone ' + num + ': ' + milestone.focus +
                 '</div>' +
+                (milestone && milestone.course_rec && milestone.course_rec.title
+                  ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
+                  : '') +
+                (milestone && milestone.milestone
+                  ? '<div class="milestone-meta"><span class="label">Goal:</span> ' + milestone.milestone + '</div>'
+                  : '') +
               '</div>' +
             '</div>';
           });

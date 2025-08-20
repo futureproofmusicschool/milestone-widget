@@ -21,6 +21,7 @@ You must output ONE JSON object whose top-level keys are:
      focus (primary skill/theme),
      weekly_practices (max 3 bullet strings),
      milestone (SMART result for that month),
+     milestone_explanation (2-3 sentences explaining the educational justification for the Milestone)
      course_rec {title, url, benefit} }
 • quarterly_summary – object with keys Q1, Q2, Q3, Q4; each value is one paragraph recapping progress and setting the next stage.
 • kpi – 3-4 measurable indicators of progress (tracks finished, followers gained, etc.).
@@ -31,9 +32,10 @@ Futureproof Discord</a>, community feedback hours.
 Logic rules for creation of the JSON object above:
 
 • Translate the student’s success_12mo answer into a single North Star Goal, then work backward to fill quarters and months by choosing one of our courses to recommend for each Milestone/month and then assigning other activities that are coordinated with the topic of that course.
-• Each Milestone and goal should include a brief explanation of why the student is doing them and how they'll benefit. How will this point help them reach their ultimate goal?
+• Each Milestone should be followed by 2-3 sentences explaining why the student is doing them and how they'll benefit. How will this point help them reach their ultimate goal?
 • The courses should be assigned in the same order found in the Course List and Order tool. Some courses may be omitted, but the courses that are included in the plan should be assigned in this order.
 • Take the user's experience and skill levels into account when building the program. Don't assigning beginning-level or intro courses to more advanced users. 
+• The Weekly Practices should be items that ought to be practiced by the user each week for several weeks. These are not one-time tasks.
 • Any courses about marketing, branding and business topics should be assigned in the later months of the program.
 • Make month 1 a “quick-win” deliverable to build momentum.
 • Match workload to weekly_hours (≈2 hrs per practice item, 4-6 hrs per milestone).
