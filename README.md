@@ -36,7 +36,7 @@ Displays a personalized 12-milestone learning journey with self-paced progressio
 
 **Features:**
 - Visual timeline with 12 milestones  
-- Current milestone detail view with weekly practices
+- Current milestone detail view with practice
 - Toggle between current milestone and full path view
 - Mark milestone complete functionality
 - Course recommendations with automatic progress tracking

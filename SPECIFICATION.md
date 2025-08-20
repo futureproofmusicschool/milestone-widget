@@ -1,7 +1,7 @@
 # Futureproof Student Goal Achievement System - Detailed UI/UX Specification
 
 ## Executive Summary
-A personalized system that transforms student intake data into actionable 12-milestone learning paths with clear goals and progress tracking. The UI presents a self-paced roadmap with milestones, weekly practices, and course recommendations in an engaging, motivating visual format.
+A personalized system that transforms student intake data into actionable 12-milestone learning paths with clear goals and progress tracking. The UI presents a self-paced roadmap with milestones, practice, and course recommendations in an engaging, motivating visual format.
 
 ## Important Terminology
 - We use **"Milestone"** for each major learning goal (12 total)
@@ -17,7 +17,7 @@ A personalized system that transforms student intake data into actionable 12-mil
 1. **Display 12-milestone roadmap from Google Sheets JSON**
 2. **Show current milestone details with:**
    - Milestone focus/title
-   - Weekly practices (read-only display)
+   - Practice (read-only display)
    - Milestone goal description
    - Recommended course with link
 3. **Basic progress tracking:**
@@ -64,7 +64,7 @@ Milestone 5: Vocal Processing 🔒
 │ This Milestone's Focus:                      │
 │ "Master balanced, professional mixes"        │
 │                                               │
-│ Weekly Practices:                            │
+│ Practice:                                    │
 │ • Apply basic EQ and compression             │
 │ • Run psychoacoustic exercises               │
 │ • Practice frequency balancing               │

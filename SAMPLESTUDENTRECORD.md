@@ -175,7 +175,7 @@ This JSON structure tracks a student's actual progress through their 12-month ro
       "id": "perfect_month",
       "name": "Perfect Month",
       "earnedDate": "2024-02-12T15:30:00Z",
-      "description": "Completed all weekly practices and milestone in Month 1",
+      "description": "Completed all practice and milestone in Month 1",
       "icon": "⭐"
     }
   ]
@@ -261,7 +261,7 @@ monthlyProgress[currentMonth].courseProgress.lastAccessed = "2024-04-15T14:00:00
 ## Progress Calculation Formula
 
 Month Progress = 
-- Weekly Practices: 40% (10% each week)
+- Practice: 40% (10% each week)
 - Course Completion: 30%
 - Student Milestone Check: 15%
 - Mentor Verification: 15%

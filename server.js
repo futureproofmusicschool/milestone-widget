@@ -1903,9 +1903,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             }
             html += '<div class="milestone-section">' +
-                '<h3>Weekly Practices</h3>' +
+                '<h3>Practice</h3>' +
                 '<ul class="practices-list">';
-            currentMilestoneData.weekly_practices.forEach(practice => {
+            currentMilestoneData.practice.forEach(practice => {
               html += '<li>' + practice + '</li>';
             });
             html += '</ul></div>' +
@@ -2025,9 +2025,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             }
             inner += '<div class="milestone-section">' +
-                '<h3>Weekly Practices</h3>' +
+                '<h3>Practice</h3>' +
                 '<ul class="practices-list">';
-            (data.weekly_practices || []).forEach(function(practice){
+            (data.practice || []).forEach(function(practice){
               inner += '<li>' + practice + '</li>';
             });
             inner += '</ul></div>' +

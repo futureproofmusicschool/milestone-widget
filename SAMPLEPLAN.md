@@ -1,6 +1,200 @@
-#### SAMPLE STUDENT PLAN:
-
-{"northstar":"Release a cohesive 4-track Darkwave EP with a strong visual identity and an engaged community","welcome":"Welcome aboard! Let’s get you a quick win by completing your first Darkwave demo this month.","overview":"Over the next year you’ll refine your Darkwave sound, build a distinct brand, and release your debut EP with clear, step-by-step milestones. Each month focuses on a key skill—from mastering Ableton workflows to designing your sonic identity and marketing your music—with deliverables to keep you motivated.\n\nFutureproof mentors provide personalized feedback calls at each checkpoint, our expert-led courses deliver targeted techniques when you need them, and our Discord community offers ongoing support, challenges, and networking to accelerate your progress.","monthly_plan":[{"month":1,"focus":"Ableton Workflow & Quick Demo","weekly_practices":["Work through one module of Learn Ableton Live: Basics","Create and save 3 custom Ableton racks for pads and drums"],"milestone":"Complete a 1-minute Darkwave demo outline in Ableton and review with your mentor","course_rec":{"title":"Learn Ableton Live: Basics","url":"https://learn.futureproofmusicschool.com/path-player?courseid=ableton-live-basics","benefit":"Master core Ableton skills to speed up production sessions"}},{"month":2,"focus":"Signature Sound Design","weekly_practices":["Follow Vital tutorial to build 3 custom wavetables","Design 2 dark drum presets using FX chains"],"milestone":"Assemble a sonic palette of 4 unique synth patches (bass, pad, lead, texture) and discuss refinements with your mentor","course_rec":{"title":"Sound Design & Wavetable Synthesis: Vital","url":"https://learn.futureproofmusicschool.com/path-player?courseid=intro-to-synthesis","benefit":"Learn to craft original sounds to define your Darkwave identity"}},{"month":3,"focus":"Creative Identity & Visual Brand","weekly_practices":["Assemble a moodboard of 10 images and reference tracks","Draft an artist bio and core narrative in a one-page document"],"milestone":"Finalize your visual style guide and brand narrative, present in Discord community challenge, then meet your mentor","course_rec":{"title":"Creative Strategies 2","url":"https://learn.futureproofmusicschool.com/path-player?courseid=creative-strategies-2","benefit":"Adopt innovative creative tactics to shape your artistic identity"}},{"month":4,"focus":"Mixing Fundamentals","weekly_practices":["Apply basic EQ and compression tips on your demo tracks","Run psychoacoustic ear-training exercises on SoundGym playlist"],"milestone":"Produce a mixed version of your first demo with balanced levels and review with mentor","course_rec":{"title":"Mixing 1","url":"https://learn.futureproofmusicschool.com/path-player?courseid=mixing-fundamentals","benefit":"Build strong mixing foundations for clear, balanced tracks"}},{"month":5,"focus":"Vocal Textures & Processing","weekly_practices":["Experiment with vocal chains on a short vocal sample","Apply EQ, compression, and reverb to create atmospheric vocals"],"milestone":"Mix a vocal and integrate it into a Darkwave loop, then get mentor feedback","course_rec":{"title":"Intro to Vocal Mixing","url":"https://learn.futureproofmusicschool.com/path-player?courseid=intro-to-vocal-mixing","benefit":"Learn to process vocals for clarity and atmospheric depth"}},{"month":6,"focus":"Release Planning & Marketing","weekly_practices":["Set up Facebook Ads Manager and Pixel basics","Draft one landing page outline for your EP release"],"milestone":"Launch a small Facebook Ads test campaign and share results in a community challenge, then meet mentor","course_rec":{"title":"How to Promote your Music in 2025: Facebook Ads","url":"https://learn.futureproofmusicschool.com/path-player?courseid=how-to-promote-your-music","benefit":"Master ad strategies to grow your audience efficiently"}},{"month":7,"focus":"Sample Pack Creation & Monetization","weekly_practices":["Design 5 drum one-shots and 5 synth loops","Package and label 10 samples with metadata for a mini sample pack"],"milestone":"Release a mini sample pack on Bandcamp or your site and review sales data with mentor","course_rec":{"title":"How to Make Your Own Sample Pack","url":"https://learn.futureproofmusicschool.com/path-player?courseid=how-to-create-your-own-sample-pack","benefit":"Generate content and revenue while sharpening sound design skills"}},{"month":8,"focus":"Advanced Harmony & Composition","weekly_practices":["Analyze chord progressions in favorite Darkwave tracks","Draft 2 unique chord progressions and melodies"],"milestone":"Compose a full 1-minute instrumental with strong harmonic movement and meet with mentor","course_rec":{"title":"Chords in Electronic Music","url":"https://learn.futureproofmusicschool.com/path-player?courseid=mastering-chord-progressions-in-electronic-music","benefit":"Deepen chord progression skills for emotive track writing"}},{"month":9,"focus":"Advanced Mixing Techniques","weekly_practices":["Apply mid-side EQ and creative saturation to your tracks","Automate depth and width with reverb and delay effects"],"milestone":"Deliver two fully mixed tracks with advanced techniques, present in a Discord challenge, then mentor check","course_rec":{"title":"Mixing 2","url":"https://learn.futureproofmusicschool.com/path-player?courseid=mixing-fundamentals-2","benefit":"Elevate your mix with professional EQ, compression, and automation"}},{"month":10,"focus":"Creative Release Content","weekly_practices":["Draft a remix concept for a community track","Create short studio videos for Instagram Reels"],"milestone":"Produce and share a remix or rework in your brand style and review strategies with mentor","course_rec":{"title":"Creative Strategies 1","url":"https://learn.futureproofmusicschool.com/path-player?courseid=creative-strategies","benefit":"Gain fresh creative methods to keep your releases engaging"}},{"month":11,"focus":"Remix & Collaboration","weekly_practices":["Use AI tools to extract stems from a Darkwave track","Craft original elements and arrange a remix"],"milestone":"Complete a remix, submit for community feedback, and sync up with mentor on next steps","course_rec":{"title":"How to Make a Remix","url":"https://learn.futureproofmusicschool.com/path-player?courseid=how-to-make-a-remix","benefit":"Learn modern remix workflows to expand reach and network"}},{"month":12,"focus":"EP Finalization & Live Prep","weekly_practices":["Set up an Ableton live set with key stems","Plan a mini livestream performance outline"],"milestone":"Finalize your 4-track Darkwave EP, release it, and conduct a mentor wrap-up session","course_rec":{"title":"Mixing 3","url":"https://learn.futureproofmusicschool.com/path-player?courseid=mixing-fundamentals-3","benefit":"Master final bus processing and mix bus strategies for a polished EP"}}],"quarterly_summary":{"Q1":"In Q1 you defined your workflow, crafted an initial demo, built a signature sound palette, and established your brand identity. Next you’ll apply mixing fundamentals and vocal processing to refine your early tracks.","Q2":"Q2 guided you through mixing basics, atmospheric vocal layering, and your first marketing tests. In Q3 you’ll create monetizable content, deepen your composition skills, and advance your mixing techniques.","Q3":"By Q3 you released a mini sample pack, composed new harmonic sketches, and applied advanced mix techniques in community challenges. Ahead in Q4 is full EP finalization, live-set prep, and strategic release planning.","Q4":"In Q4 you’ll polish and package your 4-track EP, prepare a compelling livestream set, and wrap up with a showcase, ensuring you launch your Darkwave project with impact and support."},"kpi":["Tracks completed (target 4 EP tracks)","Mailing list subscribers (target 200)","Social media followers on key platforms (target 500)","Sample pack downloads or sales (target 50)"],"support_channels":["Mentor sessions","<a href=\"https://discord.gg/futureproof\">Discord</a>","Community feedback hours"]}
-
-
-
+{
+  "northstar": "Create and release your first EP",
+  "welcome": "Hey Alex, let’s finish your first sketches in 30 days and build from there!",
+  "overview": "Over the next year you’ll move from rough sketches to polished tracks and a public release. Futureproof courses, monthly mentor check-ins, and our Discord community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
+  "monthly_plan": [
+    {
+      "month": 1,
+      "focus": "DAW fluency & first full loop",
+      "explanation": "You need to build fluency in your chosen DAW in order to translate your ideas into sound. This milestone lays the foundation for what comes later.",
+      "practice": [
+        "Complete three lessons from Learn Ableton Live: Basics each week",
+        "Create one 8-bar loop every weekday"
+      ],
+      "goal": "Finish a 60-second sketch by day 30",
+      "course_rec": {
+        "title": "Learn Ableton Live: Basics",
+        "url": "https://learn.futureproofmusicschool.com/course/ableton-live-basics",
+        "benefit": "core workflow skills"
+      }
+    },
+    {
+      "month": 2,
+      "focus": "Building a personal sound library",
+      "explanation": "Original sounds distinguish you from the monochrome crowd. A curated library becomes your private cathedral of timbres.",
+      "practice": [
+        "Record or resample five unique sounds per week",
+        "Organise samples into labelled folders"
+      ],
+      "goal": "Compile a 20-sample starter pack by day 60",
+      "course_rec": {
+        "title": "How to Make Your Own Sample Pack",
+        "url": "https://learn.futureproofmusicschool.com/course/how-to-make-your-own-sample-pack",
+        "benefit": "original sound-design toolkit"
+      }
+    },
+    {
+      "month": 3,
+      "focus": "Arranging full songs",
+      "explanation": "Transform skeletal loops into living forms; arrangement breathes motion into your music’s twilight heart.",
+      "practice": [
+        "Expand one loop into intro-verse-drop structure",
+        "Re-arrange a favourite reference track on weekends"
+      ],
+      "goal": "Rough arrangement of Track 1 complete by day 90",
+      "course_rec": {
+        "title": "Creative Strategies 2",
+        "url": "https://learn.futureproofmusicschool.com/course/creative-strategies-2",
+        "benefit": "pro arrangement tricks"
+      }
+    },
+    {
+      "month": 4,
+      "focus": "Genre deep-dive: Drum & Bass",
+      "explanation": "Exploring genre archetypes widens your sonic palette and sharpens rhythmic instincts.",
+      "practice": [
+        "Analyse two classic DnB tracks for bass and drum patterns",
+        "Recreate one pattern in your DAW each week"
+      ],
+      "goal": "Begin a DnB remix of Track 1 by day 120",
+      "course_rec": {
+        "title": "How to Make Drum and Bass",
+        "url": "https://learn.futureproofmusicschool.com/course/how-to-make-drum-and-bass",
+        "benefit": "genre-specific techniques"
+      }
+    },
+    {
+      "month": 5,
+      "focus": "Mixing essentials",
+      "explanation": "Balanced mixes let every spectral shade shine through the midnight haze.",
+      "practice": [
+        "Finish one mixing tutorial video twice a week",
+        "Run gain-staging on all current projects"
+      ],
+      "goal": "Achieve a balanced pre-mix of Track 1 by day 150",
+      "course_rec": {
+        "title": "Mixing 2",
+        "url": "https://learn.futureproofmusicschool.com/course/mixing-2",
+        "benefit": "clean, punchy mixes"
+      }
+    },
+    {
+      "month": 6,
+      "focus": "Quick-win collaboration",
+      "explanation": "Sharing stems invites new shadows into your workflow and accelerates growth.",
+      "practice": [
+        "Swap stems with a peer in Discord",
+        "Give and receive feedback every Friday"
+      ],
+      "goal": "Co-produce a two-minute collaboration sketch by day 180",
+      "course_rec": {
+        "title": "Fast Collaboration Tactics",
+        "url": "https://learn.futureproofmusicschool.com/course/fast-collaboration",
+        "benefit": "networking & creative cross-pollination"
+      }
+    },
+    {
+      "month": 7,
+      "focus": "Brand & social foundations",
+      "explanation": "Forge a visual sigil so listeners can recognise your sound in the dark.",
+      "practice": [
+        "Secure artist-name handles on key platforms",
+        "Post one behind-the-scenes clip per week"
+      ],
+      "goal": "Bio, photo, and logo finalised by day 210",
+      "course_rec": {
+        "title": "Branding 123",
+        "url": "https://learn.futureproofmusicschool.com/course/branding123",
+        "benefit": "audience growth & monetisation"
+      }
+    },
+    {
+      "month": 8,
+      "focus": "Sound-design refinement",
+      "explanation": "Craft signature tones that echo through neon catacombs.",
+      "practice": [
+        "Design three new bass patches each week",
+        "Layer and resample drums for Track 2"
+      ],
+      "goal": "Signature bass and drum kit complete by day 240",
+      "course_rec": {
+        "title": "Advanced Sound-Design",
+        "url": "https://learn.futureproofmusicschool.com/course/advanced-sound-design",
+        "benefit": "unique, memorable textures"
+      }
+    },
+    {
+      "month": 9,
+      "focus": "Advanced creative workflow",
+      "explanation": "Limitations birth innovation; refine your ritual for relentless output.",
+      "practice": [
+        "Limit yourself to 10 tracks per session to boost speed",
+        "Finish one 90-second idea every weekend"
+      ],
+      "goal": "Generate three draft ideas for the EP by day 270",
+      "course_rec": {
+        "title": "Workflow Mastery",
+        "url": "https://learn.futureproofmusicschool.com/course/workflow-mastery",
+        "benefit": "speed & efficiency"
+      }
+    },
+    {
+      "month": 10,
+      "focus": "Mix & pre-master EP",
+      "explanation": "Polish each track until it gleams like obsidian under moonlight.",
+      "practice": [
+        "Finalise gain-staging and bus processing",
+        "Run reference checks against commercial tracks"
+      ],
+      "goal": "All EP tracks in mix-ready state by day 300",
+      "course_rec": {
+        "title": "Pre-Master Toolkit",
+        "url": "https://learn.futureproofmusicschool.com/course/pre-master-toolkit",
+        "benefit": "radio-ready loudness & clarity"
+      }
+    },
+    {
+      "month": 11,
+      "focus": "Marketing & release strategy",
+      "explanation": "Summon your audience with calculated ritual—content calendars and targeted ads.",
+      "practice": [
+        "Draft a 4-week content calendar",
+        "Collect pre-saves via Meta ads test"
+      ],
+      "goal": "Release assets scheduled by day 330",
+      "course_rec": {
+        "title": "How to Promote Your Music in 2025: Facebook/Meta Ads",
+        "url": "https://learn.futureproofmusicschool.com/course/meta-ads-2025",
+        "benefit": "cost-effective fan-building"
+      }
+    },
+    {
+      "month": 12,
+      "focus": "Launch & review",
+      "explanation": "Cast your creation into the world, then study the ripples it leaves in the void.",
+      "practice": [
+        "Release EP on streaming platforms",
+        "Host a live listening party in Discord"
+      ],
+      "goal": "EP live and first 1 000 streams by day 365",
+      "course_rec": {
+        "title": "Release Day Playbook",
+        "url": "https://learn.futureproofmusicschool.com/course/release-day-playbook",
+        "benefit": "successful launches & post-mortems"
+      }
+    }
+  ],
+  "quarterly_summary": {
+    "Q1": "Foundations locked: you can build and arrange a complete track. Next quarter we’ll polish sound design and mixing.",
+    "Q2": "Sound-design and mix skills boosted; two tracks ready for feedback. Time to craft your signature style.",
+    "Q3": "Branding and release prep under way; three finished tracks and growing socials.",
+    "Q4": "EP released, first 1 000 streams, and a sustainable creation schedule for year 2."
+  },
+  "kpi": [
+    "4 finished tracks",
+    "1 EP release",
+    "1 000 Spotify streams",
+    "500 engaged followers"
+  ],
+  "support_channels": ["discord"]
+}
