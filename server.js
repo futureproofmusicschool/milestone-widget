@@ -1932,9 +1932,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             const isCompleted = completed.includes(num);
             const isCurrent = num === currentMilestone;
             
-            if (isCurrent) {
-              html += '<div class="current-indicator">═══ YOU ARE HERE ═══</div>';
-            }
+            // Removed "YOU ARE HERE" indicator
             
             html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
               '<div class="milestone-dot"></div>' +
