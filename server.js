@@ -1912,7 +1912,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>Goal</h3>' +
-                  currentMilestoneData.milestone +
+                  (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
               '</div>';
             html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
@@ -1946,8 +1946,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 (milestone && milestone.course_rec && milestone.course_rec.title
                   ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
                   : '') +
-                (milestone && milestone.milestone
-                  ? '<div class="milestone-meta"><span class="label">Goal:</span> ' + milestone.milestone + '</div>'
+                (milestone && (milestone.goal || milestone.milestone)
+                  ? '<div class="milestone-meta"><span class="label">Goal:</span> ' + (milestone.goal || milestone.milestone) + '</div>'
                   : '') +
               '</div>' +
             '</div>';
@@ -2034,7 +2034,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>Goal</h3>' +
-                  (data.milestone || '') +
+                  (data.goal || data.milestone || '') +
                 '</div>' +
               '</div>' +
               '<button class="complete-button" ' + (isCurrent ? '' : 'disabled ') + 'onclick="markComplete(' + milestoneNumber + ')">' +
