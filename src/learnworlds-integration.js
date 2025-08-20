@@ -56,23 +56,46 @@
     if (!iframe) return;
 
     window.addEventListener('message', (event) => {
-      if (event.data?.type === 'resize' && event.data?.height) {
+      const msg = event?.data;
+      if ((msg && msg.type === 'resize') && msg.height) {
         // Set exact height without extra padding
-        iframe.style.height = `${event.data.height}px`;
+        iframe.style.height = `${msg.height}px`;
       }
       // Widget requests the parent page to scroll to the very top of the page
-      if (event.data?.type === 'scrollToTop') {
-        try {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (_) {
-          try {
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-          } catch (_) {}
-        }
+      if ((msg && msg.type === 'scrollToTop') || msg === 'scrollToTop') {
+        scrollPageAndContainersToTop(iframe);
       }
     });
+  }
+
+  function scrollPageAndContainersToTop(iframe) {
+    // Try window/document
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) {}
+    try {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    } catch (_) {}
+
+    // Also scroll any scrollable ancestors
+    try {
+      let node = iframe;
+      const visited = new Set();
+      for (let i = 0; i < 8 && node; i++) { // limit depth
+        node = node.parentElement || node.parentNode;
+        if (!node || visited.has(node)) break;
+        visited.add(node);
+        const style = node instanceof Element ? window.getComputedStyle(node) : null;
+        const canScroll = style && (/(auto|scroll)/.test(style.overflow) || /(auto|scroll)/.test(style.overflowY));
+        if (canScroll && node.scrollHeight > node.clientHeight) {
+          try { node.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) {}
+          try { node.scrollTop = 0; } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    // As a final nudge, request another top-scroll after layout settles
+    try { setTimeout(() => { try { window.scrollTo(0, 0); } catch(_) {} }, 120); } catch (_) {}
   }
 
   function sendUserDataToIframe() {
