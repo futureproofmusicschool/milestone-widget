@@ -1875,20 +1875,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
               '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
               '<div id="current-view" class="current-milestone-detail">' +
-              '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
-              '<div class="milestone-section">' +
-                '<h3>Weekly Practices</h3>' +
-                '<ul class="practices-list">';
-            currentMilestoneData.weekly_practices.forEach(practice => {
-              html += '<li>' + practice + '</li>';
-            });
-            html += '</ul></div>' +
-              '<div class="milestone-section">' +
-                '<div class="milestone-goal">' +
-                  '<h3>Goal</h3>' +
-                  currentMilestoneData.milestone +
-                '</div>' +
-              '</div>';
+              '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>';
             if (currentMilestoneData.course_rec) {
               html += '<div class="course-recommendation">' +
                 '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
@@ -1905,6 +1892,19 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</a>' +
               '</div>';
             }
+            html += '<div class="milestone-section">' +
+                '<h3>Weekly Practices</h3>' +
+                '<ul class="practices-list">';
+            currentMilestoneData.weekly_practices.forEach(practice => {
+              html += '<li>' + practice + '</li>';
+            });
+            html += '</ul></div>' +
+              '<div class="milestone-section">' +
+                '<div class="milestone-goal">' +
+                  '<h3>Goal</h3>' +
+                  currentMilestoneData.milestone +
+                '</div>' +
+              '</div>';
             html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
               '☐ Mark Milestone Complete' +
               '</button>' +
@@ -1991,20 +1991,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const currentEl = document.getElementById('current-view');
           if (currentEl) {
             let inner = '' +
-              '<h2>MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
-              '<div class="milestone-section">' +
-                '<h3>Weekly Practices</h3>' +
-                '<ul class="practices-list">';
-            (data.weekly_practices || []).forEach(function(practice){
-              inner += '<li>' + practice + '</li>';
-            });
-            inner += '</ul></div>' +
-              '<div class="milestone-section">' +
-                '<div class="milestone-goal">' +
-                  '<h3>Goal</h3>' +
-                  (data.milestone || '') +
-                '</div>' +
-              '</div>';
+              '<h2>MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>';
             if (data.course_rec) {
               inner += '<div class="course-recommendation">' +
                 '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
@@ -2021,7 +2008,20 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</a>' +
               '</div>';
             }
-            inner += '<button class="complete-button" ' + (isCurrent ? '' : 'disabled ') + 'onclick="markComplete(' + milestoneNumber + ')">' +
+            inner += '<div class="milestone-section">' +
+                '<h3>Weekly Practices</h3>' +
+                '<ul class="practices-list">';
+            (data.weekly_practices || []).forEach(function(practice){
+              inner += '<li>' + practice + '</li>';
+            });
+            inner += '</ul></div>' +
+              '<div class="milestone-section">' +
+                '<div class="milestone-goal">' +
+                  '<h3>Goal</h3>' +
+                  (data.milestone || '') +
+                '</div>' +
+              '</div>' +
+              '<button class="complete-button" ' + (isCurrent ? '' : 'disabled ') + 'onclick="markComplete(' + milestoneNumber + ')">' +
               '☐ Mark Milestone Complete' +
               '</button>';
 
