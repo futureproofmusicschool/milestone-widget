@@ -924,23 +924,6 @@ app.get('/roadmap/:userId', (req, res) => {
         const userId = "${userId}";
         const apiURL = window.location.origin + "/api/roadmapData/" + userId;
 
-        // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
-        function makeClickable(text) {
-          if (!text) return text;
-          let result = String(text);
-          
-          // First, convert "Discord (URL)" pattern to clickable link
-          const discordMatch = result.match(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/i);
-          if (discordMatch) {
-            result = result.replace(discordMatch[0], '<a href="' + discordMatch[1] + '" target="_blank" rel="noopener noreferrer">Discord</a>');
-          }
-          
-          // Then convert any remaining bare URLs
-          result = result.replace(/(^|[^>])(https?:\\/\\/[^\\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
-          
-          return result;
-        }
-
         // Add window onload event to ensure proper sizing
         window.onload = function() {
           // Call sendHeight after everything is loaded
@@ -1832,23 +1815,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         const username = '${username.replace(/'/g, "\\'")}';
         const apiBaseUrl = window.location.origin;
         
-        // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
-        function makeClickable(text) {
-          if (!text) return text;
-          let result = String(text);
-          
-          // First, convert "Discord (URL)" pattern to clickable link
-          const discordMatch = result.match(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/i);
-          if (discordMatch) {
-            result = result.replace(discordMatch[0], '<a href="' + discordMatch[1] + '" target="_blank" rel="noopener noreferrer">Discord</a>');
-          }
-          
-          // Then convert any remaining bare URLs
-          result = result.replace(/(^|[^>])(https?:\\/\\/[^\\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
-          
-          return result;
-        }
-        
         async function loadRoadmap() {
           try {
             const url = apiBaseUrl + '/api/milestone-roadmap/' + userId;
@@ -1940,7 +1906,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             currentMilestoneData.practice.forEach(practice => {
-              html += '<li>' + makeClickable(practice) + '</li>';
+              html += '<li>' + practice + '</li>';
             });
             html += '</ul></div>' +
               '<div class="milestone-section">' +
@@ -2060,7 +2026,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             (data.practice || []).forEach(function(practice){
-              inner += '<li>' + makeClickable(practice) + '</li>';
+              inner += '<li>' + practice + '</li>';
             });
             inner += '</ul></div>' +
               '<div class="milestone-section">' +
