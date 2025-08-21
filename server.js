@@ -2170,7 +2170,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           setTimeout(sendHeight, 800);
         }
         
-        // Practice parsing helper: splits "Action — this matters because Why"
+        // Practice parsing helper: splits "Action — Justification" and strips common phrases if present
         window.parsePractice = function(raw){
           try {
             if (!raw || typeof raw !== 'string') return null;
@@ -2180,9 +2180,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             if (parts.length < 2) return null;
             const left = parts[0];
             const right = parts.slice(1).join(' - ');
-            const idx = right.toLowerCase().indexOf('this matters because');
-            if (idx === -1) return null;
-            const why = right.slice(idx + 'this matters because'.length).trim().replace(/^[:\-–\s]+/, '');
+            // Strip disallowed leading phrases in justification
+            const cleanedRight = right
+              .replace(/^why this matters\s*:\s*/i, '')
+              .replace(/^why this matters\s*/i, '')
+              .replace(/^this matters because\s*:?\s*/i, '')
+              .trim();
+            const why = cleanedRight;
             const action = left || text;
             if (!why) return null;
             return { action, why };

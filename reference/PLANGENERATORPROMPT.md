@@ -21,7 +21,7 @@ You must output ONE JSON object whose top-level keys are:
 • monthly_plan – array of 12 objects where each object has
    { month (1-12),
      focus (primary skill/theme),
-     practice (max 3 bullet strings; format each as: Action — this matters because Why. Keep it one string so the UI can render nested bullets. Do not include session counts or durations),
+     practice (max 3 bullet strings; format each as: Action — Justification. Keep it one string so the UI can render nested bullets. Do not include session counts or durations),
      goal (SMART result for that month),
      explanation (2-3 sentences explaining why this month’s work matters and how it supports the northstar)
      course_rec {title, url, benefit} }
@@ -41,7 +41,7 @@ Logic rules for creation of the JSON object above:
   - Think of it like a playlist: you can skip songs, but you can't shuffle the order.
   - If a URL is missing in the spreadsheet for a selected title, resolve it using site/search tools, but keep the sheet's title.
 • Take the user's experience and skill levels into account when building the program. Don't assign beginning-level or intro courses to more advanced users. 
-• The "practice" list must contain fully articulated items that are repeated weekly. Each bullet must: 1) state the action (what to do) and 2) include a brief reason. Format each bullet exactly as: Action — this matters because Why. Use the exact phrase "this matters because" and separate with an em dash (—) or hyphen (-). Keep it a single string; the widget will render this as a nested sub-point. Do not include the number of sessions or the duration. These are not one-time tasks. Don't mention the term "North Star".
+• The "practice" list must contain fully articulated items that are repeated weekly. Each bullet must: 1) state the action (what to do) and 2) include a brief justification. Format each bullet exactly as: Action — Justification. Use an em dash (—) or hyphen (-) between them. Do not include the literal phrases "this matters because" or "why this matters". Keep it a single string; the widget will render this as a nested sub-point. Do not include the number of sessions or the duration. These are not one-time tasks. Don't mention the term "North Star".
 • Sharing specificity rule: When instructing the student to share their work, explicitly direct them to either (a) share with their mentor in their next meeting, or (b) post in Discord in the #feedback channel. Alternate between these two options across months so consecutive share-actions switch between mentor and Discord. Follow the Discord linking rule.
 • Cadence/duration presentation is handled by the UI: the widget header shows "Practice (30 min, 3-5x a week)". Do not include frequency or duration inside any practice bullet.
 • Any courses about marketing, branding and business topics should be assigned in the later months of the program.
