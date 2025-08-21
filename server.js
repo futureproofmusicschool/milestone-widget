@@ -924,17 +924,6 @@ app.get('/roadmap/:userId', (req, res) => {
         const userId = "${userId}";
         const apiURL = window.location.origin + "/api/roadmapData/" + userId;
 
-        // Add window onload event to ensure proper sizing
-        window.onload = function() {
-          // Call sendHeight after everything is loaded
-          setTimeout(sendHeight, 300);
-          
-          // Add resize listener
-          window.addEventListener('resize', function() {
-            sendHeight();
-          });
-        };
-
         // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
         function makeClickable(text) {
           try {
@@ -948,6 +937,17 @@ app.get('/roadmap/:userId', (req, res) => {
             return text;
           }
         }
+
+        // Add window onload event to ensure proper sizing
+        window.onload = function() {
+          // Call sendHeight after everything is loaded
+          setTimeout(sendHeight, 300);
+          
+          // Add resize listener
+          window.addEventListener('resize', function() {
+            sendHeight();
+          });
+        };
 
         fetch(apiURL)
           .then(res => {
