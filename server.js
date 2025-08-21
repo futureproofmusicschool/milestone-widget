@@ -929,9 +929,9 @@ app.get('/roadmap/:userId', (req, res) => {
           try {
             let t = String(text || '');
             // Convert "Discord (https://discord.gg/...)" → clickable "Discord" link
-            t = t.replace(/Discord\s*\((https?:\/\/discord\.gg\/[\w-]+)\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
+            t = t.replace(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
             // Generic linkify for any remaining raw URLs
-            t = t.replace(/(https?:\/\/[^\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            t = t.replace(/(https?:\\/\\/[^\\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
             return t;
           } catch (_) {
             return text;
@@ -1834,9 +1834,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           try {
             let t = String(text || '');
             // Convert "Discord (https://discord.gg/...)" → clickable "Discord" link
-            t = t.replace(/Discord\s*\((https?:\/\/discord\.gg\/[\w-]+)\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
+            t = t.replace(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
             // Generic linkify for any remaining raw URLs
-            t = t.replace(/(https?:\/\/[^\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            t = t.replace(/(https?:\\/\\/[^\\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
             return t;
           } catch (_) {
             return text;
