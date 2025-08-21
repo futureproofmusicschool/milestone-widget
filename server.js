@@ -2175,20 +2175,21 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           try {
             if (!raw || typeof raw !== 'string') return null;
             const text = raw.trim();
-            // Normalize dashes: em dash or hyphen
-            const parts = text.split(/\s+—\s+|\s+-\s+/);
-            if (parts.length < 2) return null;
-            const left = parts[0];
-            const right = parts.slice(1).join(' - ');
+            // Find the first separator that is an em dash or hyphen with whitespace on at least one side
+            const match = (/\s[—-]\s|\s[—-]|[—-]\s/).exec(text);
+            if (!match || typeof match.index !== 'number') return null;
+            const sepStart = match.index;
+            const sepLen = match[0].length;
+            const left = text.slice(0, sepStart).trim();
+            let right = text.slice(sepStart + sepLen).trim();
             // Strip disallowed leading phrases in justification
-            const cleanedRight = right
-              .replace(/^why this matters\s*:\s*/i, '')
-              .replace(/^why this matters\s*/i, '')
+            right = right
+              .replace(/^why this matters\s*:?\s*/i, '')
               .replace(/^this matters because\s*:?\s*/i, '')
               .trim();
-            const why = cleanedRight;
             const action = left || text;
-            if (!why) return null;
+            const why = right;
+            if (!action || !why) return null;
             return { action, why };
           } catch (_) { return null; }
         }

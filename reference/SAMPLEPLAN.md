@@ -1,7 +1,7 @@
 {
   "northstar": "Create and release your first EP",
   "welcome": "Hey Alex, let’s finish your first sketches in 30 days and build from there!",
-  "overview": "Over the next year you’ll move from rough sketches to polished tracks and a public release. Futureproof courses, monthly mentor check-ins, and our Discord (https://discord.gg/WhW9Ae4TZV) community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
+  "overview": "Over the next year you’ll move from rough sketches to polished tracks and a public release. Futureproof courses, monthly mentor check-ins, and our Discord community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
   "monthly_plan": [
     {
       "month": 1,
@@ -83,7 +83,7 @@
       "focus": "Quick-win collaboration",
       "explanation": "Sharing stems invites new shadows into your workflow and accelerates growth.",
       "practice": [
-        "Swap stems with a peer in Discord (https://discord.gg/WhW9Ae4TZV) — Exposure to new ideas and workflows accelerates growth.",
+        "Swap stems with a peer in Discord — Exposure to new ideas and workflows accelerates growth.",
         "Give and receive feedback — Fast feedback loops help you fix issues before they calcify."
       ],
       "goal": "Co-produce a two-minute collaboration sketch by day 180",
@@ -174,7 +174,7 @@
       "explanation": "Cast your creation into the world, then study the ripples it leaves in the void.",
       "practice": [
         "Schedule releases and verify metadata/ISRC — Preventing launch errors avoids delays.",
-        "Plan and promote a live listening party in Discord (https://discord.gg/WhW9Ae4TZV) — Early engagement and feedback support post-release momentum."
+        "Plan and promote a live listening party in Discord — Early engagement and feedback support post-release momentum."
       ],
       "goal": "EP live and first 1 000 streams by day 365",
       "course_rec": {
@@ -196,5 +196,5 @@
     "1 000 Spotify streams",
     "500 engaged followers"
   ],
-  "support_channels": ["Discord (https://discord.gg/WhW9Ae4TZV)"]
+  "support_channels": ["Discord"]
 }
