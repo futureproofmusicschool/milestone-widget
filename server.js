@@ -1829,6 +1829,20 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         const username = '${username.replace(/'/g, "\\'")}';
         const apiBaseUrl = window.location.origin;
         
+        // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
+        function makeClickable(text) {
+          try {
+            let t = String(text || '');
+            // Convert "Discord (https://discord.gg/...)" → clickable "Discord" link
+            t = t.replace(/Discord\s*\((https?:\/\/discord\.gg\/[\w-]+)\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
+            // Generic linkify for any remaining raw URLs
+            t = t.replace(/(https?:\/\/[^\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            return t;
+          } catch (_) {
+            return text;
+          }
+        }
+        
         async function loadRoadmap() {
           try {
             const url = apiBaseUrl + '/api/milestone-roadmap/' + userId;
