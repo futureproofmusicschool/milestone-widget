@@ -926,16 +926,19 @@ app.get('/roadmap/:userId', (req, res) => {
 
         // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
         function makeClickable(text) {
-          try {
-            let t = String(text || '');
-            // Convert "Discord (https://discord.gg/...)" → clickable "Discord" link
-            t = t.replace(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
-            // Generic linkify for any remaining raw URLs
-            t = t.replace(/(https?:\\/\\/[^\\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-            return t;
-          } catch (_) {
-            return text;
+          if (!text) return text;
+          let result = String(text);
+          
+          // First, convert "Discord (URL)" pattern to clickable link
+          const discordMatch = result.match(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/i);
+          if (discordMatch) {
+            result = result.replace(discordMatch[0], '<a href="' + discordMatch[1] + '" target="_blank" rel="noopener noreferrer">Discord</a>');
           }
+          
+          // Then convert any remaining bare URLs
+          result = result.replace(/(^|[^>])(https?:\\/\\/[^\\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+          
+          return result;
         }
 
         // Add window onload event to ensure proper sizing
@@ -1831,16 +1834,19 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
         function makeClickable(text) {
-          try {
-            let t = String(text || '');
-            // Convert "Discord (https://discord.gg/...)" → clickable "Discord" link
-            t = t.replace(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
-            // Generic linkify for any remaining raw URLs
-            t = t.replace(/(https?:\\/\\/[^\\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-            return t;
-          } catch (_) {
-            return text;
+          if (!text) return text;
+          let result = String(text);
+          
+          // First, convert "Discord (URL)" pattern to clickable link
+          const discordMatch = result.match(/Discord\\s*\\((https?:\\/\\/discord\\.gg\\/[\\w-]+)\\)/i);
+          if (discordMatch) {
+            result = result.replace(discordMatch[0], '<a href="' + discordMatch[1] + '" target="_blank" rel="noopener noreferrer">Discord</a>');
           }
+          
+          // Then convert any remaining bare URLs
+          result = result.replace(/(^|[^>])(https?:\\/\\/[^\\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+          
+          return result;
         }
         
         async function loadRoadmap() {
