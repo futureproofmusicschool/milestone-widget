@@ -1916,13 +1916,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 html += '<li><div class="practice-action">' + (practice.action || '') + '</div>' +
                         '<ul class="practice-why-list"><li>' + (practice.justification || '') + '</li></ul></li>';
               } else {
-                const parsed = window.parsePractice(practice);
-                if (parsed) {
-                  html += '<li><div class="practice-action">' + parsed.action + '</div>' +
-                          '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
-                } else {
-                  html += '<li>' + (practice || '') + '</li>';
-                }
+                html += '<li>' + (practice || '') + '</li>';
               }
             });
             html += '</ul></div>' +
@@ -2047,13 +2041,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 inner += '<li><div class="practice-action">' + (practice.action || '') + '</div>' +
                          '<ul class="practice-why-list"><li>' + (practice.justification || '') + '</li></ul></li>';
               } else {
-                const parsed = window.parsePractice(practice);
-                if (parsed) {
-                  inner += '<li><div class="practice-action">' + parsed.action + '</div>' +
-                           '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
-                } else {
-                  inner += '<li>' + (practice || '') + '</li>';
-                }
+                inner += '<li>' + (practice || '') + '</li>';
               }
             });
             inner += '</ul></div>' +
@@ -2180,29 +2168,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           setTimeout(sendHeight, 800);
         }
         
-        // Practice parsing helper: splits "Action — Justification" and strips common phrases if present
-        window.parsePractice = function(raw){
-          try {
-            if (!raw || typeof raw !== 'string') return null;
-            const text = raw.trim();
-            // Find the first separator that is an em dash or hyphen with whitespace on at least one side
-            const match = (/\s[—-]\s|\s[—-]|[—-]\s/).exec(text);
-            if (!match || typeof match.index !== 'number') return null;
-            const sepStart = match.index;
-            const sepLen = match[0].length;
-            const left = text.slice(0, sepStart).trim();
-            let right = text.slice(sepStart + sepLen).trim();
-            // Strip disallowed leading phrases in justification
-            right = right
-              .replace(/^why this matters\s*:?\s*/i, '')
-              .replace(/^this matters because\s*:?\s*/i, '')
-              .trim();
-            const action = left || text;
-            const why = right;
-            if (!action || !why) return null;
-            return { action, why };
-          } catch (_) { return null; }
-        }
+        // No string parsing of practices; renderer expects structured objects.
 
         // Load roadmap on page load
         loadRoadmap();
