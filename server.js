@@ -935,6 +935,20 @@ app.get('/roadmap/:userId', (req, res) => {
           });
         };
 
+        // Utility to make URLs clickable and convert "Discord (URL)" to a proper link
+        function makeClickable(text) {
+          try {
+            let t = String(text || '');
+            // Convert "Discord (https://discord.gg/...)" → clickable "Discord" link
+            t = t.replace(/Discord\s*\((https?:\/\/discord\.gg\/[\w-]+)\)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer">Discord</a>');
+            // Generic linkify for any remaining raw URLs
+            t = t.replace(/(https?:\/\/[^\s)]+)(?![^<]*>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            return t;
+          } catch (_) {
+            return text;
+          }
+        }
+
         fetch(apiURL)
           .then(res => {
             if (!res.ok) throw new Error('Failed to fetch data');
@@ -1906,7 +1920,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             currentMilestoneData.practice.forEach(practice => {
-              html += '<li>' + practice + '</li>';
+              html += '<li>' + makeClickable(practice) + '</li>';
             });
             html += '</ul></div>' +
               '<div class="milestone-section">' +
@@ -2026,7 +2040,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             (data.practice || []).forEach(function(practice){
-              inner += '<li>' + practice + '</li>';
+              inner += '<li>' + makeClickable(practice) + '</li>';
             });
             inner += '</ul></div>' +
               '<div class="milestone-section">' +
