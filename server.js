@@ -1912,12 +1912,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             currentMilestoneData.practice.forEach(practice => {
-              const parsed = window.parsePractice(practice);
-              if (parsed) {
-                html += '<li><div class="practice-action">' + parsed.action + '</div>' +
-                        '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
+              if (practice && typeof practice === 'object' && practice.action) {
+                html += '<li><div class="practice-action">' + (practice.action || '') + '</div>' +
+                        '<ul class="practice-why-list"><li>' + (practice.justification || '') + '</li></ul></li>';
               } else {
-                html += '<li>' + practice + '</li>';
+                const parsed = window.parsePractice(practice);
+                if (parsed) {
+                  html += '<li><div class="practice-action">' + parsed.action + '</div>' +
+                          '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
+                } else {
+                  html += '<li>' + (practice || '') + '</li>';
+                }
               }
             });
             html += '</ul></div>' +
@@ -2038,12 +2043,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             (data.practice || []).forEach(function(practice){
-              const parsed = window.parsePractice(practice);
-              if (parsed) {
-                inner += '<li><div class="practice-action">' + parsed.action + '</div>' +
-                         '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
+              if (practice && typeof practice === 'object' && practice.action) {
+                inner += '<li><div class="practice-action">' + (practice.action || '') + '</div>' +
+                         '<ul class="practice-why-list"><li>' + (practice.justification || '') + '</li></ul></li>';
               } else {
-                inner += '<li>' + practice + '</li>';
+                const parsed = window.parsePractice(practice);
+                if (parsed) {
+                  inner += '<li><div class="practice-action">' + parsed.action + '</div>' +
+                           '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
+                } else {
+                  inner += '<li>' + (practice || '') + '</li>';
+                }
               }
             });
             inner += '</ul></div>' +
