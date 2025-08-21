@@ -1903,7 +1903,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             }
             html += '<div class="milestone-section">' +
-                '<h3>Practice</h3>' +
+                '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             currentMilestoneData.practice.forEach(practice => {
               html += '<li>' + practice + '</li>';
@@ -2023,7 +2023,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             }
             inner += '<div class="milestone-section">' +
-                '<h3>Practice</h3>' +
+                '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             (data.practice || []).forEach(function(practice){
               inner += '<li>' + practice + '</li>';

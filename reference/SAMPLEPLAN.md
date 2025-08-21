@@ -1,15 +1,15 @@
 {
   "northstar": "Create and release your first EP",
   "welcome": "Hey Alex, let’s finish your first sketches in 30 days and build from there!",
-  "overview": "Over the next year you’ll move from rough sketches to polished tracks and a public release. Futureproof courses, monthly mentor check-ins, and our Discord community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
+  "overview": "Over the next year you’ll move from rough sketches to polished tracks and a public release. Futureproof courses, monthly mentor check-ins, and our Discord (https://discord.gg/WhW9Ae4TZV) community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
   "monthly_plan": [
     {
       "month": 1,
       "focus": "DAW fluency & first full loop",
       "explanation": "You need to build fluency in your chosen DAW in order to translate your ideas into sound. This milestone lays the foundation for what comes later.",
       "practice": [
-        "Complete three lessons from Learn Ableton Live: Basics each week",
-        "Create one 8-bar loop every weekday"
+        "Complete 3 lessons from Learn Ableton Live: Basics each week: builds DAW navigation/editing so ideas become tracks faster.",
+        "Create one 8-bar loop on weekdays: daily reps build muscle memory and generate material for this month’s goal."
       ],
       "goal": "Finish a 60-second sketch by day 30",
       "course_rec": {
@@ -23,8 +23,8 @@
       "focus": "Building a personal sound library",
       "explanation": "Original sounds distinguish you from the monochrome crowd. A curated library becomes your private cathedral of timbres.",
       "practice": [
-        "Record or resample five unique sounds per week",
-        "Organise samples into labelled folders"
+        "Record or resample 5 unique sounds each week: expands your original palette for a recognisable sonic identity.",
+        "Organise new samples into clearly labelled folders: speeds up sound retrieval so you arrange and mix faster."
       ],
       "goal": "Compile a 20-sample starter pack by day 60",
       "course_rec": {
@@ -38,8 +38,8 @@
       "focus": "Arranging full songs",
       "explanation": "Transform skeletal loops into living forms; arrangement breathes motion into your music’s twilight heart.",
       "practice": [
-        "Expand one loop into intro-verse-drop structure",
-        "Re-arrange a favourite reference track on weekends"
+        "Expand one loop into a full intro-verse-drop outline each week: practices moving beyond loops to song form.",
+        "Re-arrange a favorite reference track on weekends: reverse-engineers structure so you internalize arrangement moves."
       ],
       "goal": "Rough arrangement of Track 1 complete by day 90",
       "course_rec": {
@@ -53,8 +53,8 @@
       "focus": "Genre deep-dive: Drum & Bass",
       "explanation": "Exploring genre archetypes widens your sonic palette and sharpens rhythmic instincts.",
       "practice": [
-        "Analyse two classic DnB tracks for bass and drum patterns",
-        "Recreate one pattern in your DAW each week"
+        "Analyze 2 classic DnB tracks for bass/drum patterns: trains your ear for genre-defining rhythm and energy.",
+        "Recreate one DnB pattern in your DAW each week: translates analysis into hands-on skill you can reuse."
       ],
       "goal": "Begin a DnB remix of Track 1 by day 120",
       "course_rec": {
@@ -68,8 +68,8 @@
       "focus": "Mixing essentials",
       "explanation": "Balanced mixes let every spectral shade shine through the midnight haze.",
       "practice": [
-        "Finish one mixing tutorial video twice a week",
-        "Run gain-staging on all current projects"
+        "Complete one mixing lesson each week: builds a repeatable approach to balance and clarity.",
+        "Run gain-staging on current projects: creates headroom and consistency for cleaner mixes."
       ],
       "goal": "Achieve a balanced pre-mix of Track 1 by day 150",
       "course_rec": {
@@ -83,8 +83,8 @@
       "focus": "Quick-win collaboration",
       "explanation": "Sharing stems invites new shadows into your workflow and accelerates growth.",
       "practice": [
-        "Swap stems with a peer in Discord",
-        "Give and receive feedback every Friday"
+        "Swap stems with a peer in Discord (https://discord.gg/WhW9Ae4TZV): exposes you to new ideas and workflow shortcuts.",
+        "Give and receive feedback every Friday: fast feedback loops help you fix issues before they calcify."
       ],
       "goal": "Co-produce a two-minute collaboration sketch by day 180",
       "course_rec": {
@@ -98,8 +98,8 @@
       "focus": "Brand & social foundations",
       "explanation": "Forge a visual sigil so listeners can recognise your sound in the dark.",
       "practice": [
-        "Secure artist-name handles on key platforms",
-        "Post one behind-the-scenes clip per week"
+        "Secure artist-name handles on key platforms: protects your brand and makes you easy to find.",
+        "Post one behind-the-scenes clip per week: builds audience familiarity ahead of releases."
       ],
       "goal": "Bio, photo, and logo finalised by day 210",
       "course_rec": {
@@ -113,8 +113,8 @@
       "focus": "Sound-design refinement",
       "explanation": "Craft signature tones that echo through neon catacombs.",
       "practice": [
-        "Design three new bass patches each week",
-        "Layer and resample drums for Track 2"
+        "Design 3 new bass patches each week: iterates toward a signature sound.",
+        "Layer and resample drums for Track 2: creates punchy, consistent rhythm foundations."
       ],
       "goal": "Signature bass and drum kit complete by day 240",
       "course_rec": {
@@ -128,8 +128,8 @@
       "focus": "Advanced creative workflow",
       "explanation": "Limitations birth innovation; refine your ritual for relentless output.",
       "practice": [
-        "Limit yourself to 10 tracks per session to boost speed",
-        "Finish one 90-second idea every weekend"
+        "Limit your template to 10 tracks per session: constraints increase focus and decision speed.",
+        "Finish one 90-second idea every weekend: builds a backlog of promising sketches for the EP."
       ],
       "goal": "Generate three draft ideas for the EP by day 270",
       "course_rec": {
@@ -143,8 +143,8 @@
       "focus": "Mix & pre-master EP",
       "explanation": "Polish each track until it gleams like obsidian under moonlight.",
       "practice": [
-        "Finalise gain-staging and bus processing",
-        "Run reference checks against commercial tracks"
+        "Finalize gain-staging and bus processing: creates clean headroom and glue across tracks.",
+        "Run reference checks against commercial tracks: calibrates tonal balance and impact."
       ],
       "goal": "All EP tracks in mix-ready state by day 300",
       "course_rec": {
@@ -158,8 +158,8 @@
       "focus": "Marketing & release strategy",
       "explanation": "Summon your audience with calculated ritual—content calendars and targeted ads.",
       "practice": [
-        "Draft a 4-week content calendar",
-        "Collect pre-saves via Meta ads test"
+        "Draft and refine a 4-week content calendar: ensures consistent visibility leading into release.",
+        "Collect pre-saves using small Meta ads tests: validates messaging and primes algorithmic lift."
       ],
       "goal": "Release assets scheduled by day 330",
       "course_rec": {
@@ -173,8 +173,8 @@
       "focus": "Launch & review",
       "explanation": "Cast your creation into the world, then study the ripples it leaves in the void.",
       "practice": [
-        "Release EP on streaming platforms",
-        "Host a live listening party in Discord"
+        "Schedule releases and verify metadata/ISRC each week: prevents launch errors and delays.",
+        "Plan and promote a live listening party in Discord (https://discord.gg/WhW9Ae4TZV): drives early engagement and feedback post-release."
       ],
       "goal": "EP live and first 1 000 streams by day 365",
       "course_rec": {
@@ -196,5 +196,5 @@
     "1 000 Spotify streams",
     "500 engaged followers"
   ],
-  "support_channels": ["discord"]
+  "support_channels": ["Discord (https://discord.gg/WhW9Ae4TZV)"]
 }
