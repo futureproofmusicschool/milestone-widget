@@ -1708,6 +1708,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           left: 0;
         }
         
+        /* Nested practice reason item (indented under the action) */
+        .practice-action { font-weight: 600; }
+        .practice-why-list { list-style: none; margin-top: 6px; padding-left: 24px; }
+        .practice-why-list li { padding: 4px 0 0 22px; position: relative; opacity: 0.9; }
+        .practice-why-list li:before { content: "–"; color: #A373F8; position: absolute; left: 0; }
+        
         .milestone-goal {
           background: rgba(0, 0, 0, 0.5);
           padding: 15px;
@@ -1906,7 +1912,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             currentMilestoneData.practice.forEach(practice => {
-              html += '<li>' + practice + '</li>';
+              const parsed = window.parsePractice(practice);
+              if (parsed) {
+                html += '<li><div class="practice-action">' + parsed.action + '</div>' +
+                        '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
+              } else {
+                html += '<li>' + practice + '</li>';
+              }
             });
             html += '</ul></div>' +
               '<div class="milestone-section">' +
@@ -2026,7 +2038,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>Practice (30 min, 3-5x a week)</h3>' +
                 '<ul class="practices-list">';
             (data.practice || []).forEach(function(practice){
-              inner += '<li>' + practice + '</li>';
+              const parsed = window.parsePractice(practice);
+              if (parsed) {
+                inner += '<li><div class="practice-action">' + parsed.action + '</div>' +
+                         '<ul class="practice-why-list"><li>' + parsed.why + '</li></ul></li>';
+              } else {
+                inner += '<li>' + practice + '</li>';
+              }
             });
             inner += '</ul></div>' +
               '<div class="milestone-section">' +
@@ -2152,6 +2170,25 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           setTimeout(sendHeight, 800);
         }
         
+        // Practice parsing helper: splits "Action — this matters because Why"
+        window.parsePractice = function(raw){
+          try {
+            if (!raw || typeof raw !== 'string') return null;
+            const text = raw.trim();
+            // Normalize dashes: em dash or hyphen
+            const parts = text.split(/\s+—\s+|\s+-\s+/);
+            if (parts.length < 2) return null;
+            const left = parts[0];
+            const right = parts.slice(1).join(' - ');
+            const idx = right.toLowerCase().indexOf('this matters because');
+            if (idx === -1) return null;
+            const why = right.slice(idx + 'this matters because'.length).trim().replace(/^[:\-–\s]+/, '');
+            const action = left || text;
+            if (!why) return null;
+            return { action, why };
+          } catch (_) { return null; }
+        }
+
         // Load roadmap on page load
         loadRoadmap();
 
