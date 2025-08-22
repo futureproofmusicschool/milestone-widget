@@ -1654,7 +1654,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           justify-content: center;
           gap: 12px;
           margin: 0 auto;
-          max-width: 800px;
+          max-width: 100%;
         }
         .nav-arrow {
           width: 36px;
