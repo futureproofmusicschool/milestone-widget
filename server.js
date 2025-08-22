@@ -1883,10 +1883,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<h1>Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Your Goal: "' + roadmapPlan.northstar + '"</div>' +
             '<div class="progress-stats">' +
-              '<span>🎯 Milestone ' + currentMilestone + ' of 12</span>' +
+              '<a href="#" onclick="showCurrentMilestone(event)" class="view-toggle">🎯 Milestone ' + currentMilestone + ' of 12</a>' +
               '<span>✅ ' + completed.length + ' Completed</span>' +
               '<span>📊 ' + Math.round((completed.length / 12) * 100) + '% Progress</span>' +
-              '<a id="toggle-link" class="view-toggle" href="#" onclick="toggleView(event)">🧭 My Path</a>' +
+              '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
 
@@ -2078,8 +2078,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const wrap = document.getElementById('current-view-wrap');
           if (path) path.style.display = 'none';
           if (wrap) wrap.style.display = '';
-          const link = document.getElementById('toggle-link');
-          if (link) link.textContent = '🧭 My Path';
 
           // Hydrate recommendation progress for the selected milestone
           if (data && data.course_rec) {
@@ -2156,24 +2154,20 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
         }
 
-        // Toggle between current milestone and full path
-        function toggleView(event) {
+        // Show the current milestone view
+        function showCurrentMilestone(event) {
+          if (event) event.preventDefault();
+          const currentMilestone = window.CURRENT_MILESTONE || 1;
+          showMilestoneDetail(currentMilestone);
+        }
+        
+        // Show the full path view
+        function showPathView(event) {
           if (event) event.preventDefault();
           const current = document.getElementById('current-view-wrap');
           const path = document.getElementById('path-view');
-          const link = document.getElementById('toggle-link');
-          const showingPath = path && path.style.display !== 'none';
-          if (showingPath) {
-            if (path) path.style.display = 'none';
-            if (current) current.style.display = '';
-            if (link) link.textContent = '🧭 My Path';
-            requestParentScrollTop();
-            setTimeout(requestParentScrollTop, 60);
-          } else {
-            if (current) current.style.display = 'none';
-            if (path) path.style.display = '';
-            if (link) link.textContent = '🎯 Current Milestone';
-          }
+          if (current) current.style.display = 'none';
+          if (path) path.style.display = '';
           sendHeight();
           setTimeout(sendHeight, 200);
           setTimeout(sendHeight, 800);
