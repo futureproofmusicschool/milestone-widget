@@ -1645,7 +1645,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           border-radius: 12px;
           padding: 30px;
           margin: 30px auto;
-          width: 640px;
+          width: 800px;
           max-width: 100%;
         }
         .current-view-wrap {
@@ -1712,7 +1712,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         .practice-action { font-weight: 600; }
         .practice-why-list { list-style: none; margin-top: 6px; padding-left: 24px; }
         .practice-why-list li { padding: 4px 0 0 22px; position: relative; opacity: 0.9; }
-        .practice-why-list li:before { content: "–"; color: #A373F8; position: absolute; left: 0; }
+        .practice-why-list li:before { content: "•"; color: #A373F8; position: absolute; left: 0; }
         
         .milestone-goal {
           background: rgba(0, 0, 0, 0.5);
