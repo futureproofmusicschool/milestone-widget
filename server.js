@@ -1645,7 +1645,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           border-radius: 12px;
           padding: 30px;
           margin: 30px auto;
-          width: 520px;
+          width: 640px;
           max-width: 100%;
         }
         .current-view-wrap {
