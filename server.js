@@ -1647,12 +1647,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           margin: 30px auto;
           width: 800px;
           max-width: 100%;
+          position: relative;
+        }
+        
+        .milestone-nav {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
         }
         .current-view-wrap {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
+          display: block;
           margin: 0 auto;
           max-width: 100%;
         }
@@ -1889,9 +1894,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
           if (currentMilestoneData) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
-              '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
               '<div id="current-view" class="current-milestone-detail">' +
-              '<h2>MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>';
+              '<div class="milestone-nav">' +
+                '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
+                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
+                '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
+              '</div>';
             if (currentMilestoneData.course_rec) {
               html += '<div class="course-recommendation">' +
                 '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
@@ -1930,7 +1938,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '☐ Mark Milestone Complete' +
               '</button>' +
             '</div>' +
-            '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
             '</div>';
           }
 
@@ -2016,7 +2023,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const currentEl = document.getElementById('current-view');
           if (currentEl) {
             let inner = '' +
-              '<h2>MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>';
+              '<div class="milestone-nav">' +
+                '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
+                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
+                '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
+              '</div>';
             if (data.course_rec) {
               inner += '<div class="course-recommendation">' +
                 '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
