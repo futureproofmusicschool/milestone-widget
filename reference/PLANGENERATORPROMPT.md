@@ -86,13 +86,13 @@ Strict schema (must match exactly):
       "month": number,
       "focus": string,
       "explanation": string,
-      "practice": [string, ... up to 3],
+      "practice": [{ "action": string, "justification": string }, ... up to 3],
       "goal": string,
       "course_rec": { "title": string, "url": string, "benefit": string }
     }, ... 12 objects total
   ],
   "quarterly_summary": { "Q1": string, "Q2": string, "Q3": string, "Q4": string },
-  "kpi": [string, string, string, string],
+  "kpi": [string, string, string, ... up to 4],
   "support_channels": [string, ...]
 }
 
