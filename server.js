@@ -2073,9 +2073,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
               '</div>';
-            html += '<button class="complete-button" onclick="markComplete(' + currentMilestone + ')">' +
-              '☐ Mark Milestone Complete' +
-              '</button>' +
             '</div>' +
             '</div>';
           }
@@ -2189,9 +2186,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   (data.goal || data.milestone || '') +
                 '</div>' +
               '</div>' +
-              '<button class="complete-button" ' + (isCurrent ? '' : 'disabled ') + 'onclick="markComplete(' + milestoneNumber + ')">' +
-              '☐ Mark Milestone Complete' +
-              '</button>';
+              '';
 
             currentEl.innerHTML = inner;
           }
@@ -2325,11 +2320,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="stat-value">' + (averageScore > 0 ? averageScore + '%' : 'N/A') + '</div>' +
               '<div class="stat-label">Avg Score</div>' +
             '</div>' +
-            '<div class="stat-card">' +
-              '<div class="stat-icon">⏱️</div>' +
-              '<div class="stat-value">' + timeDisplay + '</div>' +
-              '<div class="stat-label">Time Spent</div>' +
-            '</div>' +
+
             '<div class="stat-card">' +
               '<div class="stat-icon">📝</div>' +
               '<div class="stat-value">' + completedUnits + '/' + totalUnits + '</div>' +

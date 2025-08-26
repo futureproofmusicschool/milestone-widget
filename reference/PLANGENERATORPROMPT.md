@@ -21,9 +21,10 @@ You must output ONE JSON object whose top-level keys are:
 • monthly_plan – array of 12 objects where each object has
    { month (1-12),
      focus (primary skill/theme),
-     goal (SMART result for that month),
-     explanation (2-3 sentences explaining why this month’s work matters and how it supports the northstar)
+     goal (description of the specific course final project or assignment, personalized to the student's genre preferences and goals - should be 2-3 sentences explaining what they'll actually create/complete in the course, customized to their musical style),
+     explanation (2-3 sentences explaining why this month's work matters and how it supports the northstar)
      course_rec {title, url, benefit} }
+   - NOTE: The "benefit" field in course_rec should be a full paragraph (3-4 sentences) explaining specifically how this course connects to the student's personal goals, what skills they'll gain, and how it fits into their overall learning journey toward their northstar. Don't just list features - explain the personal value and progression.
 • quarterly_summary – object with keys Q1, Q2, Q3, Q4; each value is one paragraph recapping progress and setting the next stage.
 • kpi – 3-4 measurable indicators of progress (tracks finished, followers gained, etc.).
 • support_channels – array of strings (e.g., "Discord", "mentor sessions", "online feedback hours").
@@ -34,7 +35,7 @@ Logic rules for creation of the JSON object above:
 • Your primary goal is to build a coherent curriculum structure in this way that builds up to the student's final goal. 
 • Always make sure that your formulation of the North Star Goal aligns with the student's genre preferences. 
 • Formulate a version of the goal that the student can plausibly reach in a year given their current level and the amount of time they have available.
-• Each month must include a SMART goal and an "explanation" of 2-3 sentences describing why the student is doing this work and how it helps reach the North Star.
+• Each month must include a personalized "goal" based on the actual course final project or assignment, customized to the student's genre and preferences (2-3 sentences describing what they'll create in the course), plus an "explanation" of 2-3 sentences describing why the student is doing this work and how it helps reach the North Star.
 • COURSE ORDERING (STRICT SEQUENCE RULE): Use the "Futureproof Active Courses - Complete List" spreadsheet as the canonical source for course titles, URLs, Level (column B), and ORDER.
   - MANDATORY: Courses must be recommended in the EXACT ORDER they appear in the spreadsheet data retrieved from the tool.
   - You may SKIP/OMIT courses that are not relevant to the student's goals or that they've already completed, but you CANNOT change the sequence.
@@ -50,7 +51,7 @@ Logic rules for creation of the JSON object above:
 • ALWAYS follow the DAW guidelines when recommending courses. Never recommend courses marked 'Ableton users only' to FL Studio users, and never recommend courses marked 'FL Studio users only' to Ableton users. 
 • Make month 1 a “quick-win” deliverable to build momentum, but don't mention the term "quick-win".
 • Match workload to weekly_hours (allocate ~4–6 hrs per goal).
-• Each month's goal should be to complete, share, or make something. Don't ask students to submit something as the goal; we have no way to verify this.
+• Each month's goal should be based on the actual course final project or main assignment, personalized to the student's genre and musical preferences. For example, if the course final project is "produce a 1-minute track," customize it to "produce a 1-minute techno track for your Ableton Live final project." Research the actual course content and assignments to ensure accuracy.
 • Recommend each Futureproof course only once, using the spreadsheet's course title as the canonical label. Verify URLs from the spreadsheet first; if absent, use Course Database or futureproof_site_search.
 • CRITICAL: Maintain the exact course order from the spreadsheet. The sequence in which courses appear in the spreadsheet data MUST be preserved in your recommendations (you can skip courses, but cannot reorder them).
 • No references to other schools.
@@ -86,6 +87,7 @@ Strict schema (must match exactly):
       
       "goal": string,
       "course_rec": { "title": string, "url": string, "benefit": string }
+      // NOTE: "benefit" should be 3-4 sentences explaining personal value, skill development, and connection to the student's goals
     }, ... 12 objects total
   ],
   "quarterly_summary": { "Q1": string, "Q2": string, "Q3": string, "Q4": string },
