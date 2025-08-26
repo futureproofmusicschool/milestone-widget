@@ -2365,7 +2365,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (status === 'completed') {
             html += '<div class="achievement-banner">' +
               '<div class="achievement-icon">🎉</div>' +
-              '<div class="achievement-text">Congratulations! You\'ve completed this course!</div>' +
+              '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
               '</div>';
           }
           
