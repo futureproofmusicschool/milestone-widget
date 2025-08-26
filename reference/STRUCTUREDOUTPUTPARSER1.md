@@ -7,7 +7,6 @@
       "month": 1,
       "focus": "DAW fluency & first full loop",
       "explanation": "You need to build fluency in your chosen DAW in order to translate your ideas into sound. This milestone lays the foundation for what comes later.",
-
       "goal": "Finish a 60-second sketch by day 30",
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
@@ -19,7 +18,6 @@
       "month": 2,
       "focus": "Building a personal sound library",
       "explanation": "Original sounds distinguish you from the monochrome crowd. A curated library becomes your private cathedral of timbres.",
-
       "goal": "Compile a 20-sample starter pack by day 60",
       "course_rec": {
         "title": "How to Make Your Own Sample Pack",
@@ -31,7 +29,6 @@
       "month": 3,
       "focus": "Arranging full songs",
       "explanation": "Transform skeletal loops into living forms; arrangement breathes motion into your music’s twilight heart.",
-
       "goal": "Rough arrangement of Track 1 complete by day 90",
       "course_rec": {
         "title": "Creative Strategies 2",
@@ -43,7 +40,6 @@
       "month": 4,
       "focus": "Genre deep-dive: Drum & Bass",
       "explanation": "Exploring genre archetypes widens your sonic palette and sharpens rhythmic instincts.",
-
       "goal": "Begin a DnB remix of Track 1 by day 120",
       "course_rec": {
         "title": "How to Make Drum and Bass",
@@ -55,7 +51,6 @@
       "month": 5,
       "focus": "Mixing essentials",
       "explanation": "Balanced mixes let every spectral shade shine through the midnight haze.",
-
       "goal": "Achieve a balanced pre-mix of Track 1 by day 150",
       "course_rec": {
         "title": "Mixing 2",
@@ -67,7 +62,6 @@
       "month": 6,
       "focus": "Quick-win collaboration",
       "explanation": "Sharing stems invites new shadows into your workflow and accelerates growth.",
-
       "goal": "Co-produce a two-minute collaboration sketch by day 180",
       "course_rec": {
         "title": "Fast Collaboration Tactics",
@@ -79,7 +73,6 @@
       "month": 7,
       "focus": "Brand & social foundations",
       "explanation": "Forge a visual sigil so listeners can recognise your sound in the dark.",
-
       "goal": "Bio, photo, and logo finalised by day 210",
       "course_rec": {
         "title": "Branding 123",
@@ -91,7 +84,6 @@
       "month": 8,
       "focus": "Sound-design refinement",
       "explanation": "Craft signature tones that echo through neon catacombs.",
-
       "goal": "Signature bass and drum kit complete by day 240",
       "course_rec": {
         "title": "Advanced Sound-Design",
@@ -103,7 +95,6 @@
       "month": 9,
       "focus": "Advanced creative workflow",
       "explanation": "Limitations birth innovation; refine your ritual for relentless output.",
-
       "goal": "Generate three draft ideas for the EP by day 270",
       "course_rec": {
         "title": "Workflow Mastery",
@@ -115,7 +106,6 @@
       "month": 10,
       "focus": "Mix & pre-master EP",
       "explanation": "Polish each track until it gleams like obsidian under moonlight.",
-
       "goal": "All EP tracks in mix-ready state by day 300",
       "course_rec": {
         "title": "Pre-Master Toolkit",
@@ -127,7 +117,6 @@
       "month": 11,
       "focus": "Marketing & release strategy",
       "explanation": "Summon your audience with calculated ritual—content calendars and targeted ads.",
-
       "goal": "Release assets scheduled by day 330",
       "course_rec": {
         "title": "How to Promote Your Music in 2025: Facebook/Meta Ads",
@@ -139,7 +128,6 @@
       "month": 12,
       "focus": "Launch & review",
       "explanation": "Cast your creation into the world, then study the ripples it leaves in the void.",
-
       "goal": "EP live and first 1 000 streams by day 365",
       "course_rec": {
         "title": "Release Day Playbook",

@@ -13,12 +13,7 @@ This JSON structure tracks a student's actual progress through their 12-month ro
     {
       "month": 1,
       "status": "complete",
-      "weeklyPractices": {
-        "week1": true,
-        "week2": true,
-        "week3": true,
-        "week4": true
-      },
+      
       "milestoneStatus": {
         "studentComplete": true,
         "studentCompleteDate": "2024-02-10T10:00:00Z",
@@ -36,12 +31,7 @@ This JSON structure tracks a student's actual progress through their 12-month ro
     {
       "month": 2,
       "status": "complete",
-      "weeklyPractices": {
-        "week1": true,
-        "week2": true,
-        "week3": true,
-        "week4": true
-      },
+      
       "milestoneStatus": {
         "studentComplete": true,
         "studentCompleteDate": "2024-03-08T11:00:00Z",
@@ -59,12 +49,7 @@ This JSON structure tracks a student's actual progress through their 12-month ro
     {
       "month": 3,
       "status": "complete",
-      "weeklyPractices": {
-        "week1": true,
-        "week2": true,
-        "week3": true,
-        "week4": true
-      },
+      
       "milestoneStatus": {
         "studentComplete": true,
         "studentCompleteDate": "2024-04-05T09:00:00Z",
@@ -82,12 +67,7 @@ This JSON structure tracks a student's actual progress through their 12-month ro
     {
       "month": 4,
       "status": "in_progress",
-      "weeklyPractices": {
-        "week1": true,
-        "week2": true,
-        "week3": false,
-        "week4": false
-      },
+      
       "milestoneStatus": {
         "studentComplete": false,
         "studentCompleteDate": null,
@@ -105,12 +85,7 @@ This JSON structure tracks a student's actual progress through their 12-month ro
     {
       "month": 5,
       "status": "not_started",
-      "weeklyPractices": {
-        "week1": false,
-        "week2": false,
-        "week3": false,
-        "week4": false
-      },
+      
       "milestoneStatus": {
         "studentComplete": false,
         "studentCompleteDate": null,
@@ -193,7 +168,6 @@ This JSON structure tracks a student's actual progress through their 12-month ro
 ### Monthly Progress
 Each month tracks:
 - `status`: `not_started` | `in_progress` | `complete`
-- `weeklyPractices`: Boolean flags for each week's completion
 - `milestoneStatus`: Dual verification system
   - `studentComplete`: Student's self-assessment
   - `studentCompleteDate`: When student marked complete
@@ -233,11 +207,6 @@ Gamification elements earned:
 
 ## Update Patterns
 
-### When Student Checks Weekly Practice:
-```json
-monthlyProgress[currentMonth].weeklyPractices.week1 = true
-```
-
 ### When Student Marks Milestone Complete:
 ```json
 monthlyProgress[currentMonth].milestoneStatus.studentComplete = true
@@ -261,8 +230,7 @@ monthlyProgress[currentMonth].courseProgress.lastAccessed = "2024-04-15T14:00:00
 ## Progress Calculation Formula
 
 Month Progress = 
-- Practice: 40% (10% each week)
-- Course Completion: 30%
+- Course Completion: 70%
 - Student Milestone Check: 15%
 - Mentor Verification: 15%
 

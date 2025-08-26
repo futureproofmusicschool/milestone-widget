@@ -1695,29 +1695,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           opacity: 0.7;
         }
         
-        .practices-list {
-          list-style: none;
-          padding-left: 0;
-        }
         
-        .practices-list li {
-          padding: 8px 0;
-          padding-left: 25px;
-          position: relative;
-        }
-        
-        .practices-list li:before {
-          content: "•";
-          color: #A373F8;
-          position: absolute;
-          left: 0;
-        }
-        
-        /* Nested practice reason item (indented under the action) */
-        .practice-action { font-weight: 600; }
-        .practice-why-list { list-style: none; margin-top: 6px; padding-left: 24px; }
-        .practice-why-list li { padding: 4px 0 0 22px; position: relative; opacity: 0.9; }
-        .practice-why-list li:before { content: "•"; color: #A373F8; position: absolute; left: 0; }
         
         .milestone-goal {
           background: rgba(0, 0, 0, 0.5);
@@ -1916,18 +1894,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</a>' +
               '</div>';
             }
-            html += '<div class="milestone-section">' +
-                '<h3>Practice (30 min, 3-5x a week)</h3>' +
-                '<ul class="practices-list">';
-            currentMilestoneData.practice.forEach(practice => {
-              if (practice && typeof practice === 'object' && practice.action) {
-                html += '<li><div class="practice-action">' + (practice.action || '') + '</div>' +
-                        '<ul class="practice-why-list"><li>' + (practice.justification || '') + '</li></ul></li>';
-              } else {
-                html += '<li>' + (practice || '') + '</li>';
-              }
-            });
-            html += '</ul></div>' +
+            
               '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>Goal</h3>' +
@@ -2044,18 +2011,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</a>' +
               '</div>';
             }
-            inner += '<div class="milestone-section">' +
-                '<h3>Practice (30 min, 3-5x a week)</h3>' +
-                '<ul class="practices-list">';
-            (data.practice || []).forEach(function(practice){
-              if (practice && typeof practice === 'object' && practice.action) {
-                inner += '<li><div class="practice-action">' + (practice.action || '') + '</div>' +
-                         '<ul class="practice-why-list"><li>' + (practice.justification || '') + '</li></ul></li>';
-              } else {
-                inner += '<li>' + (practice || '') + '</li>';
-              }
-            });
-            inner += '</ul></div>' +
+            
               '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>Goal</h3>' +
