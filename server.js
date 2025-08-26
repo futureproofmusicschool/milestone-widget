@@ -1749,27 +1749,31 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           background: rgba(0, 0, 0, 0.4);
           border: 1px solid rgba(163, 115, 248, 0.3);
           border-radius: 6px;
-          padding: 10px;
+          padding: 7px;
           text-align: center;
+          height: 60px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
         
         .stat-icon {
-          font-size: 16px;
-          margin-bottom: 4px;
-        }
-        
-        .stat-value {
-          font-size: 18px;
-          font-weight: 700;
-          color: #FFFFFF;
+          font-size: 11px;
           margin-bottom: 2px;
         }
         
+        .stat-value {
+          font-size: 12px;
+          font-weight: 700;
+          color: #FFFFFF;
+          margin-bottom: 1px;
+        }
+        
         .stat-label {
-          font-size: 10px;
+          font-size: 7px;
           color: #A373F8;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.3px;
         }
         
         .progress-bar-container {
@@ -2048,7 +2052,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div id="current-view" class="current-milestone-detail">' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
+                '<h2 style="margin: 0;">COURSE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>';
             if (currentMilestoneData.course_rec) {
@@ -2161,7 +2165,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             let inner = '' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
+                '<h2 style="margin: 0;">COURSE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>';
             if (data.course_rec) {
