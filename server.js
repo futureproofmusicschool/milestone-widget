@@ -1684,6 +1684,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         .current-milestone-detail h2 {
           color: #A373F8;
+          font-size: 18px;
           margin-bottom: 20px;
         }
         
@@ -1848,6 +1849,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           font-weight: 600;
           font-size: 12px;
           margin-left: 10px;
+          min-width: 48px;
+          text-align: right;
         }
         
         .unit-status {
@@ -2322,25 +2325,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>' +
             '</div>';
           
-          // Stats cards
-          html += '<div class="progress-stats">' +
-            '<div class="stat-card">' +
-              '<div class="stat-icon">' + statusIcon + '</div>' +
-              '<div class="stat-value">' + progressRate + '%</div>' +
-              '<div class="stat-label">Complete</div>' +
-            '</div>' +
-            '<div class="stat-card">' +
-              '<div class="stat-icon">📊</div>' +
-              '<div class="stat-value">' + (averageScore > 0 ? averageScore + '%' : 'N/A') + '</div>' +
-              '<div class="stat-label">Avg Score</div>' +
-            '</div>' +
-
-            '<div class="stat-card">' +
-              '<div class="stat-icon">📝</div>' +
-              '<div class="stat-value">' + completedUnits + '/' + totalUnits + '</div>' +
-              '<div class="stat-label">Lessons</div>' +
-            '</div>' +
-            '</div>';
+          // Removed stat tiles (Progress, Avg Score, Lessons)
           
           // Assessments breakdown (quizzes and projects only)
           if (data.progress_per_section_unit && data.progress_per_section_unit.length > 0) {
@@ -2389,14 +2374,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 
                 html += '<div class="unit-item">' +
                   '<div class="unit-name">' + (unit.unit_name || 'Untitled Assessment') + '</div>' +
-                  '<div style="display: flex; align-items: center;">';
+                  '<div style="display: flex; align-items: center; gap: 10px;">' +
+                  '<div class="unit-status ' + statusClass + '">' + statusText + '</div>';
                 
-                if (unitScore !== null && unitScore !== undefined) {
+                if (unitStatus === 'completed' && unitScore !== null && unitScore !== undefined) {
                   html += '<div class="unit-score">' + unitScore + '%</div>';
                 }
                 
-                html += '<div class="unit-status ' + statusClass + '">' + statusText + '</div>' +
-                  '</div>' +
+                html += '</div>' +
                   '</div>';
               });
               
