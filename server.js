@@ -2085,29 +2085,35 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="timeline-line"></div>';
           
           // Render timeline
-          roadmapPlan.monthly_plan.forEach((milestone, index) => {
-            const num = index + 1;
-            const isCompleted = completed.includes(num);
-            const isCurrent = num === currentMilestone;
-            
-            // Removed "YOU ARE HERE" indicator
-            
-            html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
-              '<div class="milestone-dot"></div>' +
-              '<div class="milestone-content clickable" onclick="showMilestoneDetail(' + num + ')">' +
-                '<div class="milestone-title">' +
-                  (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
-                  'Course ' + num + ': ' + milestone.focus +
+          console.log('[Client] About to render timeline. monthly_plan length:', roadmapPlan.monthly_plan ? roadmapPlan.monthly_plan.length : 'undefined');
+          if (roadmapPlan.monthly_plan && Array.isArray(roadmapPlan.monthly_plan)) {
+            roadmapPlan.monthly_plan.forEach((milestone, index) => {
+              const num = index + 1;
+              const isCompleted = completed.includes(num);
+              const isCurrent = num === currentMilestone;
+              
+              console.log('[Client] Rendering milestone', num, 'focus:', milestone.focus);
+              
+              html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
+                '<div class="milestone-dot"></div>' +
+                '<div class="milestone-content clickable" onclick="showMilestoneDetail(' + num + ')">' +
+                  '<div class="milestone-title">' +
+                    (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
+                    'Course ' + num + ': ' + (milestone.focus || 'No Focus') +
+                  '</div>' +
+                  (milestone && milestone.course_rec && milestone.course_rec.title
+                    ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
+                    : '') +
+                  (milestone && (milestone.goal || milestone.milestone)
+                    ? '<div class="milestone-meta"><span class="label">Goal:</span> ' + (milestone.goal || milestone.milestone) + '</div>'
+                    : '') +
                 '</div>' +
-                (milestone && milestone.course_rec && milestone.course_rec.title
-                  ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
-                  : '') +
-                (milestone && (milestone.goal || milestone.milestone)
-                  ? '<div class="milestone-meta"><span class="label">Goal:</span> ' + (milestone.goal || milestone.milestone) + '</div>'
-                  : '') +
-              '</div>' +
-            '</div>';
-          });
+              '</div>';
+            });
+          } else {
+            console.log('[Client] No monthly_plan found or not an array');
+            html += '<div style="color: #A373F8; text-align: center; padding: 50px;">No milestones found. Please complete your onboarding form.</div>';
+          }
           
           html += '</div></div>';
           
