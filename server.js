@@ -1546,6 +1546,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         .timeline {
           position: relative;
           padding: 20px 0;
+          min-height: 100vh;
+          width: 100%;
         }
         
         .timeline-line {
@@ -1565,6 +1567,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           display: flex;
           justify-content: center;
           align-items: center;
+          min-height: 80px;
+          width: 100%;
         }
         
         .milestone-dot {
@@ -2081,7 +2085,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>';
           }
 
-          html += '<div id="path-view" style="display:none;"><div class="timeline">' +
+          html += '<div id="path-view" style="display:none; background: rgba(0,0,0,1); min-height: 800px; padding: 20px;"><div class="timeline">' +
               '<div class="timeline-line"></div>';
           
           // Render timeline
