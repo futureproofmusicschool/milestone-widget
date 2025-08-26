@@ -2359,69 +2359,87 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>' +
             '</div>';
           
-          // Units breakdown if available
+          // Assessments breakdown (quizzes and projects only)
           if (data.progress_per_section_unit && data.progress_per_section_unit.length > 0) {
-            html += '<div class="units-section">' +
-              '<div class="units-header">📚 Lesson Breakdown</div>';
-            
+            // First, collect all assessment units
+            let assessmentUnits = [];
             data.progress_per_section_unit.forEach(function(section) {
               if (section.units && section.units.length > 0) {
                 section.units.forEach(function(unit) {
-                  const unitProgress = unit.unit_progress_rate || 0;
-                  const unitStatus = unit.unit_status || 'not_started';
-                  const unitScore = unit.score_on_unit;
-                  const unitTime = unit.time_on_unit || 0;
-                  const unitDuration = unit.unit_duration || 0;
-                  
-                  // Determine status class
-                  let statusClass = 'not-started';
-                  let statusText = 'Not Started';
-                  if (unitStatus === 'completed') {
-                    statusClass = 'completed';
-                    statusText = 'Completed';
-                  } else if (unitProgress > 0) {
-                    statusClass = 'in-progress';
-                    statusText = 'In Progress';
+                  // Only include assessment-type units
+                  if (unit.unit_type === 'assessment' || unit.unit_type === 'quiz' || unit.unit_type === 'project' || 
+                      (unit.unit_name && (unit.unit_name.toLowerCase().includes('quiz') || 
+                                         unit.unit_name.toLowerCase().includes('assessment') ||
+                                         unit.unit_name.toLowerCase().includes('project')))) {
+                    assessmentUnits.push(unit);
                   }
-                  
-                  // Format time
-                  const unitMinutes = Math.floor(unitTime / 60);
-                  const durationMinutes = Math.floor(unitDuration / 60);
-                  
-                  html += '<div class="unit-item">' +
-                    '<div class="unit-header">' +
-                      '<div class="unit-name">' + (unit.unit_name || 'Untitled Lesson') + '</div>' +
-                      '<div class="unit-status ' + statusClass + '">' + statusText + '</div>' +
-                    '</div>' +
-                    '<div class="unit-details">';
-                  
-                  // Add unit type icon
-                  let typeIcon = '📄';
-                  if (unit.unit_type === 'video' || unit.unit_type === 'youtube') typeIcon = '🎬';
-                  else if (unit.unit_type === 'audio') typeIcon = '🎵';
-                  else if (unit.unit_type === 'scorm') typeIcon = '📦';
-                  else if (unit.unit_type === 'ebook') typeIcon = '📚';
-                  
-                  html += '<div class="unit-detail">' + typeIcon + ' ' + unit.unit_type + '</div>';
-                  
-                  if (unitScore !== null && unitScore !== undefined) {
-                    html += '<div class="unit-detail">📊 Score: ' + unitScore + '%</div>';
-                  }
-                  
-                  if (durationMinutes > 0) {
-                    html += '<div class="unit-detail">⏱️ ' + unitMinutes + '/' + durationMinutes + ' min</div>';
-                  }
-                  
-                  html += '</div>' +
-                    '<div class="unit-progress-bar">' +
-                      '<div class="unit-progress-fill" style="width: ' + unitProgress + '%;"></div>' +
-                    '</div>' +
-                    '</div>';
                 });
               }
             });
             
-            html += '</div>';
+            // Only show the section if we have assessments
+            if (assessmentUnits.length > 0) {
+              html += '<div class="units-section">' +
+                '<div class="units-header">📝 Quizzes and Projects</div>';
+              
+              assessmentUnits.forEach(function(unit) {
+                const unitProgress = unit.unit_progress_rate || 0;
+                const unitStatus = unit.unit_status || 'not_started';
+                const unitScore = unit.score_on_unit;
+                const unitTime = unit.time_on_unit || 0;
+                const unitDuration = unit.unit_duration || 0;
+                
+                // Determine status class
+                let statusClass = 'not-started';
+                let statusText = 'Not Started';
+                if (unitStatus === 'completed') {
+                  statusClass = 'completed';
+                  statusText = 'Completed';
+                } else if (unitProgress > 0) {
+                  statusClass = 'in-progress';
+                  statusText = 'In Progress';
+                }
+                
+                // Format time
+                const unitMinutes = Math.floor(unitTime / 60);
+                const durationMinutes = Math.floor(unitDuration / 60);
+                
+                html += '<div class="unit-item">' +
+                  '<div class="unit-header">' +
+                    '<div class="unit-name">' + (unit.unit_name || 'Untitled Assessment') + '</div>' +
+                    '<div class="unit-status ' + statusClass + '">' + statusText + '</div>' +
+                  '</div>' +
+                  '<div class="unit-details">';
+                
+                // Add unit type icon - focus on assessment types
+                let typeIcon = '📝';
+                if (unit.unit_type === 'quiz' || (unit.unit_name && unit.unit_name.toLowerCase().includes('quiz'))) {
+                  typeIcon = '🧠';
+                } else if (unit.unit_type === 'project' || (unit.unit_name && unit.unit_name.toLowerCase().includes('project'))) {
+                  typeIcon = '🎯';
+                } else if (unit.unit_type === 'assessment') {
+                  typeIcon = '📋';
+                }
+                
+                html += '<div class="unit-detail">' + typeIcon + ' ' + (unit.unit_type || 'Assessment') + '</div>';
+                
+                if (unitScore !== null && unitScore !== undefined) {
+                  html += '<div class="unit-detail">📊 Score: ' + unitScore + '%</div>';
+                }
+                
+                if (durationMinutes > 0) {
+                  html += '<div class="unit-detail">⏱️ ' + unitMinutes + '/' + durationMinutes + ' min</div>';
+                }
+                
+                html += '</div>' +
+                  '<div class="unit-progress-bar">' +
+                    '<div class="unit-progress-fill" style="width: ' + unitProgress + '%;"></div>' +
+                  '</div>' +
+                  '</div>';
+              });
+              
+              html += '</div>';
+            }
           }
           
           html += '</div>';
