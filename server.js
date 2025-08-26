@@ -1255,14 +1255,14 @@ app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
     }
 
     const data = await progressResponse.json();
-    console.log('[LW] single-course progress payload keys:', Object.keys(data || {}));
-    // Normalize result regardless of exact shape
-    const progressRate =
-      (data && typeof data.progress_rate !== 'undefined' && data.progress_rate)
-      || (data && data.data && typeof data.data.progress_rate !== 'undefined' && data.data.progress_rate)
-      || 0;
-    const pct = Math.round(Number(progressRate) || 0);
-    return res.json({ userId, courseId, progress: pct });
+    console.log('[LW] single-course progress full data:', JSON.stringify(data, null, 2));
+    
+    // Return the full data object for detailed progress display
+    return res.json({ 
+      userId, 
+      courseId, 
+      ...data // Include all fields: status, progress_rate, average_score_rate, time_on_course, etc.
+    });
   } catch (error) {
     console.error('Error fetching single course progress:', error);
     return res.status(500).json({ error: 'Failed to fetch course progress' });
@@ -1705,6 +1705,225 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           margin: 15px 0;
         }
         
+        /* Course Progress Styles */
+        .course-progress-section {
+          background: rgba(163, 115, 248, 0.05);
+          border: 1px solid rgba(163, 115, 248, 0.2);
+          border-radius: 12px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        
+        .progress-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        
+        .progress-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #A373F8;
+        }
+        
+        .progress-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 12px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 20px;
+          font-size: 14px;
+          font-weight: 600;
+        }
+        
+        .progress-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 15px;
+          margin-bottom: 25px;
+        }
+        
+        .stat-card {
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(163, 115, 248, 0.3);
+          border-radius: 8px;
+          padding: 15px;
+          text-align: center;
+        }
+        
+        .stat-icon {
+          font-size: 24px;
+          margin-bottom: 8px;
+        }
+        
+        .stat-value {
+          font-size: 24px;
+          font-weight: 700;
+          color: #FFFFFF;
+          margin-bottom: 4px;
+        }
+        
+        .stat-label {
+          font-size: 12px;
+          color: #A373F8;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        .progress-bar-container {
+          position: relative;
+          margin-bottom: 25px;
+        }
+        
+        .progress-bar-large {
+          height: 40px;
+          background: rgba(163, 115, 248, 0.1);
+          border-radius: 20px;
+          overflow: hidden;
+          position: relative;
+        }
+        
+        .progress-bar-fill-large {
+          height: 100%;
+          background: linear-gradient(90deg, #A373F8 0%, #8b5df6 100%);
+          transition: width 0.6s ease;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          padding-right: 15px;
+        }
+        
+        .progress-percentage {
+          color: #000;
+          font-weight: 700;
+          font-size: 16px;
+        }
+        
+        .units-section {
+          margin-top: 25px;
+        }
+        
+        .units-header {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 15px;
+          color: #A373F8;
+        }
+        
+        .unit-item {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(163, 115, 248, 0.2);
+          border-radius: 8px;
+          padding: 12px;
+          margin-bottom: 10px;
+          transition: all 0.3s ease;
+        }
+        
+        .unit-item:hover {
+          transform: translateX(5px);
+          border-color: rgba(163, 115, 248, 0.4);
+        }
+        
+        .unit-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+        
+        .unit-name {
+          font-weight: 600;
+          color: #FFFFFF;
+          flex: 1;
+        }
+        
+        .unit-status {
+          padding: 3px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+        
+        .unit-status.completed {
+          background: rgba(76, 175, 80, 0.2);
+          color: #4CAF50;
+        }
+        
+        .unit-status.in-progress {
+          background: rgba(255, 193, 7, 0.2);
+          color: #FFC107;
+        }
+        
+        .unit-status.not-started {
+          background: rgba(158, 158, 158, 0.2);
+          color: #9E9E9E;
+        }
+        
+        .unit-details {
+          display: flex;
+          gap: 15px;
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.7);
+          margin-top: 8px;
+        }
+        
+        .unit-detail {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+        
+        .unit-progress-bar {
+          height: 4px;
+          background: rgba(163, 115, 248, 0.2);
+          border-radius: 2px;
+          margin-top: 8px;
+          overflow: hidden;
+        }
+        
+        .unit-progress-fill {
+          height: 100%;
+          background: #A373F8;
+          transition: width 0.3s ease;
+        }
+        
+        .achievement-banner {
+          background: linear-gradient(135deg, rgba(163, 115, 248, 0.2) 0%, rgba(139, 93, 246, 0.2) 100%);
+          border: 2px solid #A373F8;
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          margin: 20px 0;
+        }
+        
+        .achievement-icon {
+          font-size: 48px;
+          margin-bottom: 10px;
+        }
+        
+        .achievement-text {
+          font-size: 18px;
+          font-weight: 600;
+          color: #FFFFFF;
+        }
+        
+        .loading-skeleton {
+          background: linear-gradient(90deg, rgba(163, 115, 248, 0.1) 25%, rgba(163, 115, 248, 0.2) 50%, rgba(163, 115, 248, 0.1) 75%);
+          background-size: 200% 100%;
+          animation: loading 1.5s infinite;
+          border-radius: 8px;
+          height: 20px;
+          margin: 10px 0;
+        }
+        
+        @keyframes loading {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        
         .complete-button {
           background: #A373F8;
           color: #000;
@@ -1895,7 +2114,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             }
             
-              '<div class="milestone-section">' +
+            // Add course progress section placeholder
+            html += '<div id="course-progress-container"></div>';
+            
+            html += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>Goal</h3>' +
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
@@ -2012,7 +2234,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             }
             
-              '<div class="milestone-section">' +
+            // Add course progress section placeholder
+            inner += '<div id="course-progress-container"></div>';
+            
+            inner += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>Goal</h3>' +
                   (data.goal || data.milestone || '') +
@@ -2058,11 +2283,22 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             const courseId = match ? match[1] : null;
             if (!courseId) return;
 
+            // Show loading skeleton
+            const progressContainer = document.getElementById('course-progress-container');
+            if (progressContainer) {
+              progressContainer.innerHTML = '<div class="loading-skeleton"></div><div class="loading-skeleton"></div>';
+            }
+
             // Call our single-course progress endpoint that proxies LearnWorlds per-course API
             const resp = await fetch(apiBaseUrl + '/api/course-progress/' + userId + '/course/' + courseId);
             const data = await resp.json();
-            if (!resp.ok || !data) return;
-            const pct = Math.round(Number(data.progress) || 0);
+            if (!resp.ok || !data) {
+              if (progressContainer) progressContainer.innerHTML = '';
+              return;
+            }
+            
+            // Update simple progress bar
+            const pct = Math.round(Number(data.progress_rate) || 0);
             if (pct > 0) {
               const cta = document.getElementById('rec-cta');
               const prog = document.getElementById('rec-progress');
@@ -2072,12 +2308,168 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               if (prog) prog.style.display = '';
               if (fill) fill.style.width = pct + '%';
               if (text) text.textContent = pct + '% Complete';
+            }
+            
+            // Render detailed progress section
+            if (progressContainer && data.progress_rate !== undefined) {
+              progressContainer.innerHTML = renderCourseProgress(data);
+            }
+            
               sendHeight();
               setTimeout(sendHeight, 300);
-            }
           } catch (e) {
-            // silent fail; keep Start Course CTA
+            console.error('Error loading course progress:', e);
+            const progressContainer = document.getElementById('course-progress-container');
+            if (progressContainer) progressContainer.innerHTML = '';
           }
+        }
+        
+        function renderCourseProgress(data) {
+          if (!data) return '';
+          
+          const progressRate = Math.round(data.progress_rate || 0);
+          const averageScore = Math.round(data.average_score_rate || 0);
+          const timeOnCourse = data.time_on_course || 0;
+          const totalUnits = data.total_units || 0;
+          const completedUnits = data.completed_units || 0;
+          const status = data.status || 'not_started';
+          
+          // Convert seconds to readable format
+          const hours = Math.floor(timeOnCourse / 3600);
+          const minutes = Math.floor((timeOnCourse % 3600) / 60);
+          const timeDisplay = hours > 0 ? hours + 'h ' + minutes + 'm' : minutes + 'm';
+          
+          // Determine status badge
+          let statusBadge = '';
+          let statusIcon = '';
+          if (status === 'completed') {
+            statusBadge = '<span class="progress-badge" style="background: rgba(76, 175, 80, 0.2); color: #4CAF50;">✅ Completed</span>';
+            statusIcon = '🏆';
+          } else if (progressRate > 0) {
+            statusBadge = '<span class="progress-badge">🚀 In Progress</span>';
+            statusIcon = '📚';
+          } else {
+            statusBadge = '<span class="progress-badge" style="background: rgba(158, 158, 158, 0.2); color: #9E9E9E;">Not Started</span>';
+            statusIcon = '📖';
+          }
+          
+          let html = '<div class="course-progress-section">';
+          
+          // Header
+          html += '<div class="progress-header">' +
+            '<div class="progress-title">Course Progress Details</div>' +
+            statusBadge +
+            '</div>';
+          
+          // Achievement banner for completed courses
+          if (status === 'completed') {
+            html += '<div class="achievement-banner">' +
+              '<div class="achievement-icon">🎉</div>' +
+              '<div class="achievement-text">Congratulations! You\'ve completed this course!</div>' +
+              '</div>';
+          }
+          
+          // Main progress bar
+          html += '<div class="progress-bar-container">' +
+            '<div class="progress-bar-large">' +
+              '<div class="progress-bar-fill-large" style="width: ' + progressRate + '%;">' +
+                (progressRate > 10 ? '<span class="progress-percentage">' + progressRate + '%</span>' : '') +
+              '</div>' +
+            '</div>' +
+            '</div>';
+          
+          // Stats cards
+          html += '<div class="progress-stats">' +
+            '<div class="stat-card">' +
+              '<div class="stat-icon">' + statusIcon + '</div>' +
+              '<div class="stat-value">' + progressRate + '%</div>' +
+              '<div class="stat-label">Complete</div>' +
+            '</div>' +
+            '<div class="stat-card">' +
+              '<div class="stat-icon">📊</div>' +
+              '<div class="stat-value">' + (averageScore > 0 ? averageScore + '%' : 'N/A') + '</div>' +
+              '<div class="stat-label">Avg Score</div>' +
+            '</div>' +
+            '<div class="stat-card">' +
+              '<div class="stat-icon">⏱️</div>' +
+              '<div class="stat-value">' + timeDisplay + '</div>' +
+              '<div class="stat-label">Time Spent</div>' +
+            '</div>' +
+            '<div class="stat-card">' +
+              '<div class="stat-icon">📝</div>' +
+              '<div class="stat-value">' + completedUnits + '/' + totalUnits + '</div>' +
+              '<div class="stat-label">Lessons</div>' +
+            '</div>' +
+            '</div>';
+          
+          // Units breakdown if available
+          if (data.progress_per_section_unit && data.progress_per_section_unit.length > 0) {
+            html += '<div class="units-section">' +
+              '<div class="units-header">📚 Lesson Breakdown</div>';
+            
+            data.progress_per_section_unit.forEach(function(section) {
+              if (section.units && section.units.length > 0) {
+                section.units.forEach(function(unit) {
+                  const unitProgress = unit.unit_progress_rate || 0;
+                  const unitStatus = unit.unit_status || 'not_started';
+                  const unitScore = unit.score_on_unit;
+                  const unitTime = unit.time_on_unit || 0;
+                  const unitDuration = unit.unit_duration || 0;
+                  
+                  // Determine status class
+                  let statusClass = 'not-started';
+                  let statusText = 'Not Started';
+                  if (unitStatus === 'completed') {
+                    statusClass = 'completed';
+                    statusText = 'Completed';
+                  } else if (unitProgress > 0) {
+                    statusClass = 'in-progress';
+                    statusText = 'In Progress';
+                  }
+                  
+                  // Format time
+                  const unitMinutes = Math.floor(unitTime / 60);
+                  const durationMinutes = Math.floor(unitDuration / 60);
+                  
+                  html += '<div class="unit-item">' +
+                    '<div class="unit-header">' +
+                      '<div class="unit-name">' + (unit.unit_name || 'Untitled Lesson') + '</div>' +
+                      '<div class="unit-status ' + statusClass + '">' + statusText + '</div>' +
+                    '</div>' +
+                    '<div class="unit-details">';
+                  
+                  // Add unit type icon
+                  let typeIcon = '📄';
+                  if (unit.unit_type === 'video' || unit.unit_type === 'youtube') typeIcon = '🎬';
+                  else if (unit.unit_type === 'audio') typeIcon = '🎵';
+                  else if (unit.unit_type === 'scorm') typeIcon = '📦';
+                  else if (unit.unit_type === 'ebook') typeIcon = '📚';
+                  
+                  html += '<div class="unit-detail">' + typeIcon + ' ' + unit.unit_type + '</div>';
+                  
+                  if (unitScore !== null && unitScore !== undefined) {
+                    html += '<div class="unit-detail">📊 Score: ' + unitScore + '%</div>';
+                  }
+                  
+                  if (durationMinutes > 0) {
+                    html += '<div class="unit-detail">⏱️ ' + unitMinutes + '/' + durationMinutes + ' min</div>';
+                  }
+                  
+                  html += '</div>' +
+                    '<div class="unit-progress-bar">' +
+                      '<div class="unit-progress-fill" style="width: ' + unitProgress + '%;"></div>' +
+                    '</div>' +
+                    '</div>';
+                });
+              }
+            });
+            
+            html += '</div>';
+          }
+          
+          html += '</div>';
+          
+          return html;
         }
         
         async function markComplete(milestoneNumber) {
