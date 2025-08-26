@@ -2056,7 +2056,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div id="current-view" class="current-milestone-detail">' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">COURSE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
+                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>';
             if (currentMilestoneData.course_rec) {
@@ -2103,7 +2103,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<div class="milestone-content clickable" onclick="showMilestoneDetail(' + num + ')">' +
                   '<div class="milestone-title">' +
                     (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
-                    'Course ' + num + ': ' + (milestone.focus || 'No Focus') +
+                    'Milestone ' + num + ': ' + (milestone.focus || 'No Focus') +
                   '</div>' +
                   (milestone && milestone.course_rec && milestone.course_rec.title
                     ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
@@ -2175,7 +2175,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             let inner = '' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">COURSE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
+                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>';
             if (data.course_rec) {
