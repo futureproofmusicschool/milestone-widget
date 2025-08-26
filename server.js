@@ -1958,31 +1958,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           color: inherit;
           display: block;
         }
-        .rec-progress {
-          margin-top: 10px;
-        }
-        .rec-progress-bar {
-          position: relative;
-          width: 100%;
-          height: 8px;
-          background: rgba(163, 115, 248, 0.2);
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        .rec-progress-fill {
-          position: absolute;
-          left: 0;
-          top: 0;
-          height: 100%;
-          width: 0%;
-          background: #A373F8;
-        }
-        .rec-progress-text {
-          font-size: 14px;
-          color: #A373F8;
-          font-weight: 600;
-          margin-top: 6px;
-        }
+
         
         .course-link {
           color: #A373F8;
@@ -2106,10 +2082,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                     currentMilestoneData.course_rec.benefit +
                   '</div>' +
                   '<div id="rec-cta" class="rec-cta" style="margin-top:10px; color:#A373F8; font-weight:700;">Start Course →</div>' +
-                  '<div id="rec-progress" class="rec-progress" style="display:none;">' +
-                    '<div class="rec-progress-bar"><div class="rec-progress-fill" id="rec-progress-fill" style="width:0%"></div></div>' +
-                    '<div class="rec-progress-text" id="rec-progress-text">0% Complete</div>' +
-                  '</div>' +
                 '</a>' +
               '</div>';
             }
@@ -2226,10 +2198,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                     data.course_rec.benefit +
                   '</div>' +
                   '<div id="rec-cta" class="rec-cta" style="margin-top:10px; color:#A373F8; font-weight:700;">Start Course →</div>' +
-                  '<div id="rec-progress" class="rec-progress" style="display:none;">' +
-                    '<div class="rec-progress-bar"><div class="rec-progress-fill" id="rec-progress-fill" style="width:0%"></div></div>' +
-                    '<div class="rec-progress-text" id="rec-progress-text">0% Complete</div>' +
-                  '</div>' +
                 '</a>' +
               '</div>';
             }
@@ -2297,18 +2265,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               return;
             }
             
-            // Update simple progress bar
-            const pct = Math.round(Number(data.progress_rate) || 0);
-            if (pct > 0) {
-              const cta = document.getElementById('rec-cta');
-              const prog = document.getElementById('rec-progress');
-              const fill = document.getElementById('rec-progress-fill');
-              const text = document.getElementById('rec-progress-text');
-              if (cta) cta.style.display = 'none';
-              if (prog) prog.style.display = '';
-              if (fill) fill.style.width = pct + '%';
-              if (text) text.textContent = pct + '% Complete';
-            }
+            // No longer updating simple progress bar as it's been removed
             
             // Render detailed progress section
             if (progressContainer && data.progress_rate !== undefined) {
