@@ -2097,7 +2097,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="milestone-content clickable" onclick="showMilestoneDetail(' + num + ')">' +
                 '<div class="milestone-title">' +
                   (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
-                  'Milestone ' + num + ': ' + milestone.focus +
+                  'Course ' + num + ': ' + milestone.focus +
                 '</div>' +
                 (milestone && milestone.course_rec && milestone.course_rec.title
                   ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
