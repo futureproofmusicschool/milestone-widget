@@ -2080,9 +2080,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   '<h3>Goal</h3>' +
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
+              '</div>' +
+              '</div>' +
               '</div>';
-            '</div>' +
-            '</div>';
           }
 
           html += '<div id="path-view" style="display:none; background: rgba(0,0,0,1); min-height: 800px; padding: 20px;"><div class="timeline">' +
