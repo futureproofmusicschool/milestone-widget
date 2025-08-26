@@ -2304,7 +2304,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Header
           html += '<div class="progress-header">' +
-            '<div class="progress-title">Course Progress Details</div>' +
+            '<div class="progress-title">Course Progress</div>' +
             statusBadge +
             '</div>';
           
@@ -2335,10 +2335,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               if (section.units && section.units.length > 0) {
                 section.units.forEach(function(unit) {
                   // Only include assessment-type units
-                  if (unit.unit_type === 'assessment' || unit.unit_type === 'quiz' || unit.unit_type === 'project' || 
-                      (unit.unit_name && (unit.unit_name.toLowerCase().includes('quiz') || 
-                                         unit.unit_name.toLowerCase().includes('assessment') ||
-                                         unit.unit_name.toLowerCase().includes('project')))) {
+                  const nameLc = (unit.unit_name || '').toLowerCase();
+                  const typeLc = (unit.unit_type || '').toLowerCase();
+                  const isAssessmentType = ['assessment','quiz','project','exam','test'].includes(typeLc);
+                  const looksLikeAssessment = nameLc.includes('quiz') || nameLc.includes('assessment') || nameLc.includes('project') || nameLc.includes('exam') || nameLc.includes('test');
+                  if (isAssessmentType || looksLikeAssessment) {
+                    // Minimal debug for visibility during integration
+                    try { console.log('[Progress] Unit candidate:', { name: unit.unit_name, type: unit.unit_type, status: unit.unit_status, score: unit.score_on_unit }); } catch(_) {}
                     assessmentUnits.push(unit);
                   }
                 });
@@ -2353,7 +2356,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               assessmentUnits.forEach(function(unit) {
                 const unitProgress = unit.unit_progress_rate || 0;
                 const unitStatus = unit.unit_status || 'not_started';
-                const unitScore = unit.score_on_unit;
+                // According to LW API, per-unit score is score_on_unit
+                let unitScore = (unit.score_on_unit);
+                if (unitScore !== undefined && unitScore !== null) {
+                  const parsed = Number(unitScore);
+                  unitScore = Number.isFinite(parsed) ? Math.round(parsed) : null;
+                }
                 const unitTime = unit.time_on_unit || 0;
                 const unitDuration = unit.unit_duration || 0;
                 
