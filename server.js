@@ -2411,17 +2411,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   '</div>' +
                   '<div class="unit-details">';
                 
-                // Add unit type icon - focus on assessment types
-                let typeIcon = '📝';
-                if (unit.unit_type === 'quiz' || (unit.unit_name && unit.unit_name.toLowerCase().includes('quiz'))) {
-                  typeIcon = '🧠';
-                } else if (unit.unit_type === 'project' || (unit.unit_name && unit.unit_name.toLowerCase().includes('project'))) {
-                  typeIcon = '🎯';
-                } else if (unit.unit_type === 'assessment') {
-                  typeIcon = '📋';
-                }
-                
-                html += '<div class="unit-detail">' + typeIcon + ' ' + (unit.unit_type || 'Assessment') + '</div>';
+                // Remove the unit type line - no longer showing the emoji + unit type
                 
                 if (unitScore !== null && unitScore !== undefined) {
                   html += '<div class="unit-detail">📊 Score: ' + unitScore + '%</div>';
