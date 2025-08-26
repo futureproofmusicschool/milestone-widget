@@ -1515,13 +1515,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
         
         .header h1 {
-          font-size: 24px;
+          font-size: 16px;
           margin-bottom: 10px;
         }
         
         .north-star {
           color: #F6F8FF;
-          font-size: 16px;
+          font-size: 24px;
           margin-bottom: 15px;
           opacity: 0.9;
         }
@@ -1643,8 +1643,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           background: rgba(163, 115, 248, 0.15);
           border: 2px solid #A373F8;
           border-radius: 12px;
-          padding: 30px;
-          margin: 30px auto;
+          padding: 20px;
+          margin: 20px auto;
           width: 800px;
           max-width: 100%;
           position: relative;
@@ -1699,30 +1699,30 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         .milestone-goal {
           background: rgba(0, 0, 0, 0.5);
-          padding: 15px;
-          border-radius: 8px;
+          padding: 12px;
+          border-radius: 6px;
           border-left: 3px solid #A373F8;
-          margin: 15px 0;
+          margin: 10px 0;
         }
         
         /* Course Progress Styles */
         .course-progress-section {
           background: rgba(163, 115, 248, 0.05);
           border: 1px solid rgba(163, 115, 248, 0.2);
-          border-radius: 12px;
-          padding: 20px;
-          margin: 20px 0;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 15px 0;
         }
         
         .progress-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
+          margin-bottom: 12px;
         }
         
         .progress-title {
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 600;
           color: #A373F8;
         }
@@ -1740,47 +1740,47 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         .progress-stats {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: 15px;
-          margin-bottom: 25px;
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 10px;
+          margin-bottom: 15px;
         }
         
         .stat-card {
           background: rgba(0, 0, 0, 0.4);
           border: 1px solid rgba(163, 115, 248, 0.3);
-          border-radius: 8px;
-          padding: 15px;
+          border-radius: 6px;
+          padding: 10px;
           text-align: center;
         }
         
         .stat-icon {
-          font-size: 24px;
-          margin-bottom: 8px;
-        }
-        
-        .stat-value {
-          font-size: 24px;
-          font-weight: 700;
-          color: #FFFFFF;
+          font-size: 16px;
           margin-bottom: 4px;
         }
         
+        .stat-value {
+          font-size: 18px;
+          font-weight: 700;
+          color: #FFFFFF;
+          margin-bottom: 2px;
+        }
+        
         .stat-label {
-          font-size: 12px;
+          font-size: 10px;
           color: #A373F8;
           text-transform: uppercase;
-          letter-spacing: 1px;
+          letter-spacing: 0.5px;
         }
         
         .progress-bar-container {
           position: relative;
-          margin-bottom: 25px;
+          margin-bottom: 15px;
         }
         
         .progress-bar-large {
-          height: 40px;
+          height: 24px;
           background: rgba(163, 115, 248, 0.1);
-          border-radius: 20px;
+          border-radius: 12px;
           overflow: hidden;
           position: relative;
         }
@@ -1792,59 +1792,63 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          padding-right: 15px;
+          padding-right: 10px;
         }
         
         .progress-percentage {
           color: #000;
           font-weight: 700;
-          font-size: 16px;
+          font-size: 12px;
         }
         
         .units-section {
-          margin-top: 25px;
+          margin-top: 15px;
         }
         
         .units-header {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 600;
-          margin-bottom: 15px;
+          margin-bottom: 10px;
           color: #A373F8;
         }
         
         .unit-item {
-          background: rgba(0, 0, 0, 0.3);
-          border: 1px solid rgba(163, 115, 248, 0.2);
-          border-radius: 8px;
-          padding: 12px;
-          margin-bottom: 10px;
-          transition: all 0.3s ease;
-        }
-        
-        .unit-item:hover {
-          transform: translateX(5px);
-          border-color: rgba(163, 115, 248, 0.4);
-        }
-        
-        .unit-header {
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(163, 115, 248, 0.15);
+          border-radius: 4px;
+          padding: 8px 12px;
+          margin-bottom: 6px;
+          transition: all 0.2s ease;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 8px;
+        }
+        
+        .unit-item:hover {
+          border-color: rgba(163, 115, 248, 0.3);
         }
         
         .unit-name {
-          font-weight: 600;
+          font-weight: 500;
           color: #FFFFFF;
           flex: 1;
+          font-size: 13px;
+        }
+        
+        .unit-score {
+          color: #A373F8;
+          font-weight: 600;
+          font-size: 12px;
+          margin-left: 10px;
         }
         
         .unit-status {
-          padding: 3px 8px;
-          border-radius: 12px;
-          font-size: 11px;
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 9px;
           font-weight: 600;
           text-transform: uppercase;
+          margin-left: 8px;
         }
         
         .unit-status.completed {
@@ -1862,50 +1866,24 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           color: #9E9E9E;
         }
         
-        .unit-details {
-          display: flex;
-          gap: 15px;
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.7);
-          margin-top: 8px;
-        }
-        
-        .unit-detail {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-        
-        .unit-progress-bar {
-          height: 4px;
-          background: rgba(163, 115, 248, 0.2);
-          border-radius: 2px;
-          margin-top: 8px;
-          overflow: hidden;
-        }
-        
-        .unit-progress-fill {
-          height: 100%;
-          background: #A373F8;
-          transition: width 0.3s ease;
-        }
+
         
         .achievement-banner {
           background: linear-gradient(135deg, rgba(163, 115, 248, 0.2) 0%, rgba(139, 93, 246, 0.2) 100%);
           border: 2px solid #A373F8;
-          border-radius: 12px;
-          padding: 20px;
+          border-radius: 8px;
+          padding: 12px;
           text-align: center;
-          margin: 20px 0;
+          margin: 12px 0;
         }
         
         .achievement-icon {
-          font-size: 48px;
-          margin-bottom: 10px;
+          font-size: 24px;
+          margin-bottom: 6px;
         }
         
         .achievement-text {
-          font-size: 18px;
+          font-size: 14px;
           font-weight: 600;
           color: #FFFFFF;
         }
@@ -1949,9 +1927,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         .course-recommendation {
           background: rgba(163, 115, 248, 0.1);
           border: 1px solid rgba(163, 115, 248, 0.3);
-          padding: 15px;
-          border-radius: 8px;
-          margin-top: 20px;
+          padding: 12px;
+          border-radius: 6px;
+          margin-top: 12px;
         }
         .course-recommendation-link {
           text-decoration: none;
@@ -2405,25 +2383,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 const durationMinutes = Math.floor(unitDuration / 60);
                 
                 html += '<div class="unit-item">' +
-                  '<div class="unit-header">' +
-                    '<div class="unit-name">' + (unit.unit_name || 'Untitled Assessment') + '</div>' +
-                    '<div class="unit-status ' + statusClass + '">' + statusText + '</div>' +
-                  '</div>' +
-                  '<div class="unit-details">';
-                
-                // Remove the unit type line - no longer showing the emoji + unit type
+                  '<div class="unit-name">' + (unit.unit_name || 'Untitled Assessment') + '</div>' +
+                  '<div style="display: flex; align-items: center;">';
                 
                 if (unitScore !== null && unitScore !== undefined) {
-                  html += '<div class="unit-detail">📊 Score: ' + unitScore + '%</div>';
+                  html += '<div class="unit-score">' + unitScore + '%</div>';
                 }
                 
-                if (durationMinutes > 0) {
-                  html += '<div class="unit-detail">⏱️ ' + unitMinutes + '/' + durationMinutes + ' min</div>';
-                }
-                
-                html += '</div>' +
-                  '<div class="unit-progress-bar">' +
-                    '<div class="unit-progress-fill" style="width: ' + unitProgress + '%;"></div>' +
+                html += '<div class="unit-status ' + statusClass + '">' + statusText + '</div>' +
                   '</div>' +
                   '</div>';
               });
