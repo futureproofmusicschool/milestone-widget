@@ -1427,7 +1427,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     // Get current progress or create new
     let progress = rows[userRowIndex][5] ? JSON.parse(rows[userRowIndex][5]) : {
       userId,
-      currentMilestone: 1,
+      currentMilestone: 0,
       milestonesCompleted: [],
       milestoneProgress: {}
     };
@@ -2027,12 +2027,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
           
           const progress = roadmapProgress || {
-            currentMilestone: 1,
+            currentMilestone: 0,
             milestonesCompleted: [],
             milestoneProgress: {}
           };
           
-          const currentMilestone = progress.currentMilestone || 1;
+          const currentMilestone = progress.currentMilestone || 0;
           const completed = progress.milestonesCompleted || [];
 
           // Expose data for client-side interactions (e.g., clicking milestones)
@@ -2044,7 +2044,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<h1>Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Your Goal: "' + roadmapPlan.northstar + '"</div>' +
             '<div class="progress-stats">' +
-              '<a href="#" onclick="showCurrentMilestone(event)" class="view-toggle">🎯 Milestone ' + currentMilestone + ' of 12</a>' +
+              '<a href="#" onclick="showCurrentMilestone(event)" class="view-toggle">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Milestone ' + currentMilestone + ' of 12') + '</a>' +
               '<span>✅ ' + completed.length + ' Completed</span>' +
               '<span>📊 ' + Math.round((completed.length / 12) * 100) + '% Progress</span>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
@@ -2052,26 +2052,64 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>';
 
           // Move the current milestone detail ABOVE the timeline
-          const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
-          if (currentMilestoneData) {
+          // Handle Milestone 0 (Overview) differently
+          if (currentMilestone === 0) {
+            html += '<div id="current-view-wrap" class="current-view-wrap">' +
+              '<div id="current-view" class="current-milestone-detail">' +
+              '<div class="milestone-nav">' +
+                '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)" disabled>‹</button>' +
+                '<h2 style="margin: 0;">OVERVIEW</h2>' +
+                '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<h3>WELCOME</h3>' +
+                '<div>' + roadmapPlan.welcome + '</div>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<h3>OVERVIEW</h3>' +
+                '<div>' + roadmapPlan.overview + '</div>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
+                  '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
+                  '<div style="font-size: 14px; margin-bottom: 15px;">Click the right arrow (›) above to start with Milestone 1 of your personalized learning plan.</div>' +
+                '</div>' +
+              '</div>' +
+              '</div>' +
+              '</div>';
+          } else {
+            const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
+            if (currentMilestoneData) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
               '<div id="current-view" class="current-milestone-detail">' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
+                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<h3>FOCUS</h3>' +
+                '<div>' + currentMilestoneData.focus + '</div>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<h3>EXPLANATION</h3>' +
+                '<div>' + currentMilestoneData.explanation + '</div>' +
               '</div>';
+            
             if (currentMilestoneData.course_rec) {
-              html += '<div class="course-recommendation">' +
-                '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
-                  '<h3>Recommended Course</h3>' +
-                  '<div>' + currentMilestoneData.course_rec.title + '</div>' +
-                  '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
-                    currentMilestoneData.course_rec.benefit +
-                  '</div>' +
-                  '<div id="rec-cta" class="rec-cta" style="margin-top:10px; color:#A373F8; font-weight:700;">Start Course →</div>' +
-                '</a>' +
-              '</div>';
+              html += '<div class="milestone-section">' +
+                '<h3>COURSE</h3>' +
+                '<div class="course-recommendation">' +
+                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
+                    '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
+                    '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Start Course →</div>' +
+                  '</a>' +
+                '</div>' +
+                '</div>' +
+                '<div class="milestone-section">' +
+                  '<h3>BENEFIT</h3>' +
+                  '<div>' + currentMilestoneData.course_rec.benefit + '</div>' +
+                '</div>';
             }
             
             // Add course progress section placeholder
@@ -2079,12 +2117,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             html += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
-                  '<h3>Goal</h3>' +
+                  '<h3>GOAL</h3>' +
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
               '</div>' +
               '</div>' +
               '</div>';
+            }
           }
 
           html += '<div id="path-view" style="display:none; background: rgba(0,0,0,1); padding: 20px;"><div class="timeline">' +
@@ -2092,6 +2131,20 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Render timeline
           console.log('[Client] About to render timeline. monthly_plan length:', roadmapPlan.monthly_plan ? roadmapPlan.monthly_plan.length : 'undefined');
+          
+          // Add Milestone 0 (Overview) to timeline
+          const isOverviewCurrent = currentMilestone === 0;
+          html += '<div class="milestone ' + (isOverviewCurrent ? 'current' : '') + '">' +
+            '<div class="milestone-dot"></div>' +
+            '<div class="milestone-content clickable" onclick="showMilestoneDetail(0)">' +
+              '<div class="milestone-title">' +
+                (isOverviewCurrent ? '🎯' : '📖') + ' ' +
+                'Overview: Getting Started' +
+              '</div>' +
+              '<div class="milestone-meta"><span class="label">Welcome:</span> ' + roadmapPlan.welcome + '</div>' +
+            '</div>' +
+          '</div>';
+          
           if (roadmapPlan.monthly_plan && Array.isArray(roadmapPlan.monthly_plan)) {
             roadmapPlan.monthly_plan.forEach((milestone, index) => {
               const num = index + 1;
@@ -2139,21 +2192,21 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           try {
             const plan = window.ROADMAP_PLAN;
             const total = Array.isArray(plan?.monthly_plan) ? plan.monthly_plan.length : 12;
-            const current = Number(window.DISPLAYED_MILESTONE || 1);
+            const current = Number(window.DISPLAYED_MILESTONE || 0);
             const prevBtn = document.getElementById('nav-prev');
             const nextBtn = document.getElementById('nav-next');
-            if (prevBtn) prevBtn.disabled = current <= 1;
+            if (prevBtn) prevBtn.disabled = current <= 0;
             if (nextBtn) nextBtn.disabled = current >= total;
           } catch (_) {}
         }
 
         function navigateMilestone(direction) {
           const plan = window.ROADMAP_PLAN;
-          if (!plan || !Array.isArray(plan.monthly_plan)) return;
-          const total = plan.monthly_plan.length;
-          const current = Number(window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 1);
+          if (!plan) return;
+          const total = Array.isArray(plan.monthly_plan) ? plan.monthly_plan.length : 12;
+          const current = Number(window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 0);
           let next = current + Number(direction || 0);
-          if (next < 1) next = 1;
+          if (next < 0) next = 0;
           if (next > total) next = total;
           if (next !== current) {
             showMilestoneDetail(next);
@@ -2165,8 +2218,57 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Always attempt to scroll to top in iframe immediately
           try { window.scrollTo(0, 0); } catch (_) {}
           const plan = window.ROADMAP_PLAN;
-          const progress = window.ROADMAP_PROGRESS || { currentMilestone: 1 };
-          if (!plan || !Array.isArray(plan.monthly_plan)) return;
+          const progress = window.ROADMAP_PROGRESS || { currentMilestone: 0 };
+          if (!plan) return;
+          
+          // Handle Milestone 0 (Overview) separately
+          if (Number(milestoneNumber) === 0) {
+            const currentEl = document.getElementById('current-view');
+            if (currentEl) {
+              let inner = '' +
+                '<div class="milestone-nav">' +
+                  '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)" disabled>‹</button>' +
+                  '<h2 style="margin: 0;">OVERVIEW</h2>' +
+                  '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
+                '</div>' +
+                '<div class="milestone-section">' +
+                  '<h3>WELCOME</h3>' +
+                  '<div>' + plan.welcome + '</div>' +
+                '</div>' +
+                '<div class="milestone-section">' +
+                  '<h3>OVERVIEW</h3>' +
+                  '<div>' + plan.overview + '</div>' +
+                '</div>' +
+                '<div class="milestone-section">' +
+                  '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
+                    '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
+                    '<div style="font-size: 14px; margin-bottom: 15px;">Click the right arrow (›) above to start with Milestone 1 of your personalized learning plan.</div>' +
+                  '</div>' +
+                '</div>';
+              currentEl.innerHTML = inner;
+            }
+            
+            // Track currently displayed milestone
+            window.DISPLAYED_MILESTONE = 0;
+            updateNavArrows();
+            
+            // Switch back to detail view
+            const path = document.getElementById('path-view');
+            const wrap = document.getElementById('current-view-wrap');
+            if (path) path.style.display = 'none';
+            if (wrap) wrap.style.display = '';
+            
+            requestParentScrollTop();
+            setTimeout(requestParentScrollTop, 60);
+            try { setTimeout(function(){ window.scrollTo(0, 0); }, 30); } catch(_) {}
+            sendHeight();
+            setTimeout(sendHeight, 200);
+            setTimeout(sendHeight, 800);
+            return;
+          }
+          
+          // Handle regular milestones
+          if (!Array.isArray(plan.monthly_plan)) return;
           const idx = Number(milestoneNumber) - 1;
           const data = plan.monthly_plan[idx];
           if (!data) return;
@@ -2177,20 +2279,32 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             let inner = '' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
+                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<h3>FOCUS</h3>' +
+                '<div>' + data.focus + '</div>' +
+              '</div>' +
+              '<div class="milestone-section">' +
+                '<h3>EXPLANATION</h3>' +
+                '<div>' + data.explanation + '</div>' +
               '</div>';
+            
             if (data.course_rec) {
-              inner += '<div class="course-recommendation">' +
-                '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
-                  '<h3>Recommended Course</h3>' +
-                  '<div>' + data.course_rec.title + '</div>' +
-                  '<div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">' +
-                    data.course_rec.benefit +
-                  '</div>' +
-                  '<div id="rec-cta" class="rec-cta" style="margin-top:10px; color:#A373F8; font-weight:700;">Start Course →</div>' +
-                '</a>' +
-              '</div>';
+              inner += '<div class="milestone-section">' +
+                '<h3>COURSE</h3>' +
+                '<div class="course-recommendation">' +
+                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
+                    '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
+                    '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Start Course →</div>' +
+                  '</a>' +
+                '</div>' +
+                '</div>' +
+                '<div class="milestone-section">' +
+                  '<h3>BENEFIT</h3>' +
+                  '<div>' + data.course_rec.benefit + '</div>' +
+                '</div>';
             }
             
             // Add course progress section placeholder
@@ -2198,7 +2312,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             inner += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
-                  '<h3>Goal</h3>' +
+                  '<h3>GOAL</h3>' +
                   (data.goal || data.milestone || '') +
                 '</div>' +
               '</div>' +
@@ -2434,7 +2548,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // Show the current milestone view
         function showCurrentMilestone(event) {
           if (event) event.preventDefault();
-          const currentMilestone = window.CURRENT_MILESTONE || 1;
+          const currentMilestone = window.CURRENT_MILESTONE || 0;
           showMilestoneDetail(currentMilestone);
         }
         

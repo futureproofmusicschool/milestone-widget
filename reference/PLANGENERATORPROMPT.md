@@ -21,8 +21,8 @@ You must output ONE JSON object whose top-level keys are:
 • monthly_plan – array of 12 objects where each object has
    { month (1-12),
      focus (primary skill/theme),
-     goal (description of the specific course final project or assignment, personalized to the student's genre preferences and goals - should be 2-3 sentences explaining what they'll actually create/complete in the course, customized to their musical style),
-     explanation (2-3 sentences explaining why this month's work matters and how it supports the northstar)
+     goal (a 1-2 sentence description of how completing the final project or assignment from the course will help the student reach their own personal northstar),
+     explanation (2-3 sentences explaining why the work in this course matters and how it supports the northstar)
      course_rec {title, url, benefit} }
    - NOTE: The "benefit" field in course_rec should be a full paragraph (3-4 sentences) explaining specifically how this course connects to the student's personal goals, what skills they'll gain, and how it fits into their overall learning journey toward their northstar. Don't just list features - explain the personal value and progression.
 • quarterly_summary – object with keys Q1, Q2, Q3, Q4; each value is one paragraph recapping progress and setting the next stage.
