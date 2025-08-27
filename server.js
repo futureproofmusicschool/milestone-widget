@@ -1288,6 +1288,13 @@ app.options('/api/milestone-roadmap/:userId/complete', (req, res) => {
   res.sendStatus(200);
 });
 
+app.options('/api/milestone-roadmap/:userId/visit', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
+});
+
 /**
  * Get user's milestone roadmap plan and progress
  */
@@ -1429,6 +1436,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       userId,
       currentMilestone: 0,
       milestonesCompleted: [],
+      milestonesVisited: [0], // Start with Overview visited
       milestoneProgress: {}
     };
     
@@ -1438,8 +1446,40 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       progress.milestonesCompleted.sort((a, b) => a - b);
     }
     
-    // Update current milestone to the next incomplete one
-    progress.currentMilestone = Math.min(milestoneNumber + 1, 12);
+    // Ensure milestonesVisited exists (for existing users)
+    if (!progress.milestonesVisited) {
+      progress.milestonesVisited = [0];
+    }
+    
+    // Update currentMilestone logic: show most advanced visited but not completed milestone
+    const completedMilestones = progress.milestonesCompleted || [];
+    const visitedMilestones = progress.milestonesVisited || [];
+    
+    // Find the highest visited milestone that isn't completed
+    let newCurrentMilestone = 0;
+    for (let i = visitedMilestones.length - 1; i >= 0; i--) {
+      const milestone = visitedMilestones[i];
+      if (!completedMilestones.includes(milestone)) {
+        newCurrentMilestone = milestone;
+        break;
+      }
+    }
+    
+    // If all visited milestones are completed, advance to next milestone
+    if (newCurrentMilestone === 0 && visitedMilestones.length > 1) {
+      const maxVisited = Math.max(...visitedMilestones);
+      const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
+      if (maxVisited === maxCompleted && maxCompleted < 12) {
+        newCurrentMilestone = maxCompleted + 1;
+        // Auto-visit the next milestone
+        if (!visitedMilestones.includes(newCurrentMilestone)) {
+          progress.milestonesVisited.push(newCurrentMilestone);
+          progress.milestonesVisited.sort((a, b) => a - b);
+        }
+      }
+    }
+    
+    progress.currentMilestone = newCurrentMilestone;
     
     // Add completion timestamp
     progress.milestoneProgress[milestoneNumber] = {
@@ -1464,6 +1504,104 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
   } catch (error) {
     console.error('Error updating milestone progress:', error);
     res.status(500).json({ error: 'Failed to update progress' });
+  }
+});
+
+/**
+ * Track milestone visit (when user navigates to a milestone)
+ */
+app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
+  // Set CORS headers explicitly for this endpoint
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const { userId } = req.params;
+    const { milestoneNumber } = req.body;
+    
+    console.log(`Tracking visit to milestone ${milestoneNumber} for user ${userId}`);
+    
+    // First, get current data
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
+      range: 'sheet1!A:F',
+    });
+
+    const rows = response.data.values || [];
+    const userRowIndex = rows.findIndex(row => row[0] === userId);
+    
+    if (userRowIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Get current progress or create new
+    let progress = rows[userRowIndex][5] ? JSON.parse(rows[userRowIndex][5]) : {
+      userId,
+      currentMilestone: 0,
+      milestonesCompleted: [],
+      milestonesVisited: [0], // Start with Overview visited
+      milestoneProgress: {}
+    };
+    
+    // Ensure milestonesVisited exists (for existing users)
+    if (!progress.milestonesVisited) {
+      progress.milestonesVisited = [0];
+    }
+    
+    // Add milestone to visited list if not already there
+    if (!progress.milestonesVisited.includes(milestoneNumber)) {
+      progress.milestonesVisited.push(milestoneNumber);
+      progress.milestonesVisited.sort((a, b) => a - b);
+    }
+    
+    // Update currentMilestone logic: show most advanced visited but not completed milestone
+    const completedMilestones = progress.milestonesCompleted || [];
+    const visitedMilestones = progress.milestonesVisited || [];
+    
+    // Find the highest visited milestone that isn't completed
+    let newCurrentMilestone = 0;
+    for (let i = visitedMilestones.length - 1; i >= 0; i--) {
+      const milestone = visitedMilestones[i];
+      if (!completedMilestones.includes(milestone)) {
+        newCurrentMilestone = milestone;
+        break;
+      }
+    }
+    
+    // If all visited milestones are completed, advance to next milestone
+    if (newCurrentMilestone === 0 && visitedMilestones.length > 1) {
+      const maxVisited = Math.max(...visitedMilestones);
+      const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
+      if (maxVisited === maxCompleted && maxCompleted < 12) {
+        newCurrentMilestone = maxCompleted + 1;
+      }
+    }
+    
+    progress.currentMilestone = newCurrentMilestone;
+    
+    // Add visit timestamp
+    if (!progress.milestoneProgress[milestoneNumber]) {
+      progress.milestoneProgress[milestoneNumber] = {};
+    }
+    progress.milestoneProgress[milestoneNumber].visitedDate = new Date().toISOString();
+    
+    // Update the sheet (column F, which is index 5)
+    const updateRange = `sheet1!F${userRowIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
+      range: updateRange,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[JSON.stringify(progress)]]
+      }
+    });
+    
+    res.json({ success: true, progress });
+    
+  } catch (error) {
+    console.error('Error tracking milestone visit:', error);
+    res.status(500).json({ error: 'Failed to track visit' });
   }
 });
 
@@ -2026,11 +2164,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             return;
           }
           
-          const progress = roadmapProgress || {
-            currentMilestone: 0,
-            milestonesCompleted: [],
-            milestoneProgress: {}
-          };
+              const progress = roadmapProgress || {
+      currentMilestone: 0,
+      milestonesCompleted: [],
+      milestonesVisited: [0], // Start with Overview visited
+      milestoneProgress: {}
+    };
+    
+    // Ensure milestonesVisited exists (for existing users)
+    if (!progress.milestonesVisited) {
+      progress.milestonesVisited = [0];
+    }
           
           const currentMilestone = progress.currentMilestone || 0;
           const completed = progress.milestonesCompleted || [];
@@ -2197,6 +2341,26 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
         }
 
+        // Track milestone visit
+        async function trackMilestoneVisit(milestoneNumber) {
+          try {
+            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId + '/visit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ milestoneNumber: Number(milestoneNumber) })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              // Update local progress data
+              window.ROADMAP_PROGRESS = result.progress;
+              window.CURRENT_MILESTONE = result.progress.currentMilestone;
+            }
+          } catch (error) {
+            console.error('Error tracking milestone visit:', error);
+          }
+        }
+
         // Show the details for a selected milestone and return to the detail view
         function showMilestoneDetail(milestoneNumber) {
           // Always attempt to scroll to top in iframe immediately
@@ -2204,6 +2368,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const plan = window.ROADMAP_PLAN;
           const progress = window.ROADMAP_PROGRESS || { currentMilestone: 0 };
           if (!plan) return;
+          
+          // Track the visit
+          trackMilestoneVisit(milestoneNumber);
           
           // Handle Milestone 0 (Overview) separately
           if (Number(milestoneNumber) === 0) {
@@ -2393,6 +2560,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             html += '<div class="achievement-banner">' +
               '<div class="achievement-icon">🎉</div>' +
               '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
+              '<div style="margin-top: 15px;">' +
+                '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready for the next milestone?</div>' +
+                '<button onclick="advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Click the arrow at top right to advance →</button>' +
+              '</div>' +
               '</div>';
           }
           
@@ -2517,6 +2688,21 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (event) event.preventDefault();
           const currentMilestone = window.CURRENT_MILESTONE || 0;
           showMilestoneDetail(currentMilestone);
+        }
+        
+        // Advance to next milestone (called from course completion)
+        function advanceToNextMilestone() {
+          const progress = window.ROADMAP_PROGRESS || { currentMilestone: 0 };
+          const plan = window.ROADMAP_PLAN;
+          if (!plan) return;
+          
+          const currentMilestone = progress.currentMilestone || 0;
+          const totalMilestones = Array.isArray(plan.monthly_plan) ? plan.monthly_plan.length : 12;
+          
+          if (currentMilestone < totalMilestones) {
+            const nextMilestone = currentMilestone + 1;
+            showMilestoneDetail(nextMilestone);
+          }
         }
         
         // Show the full path view

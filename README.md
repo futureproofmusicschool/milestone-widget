@@ -1,139 +1,215 @@
-# Learn Pathway Widget
+# Learn Pathway & Milestone Widget
 
-A server-rendered widget that displays learning pathways and course progress. The widget is served directly from an Express server without a separate React frontend.
+A server-rendered widget suite (no separate React app) that displays learning pathways, a 12‑milestone self‑paced journey, and real‑time course progress. Served directly from an Express server.
 
-**New Feature**: 12-Milestone Learning Journey Roadmap - A personalized, self-paced learning path with milestone tracking.
+## What’s Included
 
+- Course Roadmap widget: saves and displays a user’s selected courses with progress
+- Milestone Journey widget: shows a personalized, self‑paced 12‑milestone plan with current milestone focus and course recommendation
+- LearnWorlds OAuth2 integration for live course progress
+- Google Sheets as the data store for plans and progress
 
-## Project Structure
+## How It Works
 
-- `server.js` - Express server that handles API requests and serves the HTML widget
-- `vercel.json` - Vercel deployment configuration
-- `.env` - Environment variables (Google Sheets credentials, etc.)
-- Package files (`package.json`, `package-lock.json`, `.npmrc`) - Node.js dependencies
+### Data Flow (Milestone Journey)
+- Plan JSON (the 12‑milestone roadmap) is stored in Google Sheets under `MILESTONE_SPREADSHEET_ID`, tab `sheet1`, column E.
+- Progress JSON (completion state) is stored in the same sheet, column F.
+- The server renders the Milestone widget (`/milestone-roadmap/:userId`) which:
+  - Loads the plan/progress via `/api/milestone-roadmap/:userId`
+  - Renders a header, current milestone detail, and a vertical timeline
+  - Optionally shows a recommended course with live progress via `/api/course-progress/:userId/course/:courseId`
+  - Lets users mark a milestone complete via `/api/milestone-roadmap/:userId/complete`
 
-## Tech Stack
+### Data Flow (Course Roadmap)
+- A separate spreadsheet (`SPREADSHEET_ID`) stores a user’s added courses (Sheet1) and canonical sort order (Sheet2).
+- The server renders the Course Roadmap widget (`/roadmap/:userId`) and pulls data via `/api/roadmapData/:userId` with live LearnWorlds progress available via `/api/progress/:userId`.
 
-- Express.js - Server with CORS support for multiple domains
-- Google Sheets API - Data storage
-- LearnWorlds API - Course progress tracking via OAuth2
-- Vanilla JavaScript - Client-side interactivity
-- HTML/CSS - Widget rendering with responsive design
+## Progress JSON Schema (Milestone Journey)
 
+The progress tracking (column F) uses this enhanced structure:
 
-## Widgets
+```json
+{
+  "userId": "string",
+  "currentMilestone": 0,
+  "milestonesCompleted": [1, 2, 3],
+  "milestonesVisited": [0, 1, 2, 3, 4],
+  "milestoneProgress": {
+    "1": {
+      "completed": true,
+      "completedDate": "2024-04-15T10:00:00Z",
+      "visitedDate": "2024-04-14T09:00:00Z"
+    }
+  }
+}
+```
 
-### 1. Course Roadmap Widget (`/roadmap/:userId`)
-Displays a user's learning pathway with course progress in a timeline format.
+### Progress Logic
+- **First Visit**: New users start with Overview (Milestone 0)
+- **Visit Tracking**: Each milestone navigation is saved to `milestonesVisited`
+- **Current Milestone**: Shows the most advanced visited but not completed milestone
+- **Auto-Advancement**: When all visited milestones are complete, advances to next milestone
 
-**Features:**
-- Course progress tracking with visual timeline
-- Add/remove courses functionality
-- Real-time progress updates from LearnWorlds API
+## Plan JSON Schema (Milestone Journey)
 
-### 2. Milestone Journey Widget (`/milestone-roadmap/:userId`) 🆕
-Displays a personalized 12-milestone learning journey with self-paced progression.
+The plan JSON (column E) expects this shape:
 
-**Features:**
-- Visual timeline with 12 milestones  
-- Current milestone detail view with practice
-- Toggle between current milestone and full path view
-- Mark milestone complete functionality
-- Course recommendations with automatic progress tracking
-- Real-time progress display for recommended courses
-- Progress tracking saved to Google Sheets
+```json
+{
+  "northstar": "string",
+  "welcome": "string",
+  "overview": "string",
+  "monthly_plan": [
+    {
+      "month": 1,
+      "focus": "string",
+      "goal": "string",
+      "course_rec": { "title": "string", "url": "string", "benefit": "string" }
+    }
+    // ... 12 total entries, ordered as Milestones 1..12
+  ],
+  "quarterly_summary": { "Q1": "string", "Q2": "string", "Q3": "string", "Q4": "string" },
+  "kpi": ["string", "string", "string", "string"],
+  "support_channels": ["string", "string"]
+}
+```
 
+Notes:
+- The app uses the term “Milestone” in the UI; the `monthly_plan` array is treated as Milestones 1..12.
+- The `goal` field is outcome‑based and must start with “Be able to …”. It’s a capability statement (not an instruction).
+- The former `explanation` field is removed everywhere.
 
+## Features
+
+### Course Roadmap (`/roadmap/:userId`)
+- Visual timeline of saved courses
+- Add/remove courses
+- Live progress from LearnWorlds
+
+### Milestone Journey (`/milestone-roadmap/:userId`)
+- Self‑paced 12‑milestone timeline
+- Current milestone detail view with: focus, outcome goal, and course recommendation
+- Toggle between “Current” and “My Path” views
+- Mark milestone complete (stored in Sheets)
+- Live progress for the recommended course (if provided)
 
 ## API Endpoints
 
-### Course Roadmap APIs
-- `/roadmap/:userId` - Get the HTML widget for a specific user
-- `/api/roadmap/:userId` - Get a user's saved courses (JSON)
-- `/api/roadmap/:userId/add` - Add a course to a user's roadmap
-- `/api/roadmap/:userId/remove` - Remove a course from a user's roadmap
-- `/api/progress/:userId` - Proxy LearnWorlds API for progress data
-- `/api/roadmapData/:userId` - Get complete roadmap data including progress (JSON)
+### General
+- `/` – Health check (JSON)
+- `/api/health` – API health (JSON)
 
-### Milestone Journey APIs 🆕
-- `/milestone-roadmap/:userId` - Get the HTML widget for milestone journey
-- `/api/milestone-roadmap/:userId` - Get user's roadmap plan and progress (JSON)
-- `/api/milestone-roadmap/:userId/complete` - Mark a milestone as complete
-- `/api/course-progress/:userId/course/:courseId` - Get progress for a specific course
+### Course Roadmap
+- `/roadmap/:userId` – HTML widget
+- `/api/roadmap/:userId` – Saved courses (JSON)
+- `/api/roadmap/:userId/add` – Add course
+- `/api/roadmap/:userId/remove` – Remove course
+- `/api/roadmapData/:userId` – Full roadmap data (JSON)
+- `/api/progress/:userId` – Sync LearnWorlds progress (batch)
 
-### Debug Endpoints
-- `/api/debug/oauth` - Test OAuth connection and credentials
+### Milestone Journey
+- `/milestone-roadmap/:userId` – HTML widget
+- `/api/milestone-roadmap/:userId` – Plan + progress (JSON)
+- `/api/milestone-roadmap/:userId/visit` – Track milestone visit (POST)
+- `/api/milestone-roadmap/:userId/complete` – Mark milestone complete (POST)
+- `/api/course-progress/:userId/course/:courseId` – Per‑course progress (LearnWorlds)
+
+### Debug
+- `/api/debug/oauth` – Verify LearnWorlds OAuth credentials
 
 ## Data Sources
 
-### Course Roadmap Data
-- **SPREADSHEET_ID**: Main spreadsheet for course tracking
-  - Sheet1: Course data (userId, courseId, courseTitle, timestamp, progress)
-  - Sheet2: Course sort order (courseId, sortOrder)
+### Course Roadmap Sheets (SPREADSHEET_ID)
+- Sheet1: `userId, courseId, courseTitle, timestamp, progress`
+- Sheet2: `courseId, sortOrder` (used for canonical ordering)
 
-### Milestone Journey Data 🆕
-- **MILESTONE_SPREADSHEET_ID**: Milestone tracking spreadsheet (defaults to SPREADSHEET_ID if not set)
-  - Column A: User ID
-  - Column B: Username
-  - Column E: Roadmap plan (JSON from AI generation)
-  - Column F: Roadmap progress (JSON tracking completion)
+### Milestone Journey Sheet (MILESTONE_SPREADSHEET_ID)
+- Column A: `user_id`
+- Column B: `username`
+- Column E: `roadmap_plan` (JSON)
+- Column F: `roadmap_progress` (JSON with visit tracking)
 
+## Tech Stack
 
-## Embedding the Widgets
+- Express.js with CORS
+- Google Sheets API
+- LearnWorlds API (OAuth2 client credentials)
+- HTML/CSS + Vanilla JS (no frontend framework)
 
-### Course Roadmap Widget
+## Embedding
+
+### Course Roadmap
 ```html
-<iframe src="https://learn-pathway-widget.vercel.app/roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
-        width="100%" 
-        height="800" 
-        frameborder="0">
-</iframe>
+<iframe src="https://learn-pathway-widget.vercel.app/roadmap/{{USER.ID}}?username={{USER.USERNAME}}"
+        width="100%" height="800" frameborder="0"></iframe>
 ```
 
-### Milestone Journey Widget 🆕
+### Milestone Journey
 ```html
-<iframe src="https://learn-pathway-widget.vercel.app/milestone-roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
-        width="100%" 
-        height="800" 
-        frameborder="0">
-</iframe>
+<iframe src="https://learn-pathway-widget.vercel.app/milestone-roadmap/{{USER.ID}}?username={{USER.USERNAME}}"
+        width="100%" height="800" frameborder="0"></iframe>
 ```
 
-For standalone deployment:
+Standalone deployment:
 ```html
-<iframe src="https://milestone-widget.vercel.app/milestone-roadmap/{{USER.ID}}?username={{USER.USERNAME}}" 
-        width="100%" 
-        height="800" 
-        frameborder="0">
-</iframe>
+<iframe src="https://milestone-widget.vercel.app/milestone-roadmap/{{USER.ID}}?username={{USER.USERNAME}}"
+        width="100%" height="800" frameborder="0"></iframe>
 ```
 
-Both widgets automatically adjust their height and communicate with the parent frame for optimal display.
+Both widgets auto‑size using `postMessage` to the parent frame.
 
-## Setup and Development
+## Setup
 
-1. Install dependencies:
-```
+1) Install dependencies
+```bash
 npm install
 ```
 
-2. Set up environment variables in `.env`:
-```
+2) Environment variables (`.env`)
+```bash
 GOOGLE_CREDENTIALS={"type":"service_account",...}
 SPREADSHEET_ID=your_course_spreadsheet_id
-MILESTONE_SPREADSHEET_ID=your_milestone_spreadsheet_id (optional, defaults to SPREADSHEET_ID)
+MILESTONE_SPREADSHEET_ID=your_milestone_spreadsheet_id   # optional; defaults to SPREADSHEET_ID
 LEARNWORLDS_CLIENT_ID=your_learnworlds_oauth_client_id
 LEARNWORLDS_CLIENT_SECRET=your_learnworlds_oauth_client_secret
-VERCEL_PROTECTION_BYPASS=your_bypass_token (optional)
+VERCEL_PROTECTION_BYPASS=your_bypass_token                # optional
 ```
 
-**Important Notes:**
-- Use OAuth2 client credentials from LearnWorlds, NOT static access tokens
-- The OAuth token endpoint is: `https://{SCHOOLHOMEPAGE}/admin/api/oauth2/access_token`
-- Both deployments (main app and milestone widget) need the same environment variables
+Notes:
+- Use OAuth2 client credentials (not static tokens)
+- Token endpoint: `https://{SCHOOLHOMEPAGE}/admin/api/oauth2/access_token`
 
-3. Run the server:
-```
+3) Run locally
+```bash
 node server.js
 ```
 
+## Milestone Logic (Renderer)
+
+### Current Milestone
+The widget shows the most advanced milestone that the user has visited but not yet completed. This ensures users return to where they left off in their learning journey.
+
+### Progression Rules
+- **First Visit**: Shows Overview (Milestone 0)
+- **Visit Tracking**: Each milestone navigation is recorded
+- **Current Logic**: Most advanced visited but incomplete milestone
+- **Auto-Advancement**: When all visited milestones complete, advances to next
+- **Self‑paced**: No time limits
+- **Flexible completion**: Can mark complete at any time
+- **Course Integration**: Celebrates course completion and prompts advancement
+
+## Visual Style
+
+- Black background with purple accent (`#A373F8`)
+- Subtle borders and glassy panels
+- Mobile‑optimized layout
+
+## Success Metrics (suggested)
+- Widget loads < 2s
+- Progress saves reliably
+- Accurate LearnWorlds progress
+- Mobile responsiveness
+
+---
+
+This README merges and replaces prior high‑level docs, reflecting the current production behavior of the widgets and APIs.

@@ -6,7 +6,7 @@
     {
       "month": 1,
       "focus": "DAW fluency & first full loop",
-      "goal": "You can produce a 60-second electronic demo using Ableton’s core workflow, recording audio and MIDI, arranging in Session/Arrangement views, and translating musical ideas into a complete loop.",
+      "goal": "Be able to produce a 60-second electronic demo using Ableton’s core workflow, recording audio and MIDI, arranging in Session/Arrangement views, and translating musical ideas into a complete loop.",
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
         "url": "https://learn.futureproofmusicschool.com/course/ableton-live-basics",
@@ -16,7 +16,7 @@
     {
       "month": 2,
       "focus": "Building a personal sound library",
-      "goal": "You can design and organize a cohesive 20-sample pack (drums, loops, textures) tailored to your genre, using recording, processing, and cataloging techniques to build a reusable signature library.",
+      "goal": "Be able to design and organize a cohesive 20-sample pack (drums, loops, textures) tailored to your genre, using recording, processing, and cataloging techniques to build a reusable signature library.",
       "course_rec": {
         "title": "How to Make Your Own Sample Pack",
         "url": "https://learn.futureproofmusicschool.com/course/how-to-make-your-own-sample-pack",
@@ -26,7 +26,7 @@
     {
       "month": 3,
       "focus": "Arranging full songs",
-      "goal": "You can transform loops into a fully arranged 3–4 minute track, shaping tension/release with transitions, automation, and professional section flow.",
+      "goal": "Be able to transform loops into a fully arranged 3–4 minute track, shaping tension/release with transitions, automation, and professional section flow.",
       "course_rec": {
         "title": "Creative Strategies 2",
         "url": "https://learn.futureproofmusicschool.com/course/creative-strategies-2",
@@ -36,7 +36,7 @@
     {
       "month": 4,
       "focus": "Genre deep-dive: Drum & Bass",
-      "goal": "You can produce a 3-minute Drum & Bass track that demonstrates tight breakbeat programming, rolling bass design, and genre-accurate arrangement.",
+      "goal": "Be able to produce a 3-minute Drum & Bass track that demonstrates tight breakbeat programming, rolling bass design, and genre-accurate arrangement.",
       "course_rec": {
         "title": "How to Make Drum and Bass",
         "url": "https://learn.futureproofmusicschool.com/course/how-to-make-drum-and-bass",
@@ -46,7 +46,7 @@
     {
       "month": 5,
       "focus": "Mixing essentials",
-      "goal": "You can deliver a mix with clear balance, depth, and width using EQ, compression, and spatial processing suitable for release.",
+      "goal": "Be able to deliver a mix with clear balance, depth, and width using EQ, compression, and spatial processing suitable for release.",
       "course_rec": {
         "title": "Mixing 2",
         "url": "https://learn.futureproofmusicschool.com/course/mixing-2",
@@ -56,7 +56,7 @@
     {
       "month": 6,
       "focus": "Quick-win collaboration",
-      "goal": "You can co‑produce a 2‑minute collaboration sketch, exchange stems efficiently, and integrate feedback into a cohesive idea.",
+      "goal": "Be able to co‑produce a 2‑minute collaboration sketch, exchange stems efficiently, and integrate feedback into a cohesive idea.",
       "course_rec": {
         "title": "Fast Collaboration Tactics",
         "url": "https://learn.futureproofmusicschool.com/course/fast-collaboration",
@@ -66,7 +66,7 @@
     {
       "month": 7,
       "focus": "Brand & social foundations",
-      "goal": "You can present a cohesive brand package (bio, visuals, logo) aligned to your sound and target audience across platforms.",
+      "goal": "Be able to present a cohesive brand package (bio, visuals, logo) aligned to your sound and target audience across platforms.",
       "course_rec": {
         "title": "Branding 123",
         "url": "https://learn.futureproofmusicschool.com/course/branding123",
@@ -76,7 +76,7 @@
     {
       "month": 8,
       "focus": "Sound-design refinement",
-      "goal": "You can craft a signature bass patch and drum kit, then apply them consistently for a recognizable sonic identity.",
+      "goal": "Be able to craft a signature bass patch and drum kit, then apply them consistently for a recognizable sonic identity.",
       "course_rec": {
         "title": "Advanced Sound-Design",
         "url": "https://learn.futureproofmusicschool.com/course/advanced-sound-design",
@@ -86,7 +86,7 @@
     {
       "month": 9,
       "focus": "Advanced creative workflow",
-      "goal": "You can generate and evaluate three structured EP drafts quickly using constraint‑driven workflow and iteration.",
+      "goal": "Be able to generate and evaluate three structured EP drafts quickly using constraint‑driven workflow and iteration.",
       "course_rec": {
         "title": "Workflow Mastery",
         "url": "https://learn.futureproofmusicschool.com/course/workflow-mastery",
@@ -96,7 +96,7 @@
     {
       "month": 10,
       "focus": "Mix & pre-master EP",
-      "goal": "You can prepare all EP tracks to a mix‑ready state with organized sessions, version control, and consistent gain staging.",
+      "goal": "Be able to prepare all EP tracks to a mix‑ready state with organized sessions, version control, and consistent gain staging.",
       "course_rec": {
         "title": "Pre-Master Toolkit",
         "url": "https://learn.futureproofmusicschool.com/course/pre-master-toolkit",
@@ -106,7 +106,7 @@
     {
       "month": 11,
       "focus": "Marketing & release strategy",
-      "goal": "You can assemble and schedule all release assets (covers, bios, links, clips) with a clear rollout calendar.",
+      "goal": "Be able to assemble and schedule all release assets (covers, bios, links, clips) with a clear rollout calendar.",
       "course_rec": {
         "title": "How to Promote Your Music in 2025: Facebook/Meta Ads",
         "url": "https://learn.futureproofmusicschool.com/course/meta-ads-2025",
@@ -116,7 +116,7 @@
     {
       "month": 12,
       "focus": "Launch & review",
-      "goal": "You can execute a release plan end‑to‑end, launch your EP, and track results using a simple analytics workflow.",
+      "goal": "Be able to execute a release plan end‑to‑end, launch your EP, and track results using a simple analytics workflow.",
       "course_rec": {
         "title": "Release Day Playbook",
         "url": "https://learn.futureproofmusicschool.com/course/release-day-playbook",
