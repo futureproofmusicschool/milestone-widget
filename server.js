@@ -1435,7 +1435,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     const absoluteRowIndex = userRowIndexInData + 1;
     
     // Get current progress or create new, with robust parsing
-    const rawProgress = rows[absoluteRowIndex][5];
+    const rawProgress = rows[absoluteRowIndex] ? rows[absoluteRowIndex][5] : undefined;
     let progress;
     if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
         try {
@@ -1559,7 +1559,7 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
     const absoluteRowIndex = userRowIndexInData + 1;
 
     // Get current progress or create new, with robust parsing
-    const rawProgress = rows[absoluteRowIndex][5];
+    const rawProgress = rows[absoluteRowIndex] ? rows[absoluteRowIndex][5] : undefined;
     let progress;
     if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
         try {
