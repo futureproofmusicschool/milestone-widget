@@ -6,7 +6,6 @@
     {
       "month": 1,
       "focus": "DAW fluency & first full loop",
-      "explanation": "You need to build fluency in your chosen DAW in order to translate your ideas into sound. This milestone lays the foundation for what comes later.",
       "goal": "Complete the Ableton Live Basics final project by producing a 1-minute electronic track using the core workflow techniques taught in the course. You'll demonstrate your mastery of recording, MIDI sequencing, and basic arrangement by creating an original composition that showcases proper use of Ableton's session and arrangement views. This project serves as your foundation piece, proving you can translate musical ideas into actual productions using professional DAW techniques.",
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
@@ -17,7 +16,6 @@
     {
       "month": 2,
       "focus": "Building a personal sound library",
-      "explanation": "Original sounds distinguish you from the monochrome crowd. A curated library becomes your private cathedral of timbres.",
       "goal": "Create your own 20-sample electronic music pack as the course final project, featuring original drum hits, melodic loops, and atmospheric textures tailored to your preferred electronic genres. You'll record, process, and organize these samples using the advanced techniques taught in the course, demonstrating your ability to build a cohesive sound library from scratch. This sample pack becomes the foundation for your signature sound, providing unique elements that will distinguish your future EP tracks from the crowd.",
       "course_rec": {
         "title": "How to Make Your Own Sample Pack",
@@ -28,7 +26,6 @@
     {
       "month": 3,
       "focus": "Arranging full songs",
-      "explanation": "Transform skeletal loops into living forms; arrangement breathes motion into your music’s twilight heart.",
       "goal": "Complete the Creative Strategies 2 final assignment by arranging a full 3-4 minute electronic track using the advanced arrangement techniques and creative strategies taught in the course. You'll demonstrate mastery of tension building, dynamic transitions, and automation by taking a basic loop and transforming it into a complete song structure with intro, verse, chorus, breakdown, and outro sections. This project proves your evolution from loop-based production to full song composition, creating your first professionally-structured electronic music piece.",
       "course_rec": {
         "title": "Creative Strategies 2",
@@ -39,7 +36,6 @@
     {
       "month": 4,
       "focus": "Genre deep-dive: Drum & Bass",
-      "explanation": "Exploring genre archetypes widens your sonic palette and sharpens rhythmic instincts.",
       "goal": "Complete the Drum & Bass course final project by producing a 3-minute D&B track that demonstrates mastery of the genre's signature elements: complex breakbeats, rolling basslines, and precise sound design. You'll create an original composition or remix an existing track using the specific programming techniques, bass design methods, and arrangement structures taught in the course. This project showcases your ability to work within demanding technical constraints while developing skills that enhance all your electronic music production.",
       "course_rec": {
         "title": "How to Make Drum and Bass",
@@ -50,7 +46,6 @@
     {
       "month": 5,
       "focus": "Mixing essentials",
-      "explanation": "Balanced mixes let every spectral shade shine through the midnight haze.",
       "goal": "Complete the Mixing 2 course final assignment by delivering a professional-quality mix of your electronic track using the advanced EQ, compression, and spatial processing techniques taught in the course. You'll demonstrate your ability to create width, depth, and clarity while achieving proper frequency balance and dynamic range suitable for streaming platforms. This mixed track serves as proof that your productions can compete with commercial releases, showing mastery of the technical skills that separate amateur from professional electronic music.",
       "course_rec": {
         "title": "Mixing 2",
@@ -61,7 +56,6 @@
     {
       "month": 6,
       "focus": "Quick-win collaboration",
-      "explanation": "Sharing stems invites new shadows into your workflow and accelerates growth.",
       "goal": "Co-produce a two-minute collaboration sketch by day 180",
       "course_rec": {
         "title": "Fast Collaboration Tactics",
@@ -72,7 +66,6 @@
     {
       "month": 7,
       "focus": "Brand & social foundations",
-      "explanation": "Forge a visual sigil so listeners can recognise your sound in the dark.",
       "goal": "Complete the Branding 123 final project by developing a comprehensive brand package including a compelling artist bio, professional photo selection, and logo design that reflects your electronic music style and target audience. You'll deliver polished brand assets using the strategic framework and design principles taught in the course, ensuring consistency across all platforms from social media to streaming services. This brand foundation package prepares you for professional music releases and establishes the visual identity that will grow with your career.",
       "course_rec": {
         "title": "Branding 123",
@@ -83,7 +76,6 @@
     {
       "month": 8,
       "focus": "Sound-design refinement",
-      "explanation": "Craft signature tones that echo through neon catacombs.",
       "goal": "Signature bass and drum kit complete by day 240",
       "course_rec": {
         "title": "Advanced Sound-Design",
@@ -94,7 +86,6 @@
     {
       "month": 9,
       "focus": "Advanced creative workflow",
-      "explanation": "Limitations birth innovation; refine your ritual for relentless output.",
       "goal": "Generate three draft ideas for the EP by day 270",
       "course_rec": {
         "title": "Workflow Mastery",
@@ -105,7 +96,6 @@
     {
       "month": 10,
       "focus": "Mix & pre-master EP",
-      "explanation": "Polish each track until it gleams like obsidian under moonlight.",
       "goal": "All EP tracks in mix-ready state by day 300",
       "course_rec": {
         "title": "Pre-Master Toolkit",
@@ -116,7 +106,6 @@
     {
       "month": 11,
       "focus": "Marketing & release strategy",
-      "explanation": "Summon your audience with calculated ritual—content calendars and targeted ads.",
       "goal": "Release assets scheduled by day 330",
       "course_rec": {
         "title": "How to Promote Your Music in 2025: Facebook/Meta Ads",
@@ -127,7 +116,6 @@
     {
       "month": 12,
       "focus": "Launch & review",
-      "explanation": "Cast your creation into the world, then study the ripples it leaves in the void.",
       "goal": "Execute the Release Day Playbook course final project by successfully launching your debut electronic music EP using the comprehensive release strategy and promotional tactics taught in the course. You'll implement the step-by-step launch plan, coordinate pre-release marketing, and achieve your target of 1,000 streams within the first month using the specific promotional methods and analytics tracking covered in the curriculum. This project demonstrates your mastery of the complete release process, marking your official transition from student to published electronic music artist.",
       "course_rec": {
         "title": "Release Day Playbook",

@@ -2091,10 +2091,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>FOCUS</h3>' +
                 '<div>' + currentMilestoneData.focus + '</div>' +
               '</div>' +
-              '<div class="milestone-section">' +
-                '<h3>EXPLANATION</h3>' +
-                '<div>' + currentMilestoneData.explanation + '</div>' +
-              '</div>';
+              '';
             
             if (currentMilestoneData.course_rec) {
               html += '<div class="milestone-section">' +
@@ -2289,10 +2286,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h3>FOCUS</h3>' +
                 '<div>' + data.focus + '</div>' +
               '</div>' +
-              '<div class="milestone-section">' +
-                '<h3>EXPLANATION</h3>' +
-                '<div>' + data.explanation + '</div>' +
-              '</div>';
+              '';
             
             if (data.course_rec) {
               inner += '<div class="milestone-section">' +
