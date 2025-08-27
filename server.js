@@ -1415,8 +1415,9 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
   try {
     const { userId } = req.params;
     const { milestoneNumber } = req.body;
-    
-    console.log(`Marking milestone ${milestoneNumber} complete for user ${userId}`);
+    const milestoneNumberNum = Number(milestoneNumber);
+
+    console.log(`Marking milestone ${milestoneNumberNum} complete for user ${userId}`);
     
     // First, get current data
     const response = await sheets.spreadsheets.values.get({
@@ -1425,38 +1426,52 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     });
 
     const rows = response.data.values || [];
-    const userRowIndex = rows.findIndex(row => row[0] === userId);
-    
-    if (userRowIndex === -1) {
+    const userRowIndexInData = rows.slice(1).findIndex(row => (row[0] || '').trim() === (userId || '').trim());
+
+    if (userRowIndexInData === -1) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+    const absoluteRowIndex = userRowIndexInData + 1;
     
-    // Get current progress or create new
-    let progress = rows[userRowIndex][5] ? JSON.parse(rows[userRowIndex][5]) : {
+    // Get current progress or create new, with robust parsing
+    const rawProgress = rows[absoluteRowIndex][5];
+    let progress;
+    if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
+        try {
+            progress = JSON.parse(rawProgress);
+        } catch (e) {
+            progress = {}; // Start fresh if JSON is broken
+        }
+    } else {
+        progress = {};
+    }
+
+    // Initialize progress object if it's new or broken
+    progress = {
       userId,
-      currentMilestone: 0,
-      milestonesCompleted: [],
-      milestonesVisited: [0], // Start with Overview visited
-      milestoneProgress: {}
+      currentMilestone: progress.currentMilestone || 0,
+      milestonesCompleted: progress.milestonesCompleted || [],
+      milestonesVisited: progress.milestonesVisited || [0],
+      milestoneProgress: progress.milestoneProgress || {}
     };
+
+    // Normalize arrays to numbers to prevent type errors
+    progress.milestonesVisited = progress.milestonesVisited.map(Number);
+    progress.milestonesCompleted = progress.milestonesCompleted.map(Number);
     
     // Update progress
-    if (!progress.milestonesCompleted.includes(milestoneNumber)) {
-      progress.milestonesCompleted.push(milestoneNumber);
+    if (!progress.milestonesCompleted.includes(milestoneNumberNum)) {
+      progress.milestonesCompleted.push(milestoneNumberNum);
       progress.milestonesCompleted.sort((a, b) => a - b);
     }
     
-    // Ensure milestonesVisited exists (for existing users)
-    if (!progress.milestonesVisited) {
-      progress.milestonesVisited = [0];
-    }
-    
     // Update currentMilestone logic: show most advanced visited but not completed milestone
-    const completedMilestones = progress.milestonesCompleted || [];
-    const visitedMilestones = progress.milestonesVisited || [];
+    const completedMilestones = progress.milestonesCompleted;
+    const visitedMilestones = progress.milestonesVisited;
     
-    // Find the highest visited milestone that isn't completed
     let newCurrentMilestone = 0;
+    // Find the highest visited milestone that isn't completed
     for (let i = visitedMilestones.length - 1; i >= 0; i--) {
       const milestone = visitedMilestones[i];
       if (!completedMilestones.includes(milestone)) {
@@ -1465,31 +1480,35 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       }
     }
     
-    // If all visited milestones are completed, advance to next milestone
-    if (newCurrentMilestone === 0 && visitedMilestones.length > 1) {
-      const maxVisited = Math.max(...visitedMilestones);
-      const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
-      if (maxVisited === maxCompleted && maxCompleted < 12) {
-        newCurrentMilestone = maxCompleted + 1;
-        // Auto-visit the next milestone
-        if (!visitedMilestones.includes(newCurrentMilestone)) {
-          progress.milestonesVisited.push(newCurrentMilestone);
-          progress.milestonesVisited.sort((a, b) => a - b);
+    // If all visited milestones are completed, advance to the next unvisited milestone
+    if (newCurrentMilestone === 0 && visitedMilestones.length > 0) {
+        const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
+        if (maxCompleted < 12) {
+            newCurrentMilestone = maxCompleted + 1;
+            // Auto-visit the new current milestone
+            if (!visitedMilestones.includes(newCurrentMilestone)) {
+                progress.milestonesVisited.push(newCurrentMilestone);
+                progress.milestonesVisited.sort((a, b) => a - b);
+            }
+        } else {
+            newCurrentMilestone = 12; // All completed
         }
-      }
     }
     
     progress.currentMilestone = newCurrentMilestone;
     
     // Add completion timestamp
-    progress.milestoneProgress[milestoneNumber] = {
-      ...progress.milestoneProgress[milestoneNumber],
+    if (!progress.milestoneProgress[milestoneNumberNum]) {
+        progress.milestoneProgress[milestoneNumberNum] = {};
+    }
+    progress.milestoneProgress[milestoneNumberNum] = {
+      ...progress.milestoneProgress[milestoneNumberNum],
       completed: true,
       completedDate: new Date().toISOString()
     };
     
     // Update the sheet (column F, which is index 5)
-    const updateRange = `sheet1!F${userRowIndex + 1}`;
+    const updateRange = `sheet1!F${absoluteRowIndex + 1}`;
     await sheets.spreadsheets.values.update({
       spreadsheetId: MILESTONE_SPREADSHEET_ID,
       range: updateRange,
@@ -1519,8 +1538,9 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
   try {
     const { userId } = req.params;
     const { milestoneNumber } = req.body;
+    const milestoneNumberNum = Number(milestoneNumber);
     
-    console.log(`Tracking visit to milestone ${milestoneNumber} for user ${userId}`);
+    console.log(`Tracking visit to milestone ${milestoneNumberNum} for user ${userId}`);
     
     // First, get current data
     const response = await sheets.spreadsheets.values.get({
@@ -1529,38 +1549,53 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
     });
 
     const rows = response.data.values || [];
-    const userRowIndex = rows.findIndex(row => row[0] === userId);
+    // Find user row, skipping header. This is safer.
+    const userRowIndexInData = rows.slice(1).findIndex(row => (row[0] || '').trim() === (userId || '').trim());
     
-    if (userRowIndex === -1) {
+    if (userRowIndexInData === -1) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // Get current progress or create new
-    let progress = rows[userRowIndex][5] ? JSON.parse(rows[userRowIndex][5]) : {
-      userId,
-      currentMilestone: 0,
-      milestonesCompleted: [],
-      milestonesVisited: [0], // Start with Overview visited
-      milestoneProgress: {}
-    };
-    
-    // Ensure milestonesVisited exists (for existing users)
-    if (!progress.milestonesVisited) {
-      progress.milestonesVisited = [0];
+    const absoluteRowIndex = userRowIndexInData + 1;
+
+    // Get current progress or create new, with robust parsing
+    const rawProgress = rows[absoluteRowIndex][5];
+    let progress;
+    if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
+        try {
+            progress = JSON.parse(rawProgress);
+        } catch (e) {
+            progress = {}; // Start fresh if JSON is broken
+        }
+    } else {
+        progress = {};
     }
+
+    // Initialize progress object if it's new or broken
+    progress = {
+      userId,
+      currentMilestone: progress.currentMilestone || 0,
+      milestonesCompleted: progress.milestonesCompleted || [],
+      milestonesVisited: progress.milestonesVisited || [0],
+      milestoneProgress: progress.milestoneProgress || {}
+    };
+
+    // Normalize arrays to numbers to prevent type errors
+    progress.milestonesVisited = progress.milestonesVisited.map(Number);
+    progress.milestonesCompleted = progress.milestonesCompleted.map(Number);
     
     // Add milestone to visited list if not already there
-    if (!progress.milestonesVisited.includes(milestoneNumber)) {
-      progress.milestonesVisited.push(milestoneNumber);
+    if (!progress.milestonesVisited.includes(milestoneNumberNum)) {
+      progress.milestonesVisited.push(milestoneNumberNum);
       progress.milestonesVisited.sort((a, b) => a - b);
     }
     
     // Update currentMilestone logic: show most advanced visited but not completed milestone
-    const completedMilestones = progress.milestonesCompleted || [];
-    const visitedMilestones = progress.milestonesVisited || [];
+    const completedMilestones = progress.milestonesCompleted;
+    const visitedMilestones = progress.milestonesVisited;
     
-    // Find the highest visited milestone that isn't completed
     let newCurrentMilestone = 0;
+    // Find the highest visited milestone that isn't completed
     for (let i = visitedMilestones.length - 1; i >= 0; i--) {
       const milestone = visitedMilestones[i];
       if (!completedMilestones.includes(milestone)) {
@@ -1569,25 +1604,26 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
       }
     }
     
-    // If all visited milestones are completed, advance to next milestone
-    if (newCurrentMilestone === 0 && visitedMilestones.length > 1) {
-      const maxVisited = Math.max(...visitedMilestones);
-      const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
-      if (maxVisited === maxCompleted && maxCompleted < 12) {
-        newCurrentMilestone = maxCompleted + 1;
-      }
+    // If all visited milestones are completed, advance to the next unvisited milestone
+    if (newCurrentMilestone === 0 && visitedMilestones.length > 0) {
+        const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
+        if (maxCompleted < 12) {
+            newCurrentMilestone = maxCompleted + 1;
+        } else {
+            newCurrentMilestone = 12; // All completed
+        }
     }
     
     progress.currentMilestone = newCurrentMilestone;
     
     // Add visit timestamp
-    if (!progress.milestoneProgress[milestoneNumber]) {
-      progress.milestoneProgress[milestoneNumber] = {};
+    if (!progress.milestoneProgress[milestoneNumberNum]) {
+      progress.milestoneProgress[milestoneNumberNum] = {};
     }
-    progress.milestoneProgress[milestoneNumber].visitedDate = new Date().toISOString();
+    progress.milestoneProgress[milestoneNumberNum].visitedDate = new Date().toISOString();
     
     // Update the sheet (column F, which is index 5)
-    const updateRange = `sheet1!F${userRowIndex + 1}`;
+    const updateRange = `sheet1!F${absoluteRowIndex + 1}`;
     await sheets.spreadsheets.values.update({
       spreadsheetId: MILESTONE_SPREADSHEET_ID,
       range: updateRange,
