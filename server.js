@@ -2041,12 +2041,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           window.CURRENT_MILESTONE = currentMilestone;
           
           let html = '<div class="header">' +
-            '<h1>Welcome back, ' + username + '!</h1>' +
-            '<div class="north-star">Your Goal: "' + roadmapPlan.northstar + '"</div>' +
+            '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
+            '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
-              '<a href="#" onclick="showCurrentMilestone(event)" class="view-toggle">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Milestone ' + currentMilestone + ' of 12') + '</a>' +
-              '<span>✅ ' + completed.length + ' Completed</span>' +
-              '<span>📊 ' + Math.round((completed.length / 12) * 100) + '% Progress</span>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
@@ -2084,12 +2081,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div id="current-view" class="current-milestone-detail">' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + '</h2>' +
+                '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
-              '</div>' +
-              '<div class="milestone-section">' +
-                '<h3>FOCUS</h3>' +
-                '<div>' + currentMilestoneData.focus + '</div>' +
               '</div>' +
               '';
             
@@ -2099,13 +2092,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<div class="course-recommendation">' +
                   '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
+                    '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Start Course →</div>' +
                   '</a>' +
                 '</div>' +
-                '</div>' +
-                '<div class="milestone-section">' +
-                  '<h3>BENEFIT</h3>' +
-                  '<div>' + currentMilestoneData.course_rec.benefit + '</div>' +
                 '</div>';
             }
             
@@ -2279,12 +2269,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             let inner = '' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
-                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + '</h2>' +
+                '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
-              '</div>' +
-              '<div class="milestone-section">' +
-                '<h3>FOCUS</h3>' +
-                '<div>' + data.focus + '</div>' +
               '</div>' +
               '';
             
@@ -2294,13 +2280,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<div class="course-recommendation">' +
                   '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
+                    '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Start Course →</div>' +
                   '</a>' +
                 '</div>' +
-                '</div>' +
-                '<div class="milestone-section">' +
-                  '<h3>BENEFIT</h3>' +
-                  '<div>' + data.course_rec.benefit + '</div>' +
                 '</div>';
             }
             

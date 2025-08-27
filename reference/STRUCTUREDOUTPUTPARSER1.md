@@ -6,7 +6,7 @@
     {
       "month": 1,
       "focus": "DAW fluency & first full loop",
-      "goal": "Complete the Ableton Live Basics final project by producing a 1-minute electronic track using the core workflow techniques taught in the course. You'll demonstrate your mastery of recording, MIDI sequencing, and basic arrangement by creating an original composition that showcases proper use of Ableton's session and arrangement views. This project serves as your foundation piece, proving you can translate musical ideas into actual productions using professional DAW techniques.",
+      "goal": "You can produce a 60-second electronic demo using Ableton’s core workflow, recording audio and MIDI, arranging in Session/Arrangement views, and translating musical ideas into a complete loop.",
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
         "url": "https://learn.futureproofmusicschool.com/course/ableton-live-basics",
@@ -16,7 +16,7 @@
     {
       "month": 2,
       "focus": "Building a personal sound library",
-      "goal": "Create your own 20-sample electronic music pack as the course final project, featuring original drum hits, melodic loops, and atmospheric textures tailored to your preferred electronic genres. You'll record, process, and organize these samples using the advanced techniques taught in the course, demonstrating your ability to build a cohesive sound library from scratch. This sample pack becomes the foundation for your signature sound, providing unique elements that will distinguish your future EP tracks from the crowd.",
+      "goal": "You can design and organize a cohesive 20-sample pack (drums, loops, textures) tailored to your genre, using recording, processing, and cataloging techniques to build a reusable signature library.",
       "course_rec": {
         "title": "How to Make Your Own Sample Pack",
         "url": "https://learn.futureproofmusicschool.com/course/how-to-make-your-own-sample-pack",
@@ -26,7 +26,7 @@
     {
       "month": 3,
       "focus": "Arranging full songs",
-      "goal": "Complete the Creative Strategies 2 final assignment by arranging a full 3-4 minute electronic track using the advanced arrangement techniques and creative strategies taught in the course. You'll demonstrate mastery of tension building, dynamic transitions, and automation by taking a basic loop and transforming it into a complete song structure with intro, verse, chorus, breakdown, and outro sections. This project proves your evolution from loop-based production to full song composition, creating your first professionally-structured electronic music piece.",
+      "goal": "You can transform loops into a fully arranged 3–4 minute track, shaping tension/release with transitions, automation, and professional section flow.",
       "course_rec": {
         "title": "Creative Strategies 2",
         "url": "https://learn.futureproofmusicschool.com/course/creative-strategies-2",
@@ -36,7 +36,7 @@
     {
       "month": 4,
       "focus": "Genre deep-dive: Drum & Bass",
-      "goal": "Complete the Drum & Bass course final project by producing a 3-minute D&B track that demonstrates mastery of the genre's signature elements: complex breakbeats, rolling basslines, and precise sound design. You'll create an original composition or remix an existing track using the specific programming techniques, bass design methods, and arrangement structures taught in the course. This project showcases your ability to work within demanding technical constraints while developing skills that enhance all your electronic music production.",
+      "goal": "You can produce a 3-minute Drum & Bass track that demonstrates tight breakbeat programming, rolling bass design, and genre-accurate arrangement.",
       "course_rec": {
         "title": "How to Make Drum and Bass",
         "url": "https://learn.futureproofmusicschool.com/course/how-to-make-drum-and-bass",
@@ -46,7 +46,7 @@
     {
       "month": 5,
       "focus": "Mixing essentials",
-      "goal": "Complete the Mixing 2 course final assignment by delivering a professional-quality mix of your electronic track using the advanced EQ, compression, and spatial processing techniques taught in the course. You'll demonstrate your ability to create width, depth, and clarity while achieving proper frequency balance and dynamic range suitable for streaming platforms. This mixed track serves as proof that your productions can compete with commercial releases, showing mastery of the technical skills that separate amateur from professional electronic music.",
+      "goal": "You can deliver a mix with clear balance, depth, and width using EQ, compression, and spatial processing suitable for release.",
       "course_rec": {
         "title": "Mixing 2",
         "url": "https://learn.futureproofmusicschool.com/course/mixing-2",
@@ -56,7 +56,7 @@
     {
       "month": 6,
       "focus": "Quick-win collaboration",
-      "goal": "Co-produce a two-minute collaboration sketch by day 180",
+      "goal": "You can co‑produce a 2‑minute collaboration sketch, exchange stems efficiently, and integrate feedback into a cohesive idea.",
       "course_rec": {
         "title": "Fast Collaboration Tactics",
         "url": "https://learn.futureproofmusicschool.com/course/fast-collaboration",
@@ -66,7 +66,7 @@
     {
       "month": 7,
       "focus": "Brand & social foundations",
-      "goal": "Complete the Branding 123 final project by developing a comprehensive brand package including a compelling artist bio, professional photo selection, and logo design that reflects your electronic music style and target audience. You'll deliver polished brand assets using the strategic framework and design principles taught in the course, ensuring consistency across all platforms from social media to streaming services. This brand foundation package prepares you for professional music releases and establishes the visual identity that will grow with your career.",
+      "goal": "You can present a cohesive brand package (bio, visuals, logo) aligned to your sound and target audience across platforms.",
       "course_rec": {
         "title": "Branding 123",
         "url": "https://learn.futureproofmusicschool.com/course/branding123",
@@ -76,7 +76,7 @@
     {
       "month": 8,
       "focus": "Sound-design refinement",
-      "goal": "Signature bass and drum kit complete by day 240",
+      "goal": "You can craft a signature bass patch and drum kit, then apply them consistently for a recognizable sonic identity.",
       "course_rec": {
         "title": "Advanced Sound-Design",
         "url": "https://learn.futureproofmusicschool.com/course/advanced-sound-design",
@@ -86,7 +86,7 @@
     {
       "month": 9,
       "focus": "Advanced creative workflow",
-      "goal": "Generate three draft ideas for the EP by day 270",
+      "goal": "You can generate and evaluate three structured EP drafts quickly using constraint‑driven workflow and iteration.",
       "course_rec": {
         "title": "Workflow Mastery",
         "url": "https://learn.futureproofmusicschool.com/course/workflow-mastery",
@@ -96,7 +96,7 @@
     {
       "month": 10,
       "focus": "Mix & pre-master EP",
-      "goal": "All EP tracks in mix-ready state by day 300",
+      "goal": "You can prepare all EP tracks to a mix‑ready state with organized sessions, version control, and consistent gain staging.",
       "course_rec": {
         "title": "Pre-Master Toolkit",
         "url": "https://learn.futureproofmusicschool.com/course/pre-master-toolkit",
@@ -106,7 +106,7 @@
     {
       "month": 11,
       "focus": "Marketing & release strategy",
-      "goal": "Release assets scheduled by day 330",
+      "goal": "You can assemble and schedule all release assets (covers, bios, links, clips) with a clear rollout calendar.",
       "course_rec": {
         "title": "How to Promote Your Music in 2025: Facebook/Meta Ads",
         "url": "https://learn.futureproofmusicschool.com/course/meta-ads-2025",
@@ -116,7 +116,7 @@
     {
       "month": 12,
       "focus": "Launch & review",
-      "goal": "Execute the Release Day Playbook course final project by successfully launching your debut electronic music EP using the comprehensive release strategy and promotional tactics taught in the course. You'll implement the step-by-step launch plan, coordinate pre-release marketing, and achieve your target of 1,000 streams within the first month using the specific promotional methods and analytics tracking covered in the curriculum. This project demonstrates your mastery of the complete release process, marking your official transition from student to published electronic music artist.",
+      "goal": "You can execute a release plan end‑to‑end, launch your EP, and track results using a simple analytics workflow.",
       "course_rec": {
         "title": "Release Day Playbook",
         "url": "https://learn.futureproofmusicschool.com/course/release-day-playbook",
