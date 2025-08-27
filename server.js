@@ -2177,9 +2177,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           html += '</div></div>';
           
           document.getElementById('app').innerHTML = html;
-          // Hydrate recommendation progress (if any)
-          if (currentMilestoneData && currentMilestoneData.course_rec) {
-            hydrateRecommendationProgress(currentMilestoneData.course_rec);
+          // Hydrate recommendation progress (if any) - only for regular milestones, not Overview
+          if (currentMilestone > 0) {
+            const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
+            if (currentMilestoneData && currentMilestoneData.course_rec) {
+              hydrateRecommendationProgress(currentMilestoneData.course_rec);
+            }
           }
           // Initialize nav arrows state
           window.DISPLAYED_MILESTONE = currentMilestone;
