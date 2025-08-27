@@ -2044,6 +2044,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
+              '<a href="#" onclick="showCurrentMilestone(event)" class="view-toggle">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Milestone ' + currentMilestone + ' of 12') + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
