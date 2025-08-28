@@ -2241,7 +2241,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const { roadmapPlan, roadmapProgress } = data;
           
           if (!roadmapPlan || !roadmapPlan.monthly_plan) {
-            document.getElementById('app').innerHTML = '<div class="loading">No roadmap found. Please complete your onboarding form.</div>';
+            document.getElementById('app').innerHTML = '<div class="loading">No roadmap found!<br><br>If you\'ve just joined us and filled out the onboarding form, your personalized curriculum plan should be ready in just a few minutes. Please have a look around our site while our system does a little research and builds your custom plan.</div>';
             sendHeight();
             return;
           }
@@ -2285,7 +2285,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h2 style="margin: 0;">OVERVIEW</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>' +
-              '<div>' + roadmapPlan.overview + '</div>' +
+              '<div>' + roadmapPlan.overview.replace(/\.\s+/g, '.<br><br>') + '</div>' +
               '<div class="milestone-section">' +
                 '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
                   '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
