@@ -1754,13 +1754,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           text-decoration: none;
         }
         .view-toggle.active {
-          background: rgba(163, 115, 248, 0.35);
+          background: rgba(163, 115, 248, 0.15);
           color: #FFFFFF;
-          border-color: rgba(163, 115, 248, 0.8);
+          border-color: rgba(163, 115, 248, 0.5);
         }
         .view-toggle.active:hover {
-          background: rgba(163, 115, 248, 0.45);
-          border-color: rgba(163, 115, 248, 0.9);
+          background: rgba(163, 115, 248, 0.2);
+          border-color: rgba(163, 115, 248, 0.6);
         }
         
         .timeline {
@@ -2437,9 +2437,23 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               // Update local progress data
               window.ROADMAP_PROGRESS = result.progress;
               window.CURRENT_MILESTONE = result.progress.currentMilestone;
+              
+              // Update button text to reflect new current milestone
+              updateCurrentMilestoneButton();
             }
           } catch (error) {
             console.error('Error tracking milestone visit:', error);
+          }
+        }
+        
+        // Update the current milestone button text
+        function updateCurrentMilestoneButton() {
+          const currentLink = document.getElementById('current-link');
+          const currentMilestone = window.CURRENT_MILESTONE || 0;
+          
+          if (currentLink) {
+            const buttonText = currentMilestone === 0 ? '🎯 Overview' : '🎯 Current Milestone: ' + currentMilestone + ' of 12';
+            currentLink.innerHTML = buttonText;
           }
         }
 
@@ -2489,6 +2503,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const pathLink = document.getElementById('path-link');
           if (currentLink) currentLink.classList.add('active');
           if (pathLink) pathLink.classList.remove('active');
+          
+          // Update button text to reflect current milestone
+          updateCurrentMilestoneButton();
           
           requestParentScrollTop();
           setTimeout(requestParentScrollTop, 60);
@@ -2558,6 +2575,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const pathLink = document.getElementById('path-link');
           if (currentLink) currentLink.classList.add('active');
           if (pathLink) pathLink.classList.remove('active');
+
+          // Update button text to reflect current milestone
+          updateCurrentMilestoneButton();
 
           // Hydrate recommendation progress for the selected milestone
           if (data && data.course_rec) {
