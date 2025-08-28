@@ -1729,19 +1729,30 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           background: rgba(163, 115, 248, 0.15);
           border: 1px solid rgba(163, 115, 248, 0.4);
           border-radius: 6px;
-          padding: 8px 16px;
+          padding: 6px 12px;
           text-decoration: none;
           font-weight: 700;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
           cursor: pointer;
           transition: all 0.2s ease;
+          white-space: nowrap;
+          font-size: 13px;
         }
         .view-toggle:hover { 
           background: rgba(163, 115, 248, 0.25);
           border-color: rgba(163, 115, 248, 0.6);
           text-decoration: none;
+        }
+        .view-toggle.active {
+          background: #A373F8;
+          color: #000;
+          border-color: #A373F8;
+        }
+        .view-toggle.active:hover {
+          background: #8b5df6;
+          border-color: #8b5df6;
         }
         
         .timeline {
@@ -2251,7 +2262,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
-              '<a href="#" onclick="showCurrentMilestone(event)" class="view-toggle">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Milestone ' + currentMilestone + ' of 12') + '</a>' +
+              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Milestone ' + currentMilestone + ' of 12') + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
@@ -2329,6 +2340,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 (isOverviewCurrent ? '🎯' : '📖') + ' ' +
                 'Overview: Getting Started' +
               '</div>' +
+              '<div class="milestone-meta" style="margin-top: 8px; font-size: 13px; line-height: 1.4;">' + roadmapPlan.overview + '</div>' +
             '</div>' +
           '</div>';
           
@@ -2458,18 +2470,24 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             window.DISPLAYED_MILESTONE = 0;
             updateNavArrows();
             
-            // Switch back to detail view
-            const path = document.getElementById('path-view');
-            const wrap = document.getElementById('current-view-wrap');
-            if (path) path.style.display = 'none';
-            if (wrap) wrap.style.display = '';
-            
-            requestParentScrollTop();
-            setTimeout(requestParentScrollTop, 60);
-            try { setTimeout(function(){ window.scrollTo(0, 0); }, 30); } catch(_) {}
-            sendHeight();
-            setTimeout(sendHeight, 200);
-            setTimeout(sendHeight, 800);
+                      // Switch back to detail view
+          const path = document.getElementById('path-view');
+          const wrap = document.getElementById('current-view-wrap');
+          if (path) path.style.display = 'none';
+          if (wrap) wrap.style.display = '';
+          
+          // Update active button states when switching to detail view
+          const currentLink = document.getElementById('current-link');
+          const pathLink = document.getElementById('path-link');
+          if (currentLink) currentLink.classList.add('active');
+          if (pathLink) pathLink.classList.remove('active');
+          
+          requestParentScrollTop();
+          setTimeout(requestParentScrollTop, 60);
+          try { setTimeout(function(){ window.scrollTo(0, 0); }, 30); } catch(_) {}
+          sendHeight();
+          setTimeout(sendHeight, 200);
+          setTimeout(sendHeight, 800);
             return;
           }
           
@@ -2526,6 +2544,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const wrap = document.getElementById('current-view-wrap');
           if (path) path.style.display = 'none';
           if (wrap) wrap.style.display = '';
+
+          // Update active button states when switching to detail view
+          const currentLink = document.getElementById('current-link');
+          const pathLink = document.getElementById('path-link');
+          if (currentLink) currentLink.classList.add('active');
+          if (pathLink) pathLink.classList.remove('active');
 
           // Hydrate recommendation progress for the selected milestone
           if (data && data.course_rec) {
@@ -2749,6 +2773,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         function showCurrentMilestone(event) {
           if (event) event.preventDefault();
           const currentMilestone = window.CURRENT_MILESTONE || 0;
+          
+          // Update active button states
+          const currentLink = document.getElementById('current-link');
+          const pathLink = document.getElementById('path-link');
+          if (currentLink) currentLink.classList.add('active');
+          if (pathLink) pathLink.classList.remove('active');
+          
           showMilestoneDetail(currentMilestone);
         }
         
@@ -2770,6 +2801,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // Show the full path view
         function showPathView(event) {
           if (event) event.preventDefault();
+          
+          // Update active button states
+          const currentLink = document.getElementById('current-link');
+          const pathLink = document.getElementById('path-link');
+          if (currentLink) currentLink.classList.remove('active');
+          if (pathLink) pathLink.classList.add('active');
+          
           const current = document.getElementById('current-view-wrap');
           const path = document.getElementById('path-view');
           if (current) current.style.display = 'none';
