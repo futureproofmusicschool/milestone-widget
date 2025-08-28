@@ -2207,6 +2207,14 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         const username = '${username.replace(/'/g, "\\'")}';
         const apiBaseUrl = window.location.origin;
         
+        // Function to add extra line breaks after sentences in Overview text
+        function formatOverviewText(text) {
+          if (!text || typeof text !== 'string') return text;
+          // Split by sentences (periods, exclamation marks, question marks)
+          // Add two line breaks after each sentence
+          return text.replace(/([.!?])(\s+)/g, '$1<br/><br/>$2');
+        }
+        
         async function loadRoadmap() {
           try {
             const url = apiBaseUrl + '/api/milestone-roadmap/' + userId;
@@ -2285,11 +2293,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h2 style="margin: 0;">OVERVIEW</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>' +
-              '<div>' + roadmapPlan.overview + '</div>' +
+              '<div>' + formatOverviewText(roadmapPlan.overview) + '</div>' +
               '<div class="milestone-section">' +
-                '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
+                '<div onclick="showMilestoneDetail(1)" style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'rgba(163, 115, 248, 0.2)\'" onmouseout="this.style.background=\'rgba(163, 115, 248, 0.1)\'">' +
                   '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
-                  '<div style="font-size: 14px; margin-bottom: 15px;">Click the right arrow (›) above to start with Milestone 1 of your personalized learning plan.</div>' +
+                  '<div style="font-size: 14px; margin-bottom: 15px;">Click here to start with Milestone 1 of your personalized learning plan.</div>' +
                 '</div>' +
               '</div>' +
               '</div>' +
@@ -2478,11 +2486,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   '<h2 style="margin: 0;">OVERVIEW</h2>' +
                   '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
                 '</div>' +
-                '<div>' + plan.overview + '</div>' +
+                '<div>' + formatOverviewText(plan.overview) + '</div>' +
                 '<div class="milestone-section">' +
-                  '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
+                  '<div onclick="showMilestoneDetail(1)" style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'rgba(163, 115, 248, 0.2)\'" onmouseout="this.style.background=\'rgba(163, 115, 248, 0.1)\'">' +
                     '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
-                    '<div style="font-size: 14px; margin-bottom: 15px;">Click the right arrow (›) above to start with Milestone 1 of your personalized learning plan.</div>' +
+                    '<div style="font-size: 14px; margin-bottom: 15px;">Click here to start with Milestone 1 of your personalized learning plan.</div>' +
                   '</div>' +
                 '</div>';
               currentEl.innerHTML = inner;
