@@ -1011,21 +1011,29 @@ app.get('/roadmap/:userId', (req, res) => {
         function sendHeight() {
           // Allow a small delay for rendering to complete
           setTimeout(() => {
-            // Get the actual content height
+            // Get the actual content height more accurately
             const contentEl = document.getElementById('roadmap-content');
             const progressEl = document.getElementById('total-progress-container');
             
-            // Calculate total height needed
-            let totalHeight = 30; // Base padding
+            // Calculate total height needed based on actual visible content
+            let totalHeight = 40; // Minimal base padding
             
-            if (contentEl) totalHeight += contentEl.offsetHeight;
-            if (progressEl) totalHeight += progressEl.offsetHeight;
+            if (contentEl && contentEl.style.display !== 'none') {
+              totalHeight += contentEl.scrollHeight;
+            }
+            if (progressEl && progressEl.style.display !== 'none') {
+              totalHeight += progressEl.scrollHeight;
+            }
             
-            // Ensure minimum height (adjust as needed)
-            const minHeight = 500;
+            // Use a more conservative minimum height to prevent excessive space
+            const minHeight = 200;
             totalHeight = Math.max(totalHeight, minHeight);
             
-            console.log('Sending height:', totalHeight);
+            console.log('Sending height:', totalHeight, {
+              contentHeight: contentEl ? contentEl.scrollHeight : 0,
+              progressHeight: progressEl ? progressEl.scrollHeight : 0,
+              contentVisible: contentEl ? contentEl.style.display !== 'none' : false
+            });
             
             // Send message to parent
             window.parent.postMessage({ 
@@ -1746,13 +1754,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           text-decoration: none;
         }
         .view-toggle.active {
-          background: #A373F8;
-          color: #000;
-          border-color: #A373F8;
+          background: rgba(163, 115, 248, 0.35);
+          color: #FFFFFF;
+          border-color: rgba(163, 115, 248, 0.8);
         }
         .view-toggle.active:hover {
-          background: #8b5df6;
-          border-color: #8b5df6;
+          background: rgba(163, 115, 248, 0.45);
+          border-color: rgba(163, 115, 248, 0.9);
         }
         
         .timeline {
@@ -2262,7 +2270,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
-              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Milestone ' + currentMilestone + ' of 12') + '</a>' +
+              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Current Milestone: ' + currentMilestone + ' of 12') + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
@@ -2825,17 +2833,36 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // Send height to parent so the iframe expands to fit content
         function sendHeight() {
           try {
-            const totalHeight = Math.max(
-              document.body.scrollHeight,
-              document.documentElement.scrollHeight,
-              document.body.offsetHeight,
-              document.documentElement.offsetHeight,
-              document.body.clientHeight,
-              document.documentElement.clientHeight
-            );
+            // Use a more precise calculation that avoids extra empty space
+            const appEl = document.getElementById('app');
+            const currentViewEl = document.getElementById('current-view-wrap');
+            const pathViewEl = document.getElementById('path-view');
+            
+            let contentHeight = 0;
+            
+            // Calculate based on which view is currently displayed
+            if (currentViewEl && currentViewEl.style.display !== 'none') {
+              contentHeight = currentViewEl.scrollHeight;
+            } else if (pathViewEl && pathViewEl.style.display !== 'none') {
+              contentHeight = pathViewEl.scrollHeight;
+            } else if (appEl) {
+              contentHeight = appEl.scrollHeight;
+            }
+            
+            // Add minimal padding and use conservative minimum
+            const totalHeight = Math.max(contentHeight + 40, 200);
+            
+            console.log('Milestone widget sending height:', totalHeight, {
+              currentViewHeight: currentViewEl ? currentViewEl.scrollHeight : 0,
+              pathViewHeight: pathViewEl ? pathViewEl.scrollHeight : 0,
+              appHeight: appEl ? appEl.scrollHeight : 0,
+              currentViewVisible: currentViewEl ? currentViewEl.style.display !== 'none' : false,
+              pathViewVisible: pathViewEl ? pathViewEl.style.display !== 'none' : false
+            });
+            
             window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
           } catch (e) {
-            // no-op
+            console.error('Error in sendHeight:', e);
           }
         }
         // Ask parent page to scroll to the top of the widget
