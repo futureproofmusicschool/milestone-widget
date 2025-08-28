@@ -2285,7 +2285,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<h2 style="margin: 0;">OVERVIEW</h2>' +
                 '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>' +
-              '<div>' + roadmapPlan.overview.replace(/\.\s+/g, '.<br><br>') + '</div>' +
+              '<div>' + roadmapPlan.overview + '</div>' +
               '<div class="milestone-section">' +
                 '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
                   '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
