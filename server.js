@@ -1344,7 +1344,44 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
       || extractJsonObjectFromText(rawPlan);
     roadmapPlan = normalizeMonthlyPlanKeys(roadmapPlan);
     roadmapPlan = normalizePlanObjectLoose(roadmapPlan);
-    const roadmapProgress = parseJsonPossiblyDoubleEncoded(rawProgress);
+
+    // Robustly parse progress and ensure correct current milestone semantics
+    let roadmapProgress = null;
+    try {
+      if (typeof rawProgress === 'string') {
+        const trimmed = rawProgress.trim();
+        if (trimmed && trimmed.toLowerCase() !== 'none') {
+          roadmapProgress = parseJsonPossiblyDoubleEncoded(trimmed) || extractJsonObjectFromText(trimmed);
+        }
+      }
+    } catch (_) {
+      roadmapProgress = null;
+    }
+
+    if (roadmapProgress && typeof roadmapProgress === 'object') {
+      try {
+        const visited = Array.isArray(roadmapProgress.milestonesVisited) ? roadmapProgress.milestonesVisited.map(Number) : [0];
+        const completed = Array.isArray(roadmapProgress.milestonesCompleted) ? roadmapProgress.milestonesCompleted.map(Number) : [];
+        roadmapProgress.milestonesVisited = visited;
+        roadmapProgress.milestonesCompleted = completed;
+        // Compute highest visited but not completed milestone
+        let computedCurrent = 0;
+        for (let i = visited.length - 1; i >= 0; i--) {
+          const m = visited[i];
+          if (!completed.includes(m)) { computedCurrent = m; break; }
+        }
+        if (computedCurrent === 0 && visited.length > 0) {
+          const maxCompleted = completed.length > 0 ? Math.max(...completed) : 0;
+          computedCurrent = Math.min(maxCompleted + 1, 12);
+        }
+        if (!Number.isFinite(roadmapProgress.currentMilestone) || roadmapProgress.currentMilestone !== computedCurrent) {
+          roadmapProgress.currentMilestone = computedCurrent;
+        }
+      } catch (_) {}
+    } else {
+      roadmapProgress = null;
+    }
+
     console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
     console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.monthly_plan) ? roadmapPlan.monthly_plan.length : 'n/a');
     
