@@ -2623,8 +2623,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               progressContainer.innerHTML = renderCourseProgress(data);
             }
             
-              sendHeight();
-              setTimeout(sendHeight, 300);
+            // Call sendHeight multiple times with increasing delays to ensure
+            // the dynamic content (assessments/quizzes) is properly measured
+            sendHeight();
+            setTimeout(sendHeight, 100);
+            setTimeout(sendHeight, 300);
+            setTimeout(sendHeight, 600);
           } catch (e) {
             console.error('Error loading course progress:', e);
             const progressContainer = document.getElementById('course-progress-container');
@@ -2853,7 +2857,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // Send height to parent so the iframe expands to fit content
         function sendHeight() {
           try {
-            // Use a more precise calculation that avoids extra empty space
+            // Use a more precise calculation that ensures all content is visible
             const appEl = document.getElementById('app');
             const currentViewEl = document.getElementById('current-view-wrap');
             const pathViewEl = document.getElementById('path-view');
@@ -2862,22 +2866,37 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             // Calculate based on which view is currently displayed
             if (currentViewEl && currentViewEl.style.display !== 'none') {
-              contentHeight = currentViewEl.scrollHeight;
+              // Include both the header and the current view content
+              const headerEl = document.querySelector('.header');
+              const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+              
+              // Also check for dynamic progress container that might have loaded
+              const progressContainer = document.getElementById('course-progress-container');
+              const progressHeight = progressContainer ? progressContainer.scrollHeight : 0;
+              
+              contentHeight = headerHeight + currentViewEl.scrollHeight + progressHeight;
             } else if (pathViewEl && pathViewEl.style.display !== 'none') {
-              contentHeight = pathViewEl.scrollHeight;
+              // For path view, include header + path content
+              const headerEl = document.querySelector('.header');
+              const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+              contentHeight = headerHeight + pathViewEl.scrollHeight;
             } else if (appEl) {
+              // Fallback to full app height
               contentHeight = appEl.scrollHeight;
             }
             
-            // Add minimal padding and use conservative minimum
-            const totalHeight = Math.max(contentHeight + 40, 200);
+            // Add generous padding and use higher minimum to ensure content isn't cut off
+            const totalHeight = Math.max(contentHeight + 80, 400);
             
             console.log('Milestone widget sending height:', totalHeight, {
               currentViewHeight: currentViewEl ? currentViewEl.scrollHeight : 0,
               pathViewHeight: pathViewEl ? pathViewEl.scrollHeight : 0,
               appHeight: appEl ? appEl.scrollHeight : 0,
+              headerHeight: document.querySelector('.header') ? document.querySelector('.header').offsetHeight : 0,
+              progressContainerHeight: document.getElementById('course-progress-container') ? document.getElementById('course-progress-container').scrollHeight : 0,
               currentViewVisible: currentViewEl ? currentViewEl.style.display !== 'none' : false,
-              pathViewVisible: pathViewEl ? pathViewEl.style.display !== 'none' : false
+              pathViewVisible: pathViewEl ? pathViewEl.style.display !== 'none' : false,
+              calculatedContentHeight: contentHeight
             });
             
             window.parent.postMessage({ type: 'resize', height: totalHeight }, '*');
