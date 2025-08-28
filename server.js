@@ -2241,7 +2241,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const { roadmapPlan, roadmapProgress } = data;
           
           if (!roadmapPlan || !roadmapPlan.monthly_plan) {
-            document.getElementById('app').innerHTML = '<div class="loading">No roadmap found!<br><br>If you\'ve just joined us and filled out the onboarding form, your personalized curriculum plan should be ready in just a few minutes. Please have a look around our site while our system does a little research and builds your custom plan.</div>';
+            document.getElementById('app').innerHTML = '<div class="loading">No roadmap found. Please complete your onboarding form.</div>';
             sendHeight();
             return;
           }
