@@ -33,6 +33,7 @@ Logic rules for creation of the JSON object above:
 • First, translate the student's response about musical_goals into a single North Star Goal, then work backward to fill quarters and months by choosing one of our courses to recommend for each month (goal) and assigning other activities that are coordinated with the topic of that course. 
 • Your primary goal is to build a coherent curriculum structure in this way that builds up to the student's final goal. 
 • Always make sure that your formulation of the North Star Goal aligns with the student's genre preferences. 
+• Never use any numbering in the 'focus' field, only words. 
 • Formulate a version of the goal that the student can plausibly reach in a year given their current level and the amount of time they have available.
 • Each month must include a personalized "goal" written as an outcome/capability statement based on the course’s actual final project, customized to the student's genre and preferences (1–2 sentences beginning with "Be able to ..." that restate the skills/capabilities achieved; do not assign tasks or use imperative phrasing).
 • COURSE ORDERING (MANDATORY SEQUENTIAL ORDER - NO EXCEPTIONS): Use the "Futureproof Active Courses1" tool as the canonical source for course order, titles, URLs, and Level.

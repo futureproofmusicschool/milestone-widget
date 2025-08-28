@@ -1726,13 +1726,23 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
 
         .view-toggle {
           color: #A373F8;
+          background: rgba(163, 115, 248, 0.15);
+          border: 1px solid rgba(163, 115, 248, 0.4);
+          border-radius: 6px;
+          padding: 8px 16px;
           text-decoration: none;
           font-weight: 700;
           display: inline-flex;
           align-items: center;
           gap: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
-        .view-toggle:hover { text-decoration: underline; }
+        .view-toggle:hover { 
+          background: rgba(163, 115, 248, 0.25);
+          border-color: rgba(163, 115, 248, 0.6);
+          text-decoration: none;
+        }
         
         .timeline {
           position: relative;
@@ -2319,7 +2329,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 (isOverviewCurrent ? '🎯' : '📖') + ' ' +
                 'Overview: Getting Started' +
               '</div>' +
-              '<div class="milestone-meta"><span class="label">Welcome:</span> ' + roadmapPlan.welcome + '</div>' +
             '</div>' +
           '</div>';
           
