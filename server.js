@@ -2204,12 +2204,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
       
       <script>
         const userId = '${userId}';
-        const username = '${escapeJS(username)}';
+        const username = '${username.replace(/['\u2019]/g, "\\'")}';
         const apiBaseUrl = window.location.origin;
         
         function escapeJS(str) {
           if (typeof str !== 'string') return str;
-          return str.replace(/['']/g, "\\'");
+          return str.replace(/['\u2019]/g, "\\'");
         }
 
         // Function to add extra line breaks after sentences in Overview text
