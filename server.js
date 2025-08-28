@@ -1364,14 +1364,15 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
         const completed = Array.isArray(roadmapProgress.milestonesCompleted) ? roadmapProgress.milestonesCompleted.map(Number) : [];
         roadmapProgress.milestonesVisited = visited;
         roadmapProgress.milestonesCompleted = completed;
-        // Compute highest visited but not completed milestone
+        // Compute lowest visited (>=1) but not completed milestone
+        const visitedAsc = [...new Set(visited)].map(Number).sort((a,b)=>a-b);
+        const candidates = visitedAsc.filter(m => m >= 1 && !completed.includes(m));
         let computedCurrent = 0;
-        for (let i = visited.length - 1; i >= 0; i--) {
-          const m = visited[i];
-          if (!completed.includes(m)) { computedCurrent = m; break; }
-        }
-        if (computedCurrent === 0 && visited.length > 0) {
-          const maxCompleted = completed.length > 0 ? Math.max(...completed) : 0;
+        if (candidates.length > 0) {
+          computedCurrent = candidates[0];
+        } else {
+          const nonZeroCompleted = completed.filter(m => m >= 1);
+          const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
           computedCurrent = Math.min(maxCompleted + 1, 12);
         }
         if (!Number.isFinite(roadmapProgress.currentMilestone) || roadmapProgress.currentMilestone !== computedCurrent) {
@@ -1507,29 +1508,16 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     const completedMilestones = progress.milestonesCompleted;
     const visitedMilestones = progress.milestonesVisited;
     
+    // Compute lowest visited (>=1) not completed; else next after max completed
+    const visitedAsc_complete = [...new Set(visitedMilestones)].map(Number).sort((a,b)=>a-b);
+    const candidates_complete = visitedAsc_complete.filter(m => m >= 1 && !completedMilestones.includes(m));
     let newCurrentMilestone = 0;
-    // Find the highest visited milestone that isn't completed
-    for (let i = visitedMilestones.length - 1; i >= 0; i--) {
-      const milestone = visitedMilestones[i];
-      if (!completedMilestones.includes(milestone)) {
-        newCurrentMilestone = milestone;
-        break;
-      }
-    }
-    
-    // If all visited milestones are completed, advance to the next unvisited milestone
-    if (newCurrentMilestone === 0 && visitedMilestones.length > 0) {
-        const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
-        if (maxCompleted < 12) {
-            newCurrentMilestone = maxCompleted + 1;
-            // Auto-visit the new current milestone
-            if (!visitedMilestones.includes(newCurrentMilestone)) {
-                progress.milestonesVisited.push(newCurrentMilestone);
-                progress.milestonesVisited.sort((a, b) => a - b);
-            }
-        } else {
-            newCurrentMilestone = 12; // All completed
-        }
+    if (candidates_complete.length > 0) {
+      newCurrentMilestone = candidates_complete[0];
+    } else {
+      const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
+      const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
+      newCurrentMilestone = Math.min(maxCompleted + 1, 12);
     }
     
     progress.currentMilestone = newCurrentMilestone;
@@ -1631,24 +1619,16 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
     const completedMilestones = progress.milestonesCompleted;
     const visitedMilestones = progress.milestonesVisited;
     
+    // Compute lowest visited (>=1) not completed; else next after max completed
+    const visitedAsc_visit = [...new Set(visitedMilestones)].map(Number).sort((a,b)=>a-b);
+    const candidates_visit = visitedAsc_visit.filter(m => m >= 1 && !completedMilestones.includes(m));
     let newCurrentMilestone = 0;
-    // Find the highest visited milestone that isn't completed
-    for (let i = visitedMilestones.length - 1; i >= 0; i--) {
-      const milestone = visitedMilestones[i];
-      if (!completedMilestones.includes(milestone)) {
-        newCurrentMilestone = milestone;
-        break;
-      }
-    }
-    
-    // If all visited milestones are completed, advance to the next unvisited milestone
-    if (newCurrentMilestone === 0 && visitedMilestones.length > 0) {
-        const maxCompleted = completedMilestones.length > 0 ? Math.max(...completedMilestones) : 0;
-        if (maxCompleted < 12) {
-            newCurrentMilestone = maxCompleted + 1;
-        } else {
-            newCurrentMilestone = 12; // All completed
-        }
+    if (candidates_visit.length > 0) {
+      newCurrentMilestone = candidates_visit[0];
+    } else {
+      const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
+      const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
+      newCurrentMilestone = Math.min(maxCompleted + 1, 12);
     }
     
     progress.currentMilestone = newCurrentMilestone;
