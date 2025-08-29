@@ -1348,10 +1348,30 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     console.log('Milestone API: rawPlan len:', rawPlan ? String(rawPlan).length : 0);
     if (rawPlan) console.log('Milestone API: rawPlan preview:', String(rawPlan).slice(0, 180));
 
-    let roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan)
-      || extractJsonObjectFromText(rawPlan);
-    roadmapPlan = normalizeMonthlyPlanKeys(roadmapPlan);
-    roadmapPlan = normalizePlanObjectLoose(roadmapPlan);
+    let roadmapPlan = null;
+    let planState = 'none'; // Can be 'none', 'inprogress', or 'ready'
+    
+    // Check if rawPlan is 'none' or 'inprogress' or empty
+    if (!rawPlan || String(rawPlan).trim().toLowerCase() === 'none') {
+      planState = 'none';
+      roadmapPlan = null;
+    } else if (String(rawPlan).trim().toLowerCase() === 'inprogress') {
+      planState = 'inprogress';
+      roadmapPlan = null;
+    } else {
+      // Try to parse as JSON
+      roadmapPlan = parseJsonPossiblyDoubleEncoded(rawPlan)
+        || extractJsonObjectFromText(rawPlan);
+      roadmapPlan = normalizeMonthlyPlanKeys(roadmapPlan);
+      roadmapPlan = normalizePlanObjectLoose(roadmapPlan);
+      
+      if (roadmapPlan && roadmapPlan.monthly_plan) {
+        planState = 'ready';
+      } else {
+        planState = 'none';
+        roadmapPlan = null;
+      }
+    }
 
     // Robustly parse progress and ensure correct current milestone semantics
     let roadmapProgress = null;
@@ -1391,6 +1411,7 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
       roadmapProgress = null;
     }
 
+    console.log('Milestone API: planState:', planState);
     console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
     console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.monthly_plan) ? roadmapPlan.monthly_plan.length : 'n/a');
     
@@ -1398,7 +1419,8 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
       userId,
       username: userRow[1] || 'Student',
       roadmapPlan,
-      roadmapProgress
+      roadmapProgress,
+      planState
     });
     
   } catch (error) {
@@ -2238,10 +2260,33 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
         
         function renderRoadmap(data) {
-          const { roadmapPlan, roadmapProgress } = data;
+          const { roadmapPlan, roadmapProgress, planState } = data;
+          console.log('[Client] renderRoadmap called with planState:', planState);
           
-          if (!roadmapPlan || !roadmapPlan.monthly_plan) {
-            document.getElementById('app').innerHTML = '<div class="loading">No roadmap found. Please complete your onboarding form.</div>';
+          // Handle different plan states
+          if (planState === 'none' || !roadmapPlan || !roadmapPlan.monthly_plan) {
+            document.getElementById('app').innerHTML = 
+              '<div class="loading" style="cursor: pointer; text-align: center; padding: 20px;" onclick="handleNoRoadmapClick()">' +
+                '<h3 style="color: #9333ea; margin-bottom: 15px;">No roadmap found!</h3>' +
+                '<p style="color: #666; line-height: 1.5;">Please take a minute to fill out the questions on our onboarding form and we\\'ll generate a custom plan for you.</p>' +
+                '<p style="color: #9333ea; font-size: 14px; margin-top: 15px;">Click here to get started</p>' +
+              '</div>';
+            sendHeight();
+            return;
+          }
+          
+          if (planState === 'inprogress') {
+            document.getElementById('app').innerHTML = 
+              '<div class="loading" style="text-align: center; padding: 20px;">' +
+                '<h3 style="color: #9333ea; margin-bottom: 15px;">Building Your Custom Plan</h3>' +
+                '<p style="color: #666; line-height: 1.5;">Our system is currently building your personalized curriculum plan and it should be ready in five minutes or less. Please have a look around our site while our system does a little research and builds your custom plan.</p>' +
+                '<div style="margin-top: 20px;">' +
+                  '<div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #9333ea; border-radius: 50%; animation: spin 1s linear infinite;"></div>' +
+                '</div>' +
+              '</div>';
+            
+            // Set up auto-reload after 5 minutes of inactivity
+            setupAutoReload();
             sendHeight();
             return;
           }
@@ -2850,6 +2895,42 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
         
         // No string parsing of practices; renderer expects structured objects.
+
+        // Handle click on "No roadmap found" message
+        function handleNoRoadmapClick() {
+          // Reload the page and navigate to the onboarding form
+          window.top.location.href = 'https://learn.futureproofmusicschool.com/standalone-form?assessment-id=68b0a35a9f293e250a0cf3e4';
+        }
+        
+        // Auto-reload functionality for 'inprogress' state
+        let autoReloadTimer = null;
+        let lastActivity = Date.now();
+        
+        function setupAutoReload() {
+          // Clear any existing timer
+          if (autoReloadTimer) {
+            clearTimeout(autoReloadTimer);
+          }
+          
+          // Track user activity
+          const activityEvents = ['click', 'scroll', 'keydown', 'mousemove'];
+          const updateActivity = () => {
+            lastActivity = Date.now();
+          };
+          
+          activityEvents.forEach(event => {
+            document.addEventListener(event, updateActivity, { passive: true });
+          });
+          
+          // Set up the auto-reload timer (5 minutes = 300000ms)
+          autoReloadTimer = setTimeout(() => {
+            // Check if there has been no activity in the last 5 minutes
+            if (Date.now() - lastActivity >= 300000) {
+              console.log('[Client] Auto-reloading due to inactivity during plan generation');
+              loadRoadmap();
+            }
+          }, 300000); // 5 minutes
+        }
 
         // Load roadmap on page load
         loadRoadmap();
