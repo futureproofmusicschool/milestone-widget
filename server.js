@@ -2266,10 +2266,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Handle different plan states
           if (planState === 'none' || !roadmapPlan || !roadmapPlan.monthly_plan) {
             document.getElementById('app').innerHTML = 
-              '<div class="loading" style="cursor: pointer; text-align: center; padding: 20px;" onclick="handleNoRoadmapClick()">' +
-                '<h3 style="color: #9333ea; margin-bottom: 15px;">No roadmap found!</h3>' +
-                '<p style="color: #666; line-height: 1.5;">Please take a minute to fill out the questions on our onboarding form and we\\'ll generate a custom plan for you.</p>' +
-                '<p style="color: #9333ea; font-size: 14px; margin-top: 15px;">Click here to get started</p>' +
+              '<div class="loading" style="cursor: pointer; text-align: center; padding: 60px 20px; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="handleNoRoadmapClick()">' +
+                '<h3 style="color: #A373F8; margin-bottom: 20px; font-size: 24px;">No roadmap found!</h3>' +
+                '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">Please take a minute to fill out the questions on our onboarding form and we\\'ll generate a custom plan for you.</p>' +
+                '<p style="color: #A373F8; font-size: 14px; font-weight: 600;">Click here to get started</p>' +
               '</div>';
             sendHeight();
             return;
@@ -2277,11 +2277,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           if (planState === 'inprogress') {
             document.getElementById('app').innerHTML = 
-              '<div class="loading" style="text-align: center; padding: 20px;">' +
-                '<h3 style="color: #9333ea; margin-bottom: 15px;">Building Your Custom Plan</h3>' +
-                '<p style="color: #666; line-height: 1.5;">Our system is currently building your personalized curriculum plan and it should be ready in five minutes or less. Please have a look around our site while our system does a little research and builds your custom plan.</p>' +
+              '<div class="loading" style="text-align: center; padding: 60px 20px; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">' +
+                '<h3 style="color: #A373F8; margin-bottom: 20px; font-size: 24px;">Building Your Custom Plan</h3>' +
+                '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 30px; max-width: 500px;">Our system is currently building your personalized curriculum plan and it should be ready in five minutes or less. Please have a look around our site while our system does a little research and builds your custom plan.</p>' +
                 '<div style="margin-top: 20px;">' +
-                  '<div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #9333ea; border-radius: 50%; animation: spin 1s linear infinite;"></div>' +
+                  '<div style="display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(163, 115, 248, 0.3); border-top: 3px solid #A373F8; border-radius: 50%; animation: spin 1s linear infinite;"></div>' +
                 '</div>' +
               '</div>';
             
