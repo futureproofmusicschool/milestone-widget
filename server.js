@@ -2331,7 +2331,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Handle Milestone 0 (Overview) differently
           if (currentMilestone === 0) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
-              '<div id="current-view" class="current-milestone-detail">' +
+              '<div id="current-view" class="current-milestone-detail" style="cursor: pointer;" onclick="navigateMilestone(1)">' +
               '<div class="milestone-nav">' +
                 '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)" disabled>‹</button>' +
                 '<h2 style="margin: 0;">OVERVIEW</h2>' +
@@ -2341,7 +2341,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="milestone-section">' +
                 '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
                   '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
-                  '<div style="font-size: 14px; margin-bottom: 15px;">Click the right arrow (›) above to start with Milestone 1 of your personalized learning plan.</div>' +
+                  '<div style="font-size: 14px; margin-bottom: 15px;">Click to start with Milestone 1 of your personalized learning plan.</div>' +
                 '</div>' +
               '</div>' +
               '</div>' +
@@ -2534,10 +2534,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '<div class="milestone-section">' +
                   '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 15px; border-radius: 8px; text-align: center;">' +
                     '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready to begin your journey?</div>' +
-                    '<div style="font-size: 14px; margin-bottom: 15px;">Click the right arrow (›) above to start with Milestone 1 of your personalized learning plan.</div>' +
+                    '<div style="font-size: 14px; margin-bottom: 15px;">Click to start with Milestone 1 of your personalized learning plan.</div>' +
                   '</div>' +
                 '</div>';
               currentEl.innerHTML = inner;
+              currentEl.style.cursor = 'pointer';
+              currentEl.onclick = () => navigateMilestone(1);
             }
             
             // Track currently displayed milestone
@@ -2610,6 +2612,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '';
 
             currentEl.innerHTML = inner;
+            currentEl.style.cursor = 'default';
+            currentEl.onclick = null;
           }
 
           // Track currently displayed milestone
