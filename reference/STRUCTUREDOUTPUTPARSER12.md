@@ -102,33 +102,11 @@
         "url": "https://learn.futureproofmusicschool.com/course/pre-master-toolkit",
         "benefit": "radio-ready loudness & clarity"
       }
-    },
-    {
-      "number": 11,
-      "focus": "Marketing & release strategy",
-      "goal": "Be able to assemble and schedule all release assets (covers, bios, links, clips) with a clear rollout calendar.",
-      "course_rec": {
-        "title": "How to Promote Your Music in 2025: Facebook/Meta Ads",
-        "url": "https://learn.futureproofmusicschool.com/course/meta-ads-2025",
-        "benefit": "Organic reach on social media has drastically declined, making paid advertising essential for any serious music release in 2025. This course teaches you to create targeted ad campaigns that reach your ideal listeners cost-effectively, showing you how to build custom audiences, craft compelling ad creative, and optimize campaigns for maximum return on investment. You'll learn to track meaningful metrics beyond vanity numbers, focusing on building genuine fans who will stream your music repeatedly and share it with others. These marketing skills are crucial for your EP launch success and will serve as the foundation for sustainable career growth in an increasingly competitive digital landscape."
-      }
-    },
-    {
-      "number": 12,
-      "focus": "Launch & review",
-      "goal": "Be able to execute a release plan end‑to‑end, launch your EP, and track results using a simple analytics workflow.",
-      "course_rec": {
-        "title": "Release Day Playbook",
-        "url": "https://learn.futureproofmusicschool.com/course/release-day-playbook",
-        "benefit": "successful launches & post-mortems"
-      }
     }
   ],
-  "quarters": {
-    "Q1": "Foundations locked: you can build and arrange a complete track. Next quarter we’ll polish sound design and mixing.",
-    "Q2": "Sound-design and mix skills boosted; two tracks ready for feedback. Time to craft your signature style.",
-    "Q3": "Branding and release prep under way; three finished tracks and growing socials.",
-    "Q4": "EP released, first 1 000 streams, and a sustainable creation schedule for continued growth."
+  "halves": {
+    "H1": "Foundations locked: you can build and arrange complete tracks with solid sound design and mixing skills. Ready to craft your signature style.",
+    "H2": "Branding and release prep mastered; EP released with first 1,000 streams and a sustainable creation schedule for continued growth."
   },
   "kpi": [
     "4 finished tracks",

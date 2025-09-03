@@ -1,11 +1,11 @@
 # Learn Pathway & Milestone Widget
 
-A server-rendered widget suite (no separate React app) that displays learning pathways, a 12‑milestone self‑paced journey, and real‑time course progress. Served directly from an Express server.
+A server-rendered widget suite (no separate React app) that displays learning pathways, a 10‑milestone self‑paced journey, and real‑time course progress. Served directly from an Express server.
 
 ## What's Included
 
 - Course Roadmap widget: saves and displays a user's selected courses with progress
-- Milestone Journey widget: shows a personalized, self‑paced 12‑milestone journey with current milestone focus and course recommendation
+- Milestone Journey widget: shows a personalized, self‑paced 10‑milestone journey with current milestone focus and course recommendation
 - LearnWorlds OAuth2 integration for live course progress
 - Google Sheets as the data store for plans and progress
 
@@ -13,7 +13,7 @@ A server-rendered widget suite (no separate React app) that displays learning pa
 
 
 ### Data Flow (Milestone Journey)
-- Plan JSON (the 12‑milestone roadmap) is stored in Google Sheets under `MILESTONE_SPREADSHEET_ID`, tab `sheet1`, column E.
+- Plan JSON (the 10‑milestone roadmap) is stored in Google Sheets under `MILESTONE_SPREADSHEET_ID`, tab `sheet1`, column E.
 - Progress JSON (completion state) is stored in the same sheet, column F.
 - The server renders the Milestone widget (`/milestone-roadmap/:userId`) which:
   - Loads the plan/progress via `/api/milestone-roadmap/:userId`
@@ -67,19 +67,19 @@ The plan JSON (column E) expects this shape:
       "goal": "string",
       "course_rec": { "title": "string", "url": "string", "benefit": "string" }
     }
-    // ... 12 total entries, ordered as Milestones 1..12
+    // ... 10 total entries, ordered as Milestones 1..10
   ],
-  "quarters": { "Q1": "string", "Q2": "string", "Q3": "string", "Q4": "string" },
+  "halves": { "H1": "string", "H2": "string" },
   "kpi": ["string", "string", "string", "string"],
   "support_channels": ["string", "string"]
 }
 ```
 
 Notes:
-- The `milestones` array contains the 12 milestones (indexed as Milestones 1..12 in the UI).
-- The `number` field represents the milestone number (1-12).
+- The `milestones` array contains the 10 milestones (indexed as Milestones 1..10 in the UI).
+- The `number` field represents the milestone number (1-10).
 - The `goal` field is outcome‑based and must start with "Be able to …". It's a capability statement (not an instruction).
-- The `quarters` object divides the journey into quarters (Q1: Milestones 1-3, Q2: Milestones 4-6, Q3: Milestones 7-9, Q4: Milestones 10-12).
+- The `halves` object divides the journey into halves (H1: Milestones 1-5, H2: Milestones 6-10).
 - The former `explanation` field is removed everywhere.
 
 ## Features
@@ -90,7 +90,7 @@ Notes:
 - Live progress from LearnWorlds
 
 ### Milestone Journey (`/milestone-roadmap/:userId`)
-- Self‑paced 12‑milestone journey
+- Self‑paced 10‑milestone journey
 - Current milestone detail view with: focus, outcome goal, and course recommendation
 - Toggle between "Current" and "My Path" views
 - Mark milestone complete (stored in Sheets)

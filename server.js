@@ -246,9 +246,13 @@ function normalizePlanObjectLoose(planObj) {
   // Always use new key name in output
   if (Array.isArray(milestones)) draft.milestones = milestones;
   
-  // Also handle quarters/quarterly_summary
+  // Also handle quarters/quarterly_summary and halves
   if (draft.quarterly_summary && !draft.quarters) {
     draft.quarters = draft.quarterly_summary;
+  }
+  // Convert quarters to halves if needed
+  if (draft.quarters && !draft.halves) {
+    draft.halves = draft.quarters;
   }
   
   return draft;
@@ -1418,7 +1422,7 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
         } else {
           const nonZeroCompleted = completed.filter(m => m >= 1);
           const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
-          computedCurrent = Math.min(maxCompleted + 1, 12);
+          computedCurrent = Math.min(maxCompleted + 1, 10);
         }
         if (!Number.isFinite(roadmapProgress.currentMilestone) || roadmapProgress.currentMilestone !== computedCurrent) {
           roadmapProgress.currentMilestone = computedCurrent;
@@ -1566,7 +1570,7 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
     } else {
       const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
       const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
-      newCurrentMilestone = Math.min(maxCompleted + 1, 12);
+      newCurrentMilestone = Math.min(maxCompleted + 1, 10);
     }
     
     progress.currentMilestone = newCurrentMilestone;
@@ -2167,6 +2171,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             if (roadmapPlan.quarterly_summary && !roadmapPlan.quarters) {
               roadmapPlan.quarters = roadmapPlan.quarterly_summary;
             }
+            // Convert quarters to halves if needed
+            if (roadmapPlan.quarters && !roadmapPlan.halves) {
+              roadmapPlan.halves = roadmapPlan.quarters;
+            }
           }
           
           // Handle different plan states
@@ -2222,7 +2230,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
-              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Current Milestone: ' + currentMilestone + ' of 12') + '</a>' +
+              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Current Milestone: ' + currentMilestone + ' of 10') + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
@@ -2349,7 +2357,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         function updateNavArrows() {
           try {
             const plan = window.ROADMAP_PLAN;
-            const total = Array.isArray(plan?.milestones) ? plan.milestones.length : 12;
+            const total = Array.isArray(plan?.milestones) ? plan.milestones.length : 10;
             const current = Number(window.DISPLAYED_MILESTONE || 0);
             const prevBtn = document.getElementById('nav-prev');
             const nextBtn = document.getElementById('nav-next');
@@ -2361,7 +2369,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         function navigateMilestone(direction) {
           const plan = window.ROADMAP_PLAN;
           if (!plan) return;
-          const total = Array.isArray(plan.milestones) ? plan.milestones.length : 12;
+          const total = Array.isArray(plan.milestones) ? plan.milestones.length : 10;
           const current = Number(window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 0);
           let next = current + Number(direction || 0);
           if (next < 0) next = 0;
@@ -2400,7 +2408,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const currentMilestone = window.CURRENT_MILESTONE || 0;
           
           if (currentLink) {
-            const buttonText = currentMilestone === 0 ? '🎯 Overview' : '🎯 Current Milestone: ' + currentMilestone + ' of 12';
+            const buttonText = currentMilestone === 0 ? '🎯 Overview' : '🎯 Current Milestone: ' + currentMilestone + ' of 10';
             currentLink.innerHTML = buttonText;
           }
         }
@@ -2740,7 +2748,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (!plan) return;
           
           const currentMilestone = progress.currentMilestone || 0;
-          const totalMilestones = Array.isArray(plan.milestones) ? plan.milestones.length : 12;
+          const totalMilestones = Array.isArray(plan.milestones) ? plan.milestones.length : 10;
           
           if (currentMilestone < totalMilestones) {
             const nextMilestone = currentMilestone + 1;
