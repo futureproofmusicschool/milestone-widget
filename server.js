@@ -2905,7 +2905,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         // Auto-reload functionality for 'inprogress' state
         let autoReloadTimer = null;
-        let lastActivity = Date.now();
         
         function setupAutoReload() {
           // Clear any existing timer
@@ -2913,23 +2912,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             clearTimeout(autoReloadTimer);
           }
           
-          // Track user activity
-          const activityEvents = ['click', 'scroll', 'keydown', 'mousemove'];
-          const updateActivity = () => {
-            lastActivity = Date.now();
-          };
-          
-          activityEvents.forEach(event => {
-            document.addEventListener(event, updateActivity, { passive: true });
-          });
-          
           // Set up the auto-reload timer (5 minutes = 300000ms)
           autoReloadTimer = setTimeout(() => {
-            // Check if there has been no activity in the last 5 minutes
-            if (Date.now() - lastActivity >= 300000) {
-              console.log('[Client] Auto-reloading due to inactivity during plan generation');
-              loadRoadmap();
-            }
+            console.log('[Client] Auto-reloading to check for plan.');
+            loadRoadmap();
           }, 300000); // 5 minutes
         }
 
