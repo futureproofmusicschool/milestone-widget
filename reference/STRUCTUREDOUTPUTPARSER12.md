@@ -2,9 +2,9 @@
   "northstar": "Create and release your first EP",
   "welcome": "Hey Alex, let's finish your first sketches and build from there!",
   "overview": "You'll move from rough sketches to polished tracks and a public release through this journey. Futureproof courses, regular mentor check-ins, and our Discord community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
-  "monthly_plan": [
+  "milestones": [
     {
-      "month": 1,
+      "number": 1,
       "focus": "DAW fluency & first full loop",
       "goal": "Be able to produce a 60-second electronic demo using Ableton’s core workflow, recording audio and MIDI, arranging in Session/Arrangement views, and translating musical ideas into a complete loop.",
       "course_rec": {
@@ -14,7 +14,7 @@
       }
     },
     {
-      "month": 2,
+      "number": 2,
       "focus": "Building a personal sound library",
       "goal": "Be able to design and organize a cohesive 20-sample pack (drums, loops, textures) tailored to your genre, using recording, processing, and cataloging techniques to build a reusable signature library.",
       "course_rec": {
@@ -24,7 +24,7 @@
       }
     },
     {
-      "month": 3,
+      "number": 3,
       "focus": "Arranging full songs",
       "goal": "Be able to transform loops into a fully arranged 3–4 minute track, shaping tension/release with transitions, automation, and professional section flow.",
       "course_rec": {
@@ -34,7 +34,7 @@
       }
     },
     {
-      "month": 4,
+      "number": 4,
       "focus": "Genre deep-dive: Drum & Bass",
       "goal": "Be able to produce a 3-minute Drum & Bass track that demonstrates tight breakbeat programming, rolling bass design, and genre-accurate arrangement.",
       "course_rec": {
@@ -44,7 +44,7 @@
       }
     },
     {
-      "month": 5,
+      "number": 5,
       "focus": "Mixing essentials",
       "goal": "Be able to deliver a mix with clear balance, depth, and width using EQ, compression, and spatial processing suitable for release.",
       "course_rec": {
@@ -54,7 +54,7 @@
       }
     },
     {
-      "month": 6,
+      "number": 6,
       "focus": "Quick-win collaboration",
       "goal": "Be able to co‑produce a 2‑minute collaboration sketch, exchange stems efficiently, and integrate feedback into a cohesive idea.",
       "course_rec": {
@@ -64,7 +64,7 @@
       }
     },
     {
-      "month": 7,
+      "number": 7,
       "focus": "Brand & social foundations",
       "goal": "Be able to present a cohesive brand package (bio, visuals, logo) aligned to your sound and target audience across platforms.",
       "course_rec": {
@@ -74,7 +74,7 @@
       }
     },
     {
-      "month": 8,
+      "number": 8,
       "focus": "Sound-design refinement",
       "goal": "Be able to craft a signature bass patch and drum kit, then apply them consistently for a recognizable sonic identity.",
       "course_rec": {
@@ -84,7 +84,7 @@
       }
     },
     {
-      "month": 9,
+      "number": 9,
       "focus": "Advanced creative workflow",
       "goal": "Be able to generate and evaluate three structured EP drafts quickly using constraint‑driven workflow and iteration.",
       "course_rec": {
@@ -94,7 +94,7 @@
       }
     },
     {
-      "month": 10,
+      "number": 10,
       "focus": "Mix & pre-master EP",
       "goal": "Be able to prepare all EP tracks to a mix‑ready state with organized sessions, version control, and consistent gain staging.",
       "course_rec": {
@@ -104,7 +104,7 @@
       }
     },
     {
-      "month": 11,
+      "number": 11,
       "focus": "Marketing & release strategy",
       "goal": "Be able to assemble and schedule all release assets (covers, bios, links, clips) with a clear rollout calendar.",
       "course_rec": {
@@ -114,7 +114,7 @@
       }
     },
     {
-      "month": 12,
+      "number": 12,
       "focus": "Launch & review",
       "goal": "Be able to execute a release plan end‑to‑end, launch your EP, and track results using a simple analytics workflow.",
       "course_rec": {
@@ -124,7 +124,7 @@
       }
     }
   ],
-  "quarterly_summary": {
+  "quarters": {
     "Q1": "Foundations locked: you can build and arrange a complete track. Next quarter we’ll polish sound design and mixing.",
     "Q2": "Sound-design and mix skills boosted; two tracks ready for feedback. Time to craft your signature style.",
     "Q3": "Branding and release prep under way; three finished tracks and growing socials.",

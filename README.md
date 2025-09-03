@@ -60,26 +60,26 @@ The plan JSON (column E) expects this shape:
   "northstar": "string",
   "welcome": "string",
   "overview": "string",
-  "monthly_plan": [
+  "milestones": [
     {
-      "month": 1,
+      "number": 1,
       "focus": "string",
       "goal": "string",
       "course_rec": { "title": "string", "url": "string", "benefit": "string" }
     }
     // ... 12 total entries, ordered as Milestones 1..12
   ],
-  "quarterly_summary": { "Q1": "string", "Q2": "string", "Q3": "string", "Q4": "string" },
+  "quarters": { "Q1": "string", "Q2": "string", "Q3": "string", "Q4": "string" },
   "kpi": ["string", "string", "string", "string"],
   "support_channels": ["string", "string"]
 }
 ```
 
 Notes:
-- The `monthly_plan` array contains the 12 milestones (indexed as Milestones 1..12 in the UI).
-- The `month` field in each entry is kept for compatibility but represents milestone number.
+- The `milestones` array contains the 12 milestones (indexed as Milestones 1..12 in the UI).
+- The `number` field represents the milestone number (1-12).
 - The `goal` field is outcome‑based and must start with "Be able to …". It's a capability statement (not an instruction).
-- The `quarterly_summary` divides the journey into quarters (Q1: Milestones 1-3, Q2: Milestones 4-6, Q3: Milestones 7-9, Q4: Milestones 10-12).
+- The `quarters` object divides the journey into quarters (Q1: Milestones 1-3, Q2: Milestones 4-6, Q3: Milestones 7-9, Q4: Milestones 10-12).
 - The former `explanation` field is removed everywhere.
 
 ## Features

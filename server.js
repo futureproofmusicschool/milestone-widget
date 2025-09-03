@@ -191,15 +191,25 @@ function extractJsonObjectFromText(text) {
 
 function normalizeMonthlyPlanKeys(obj) {
   if (!obj || typeof obj !== 'object') return obj;
+  // Handle both old (monthly_plan) and new (milestones) keys for backward compatibility
+  if (typeof obj.milestones === 'string') {
+    try {
+      const parsed = JSON.parse(obj.milestones);
+      if (Array.isArray(parsed)) obj.milestones = parsed;
+    } catch (_) {}
+  }
   if (typeof obj.monthly_plan === 'string') {
     try {
       const parsed = JSON.parse(obj.monthly_plan);
-      if (Array.isArray(parsed)) obj.monthly_plan = parsed;
+      if (Array.isArray(parsed)) obj.milestones = parsed; // Convert to new key
     } catch (_) {}
   }
-  if (Array.isArray(obj.monthly_plan)) return obj;
+  if (Array.isArray(obj.milestones)) return obj;
+  if (Array.isArray(obj.monthly_plan)) {
+    return { ...obj, milestones: obj.monthly_plan }; // Convert to new key
+  }
   if (Array.isArray(obj.monthlyPlan)) {
-    return { ...obj, monthly_plan: obj.monthlyPlan };
+    return { ...obj, milestones: obj.monthlyPlan }; // Convert to new key
   }
   return obj;
 }
@@ -223,14 +233,24 @@ function getLoose(obj, looseName) {
 function normalizePlanObjectLoose(planObj) {
   if (!planObj || typeof planObj !== 'object') return null;
   const draft = { ...planObj };
-  let monthly = draft.monthly_plan;
-  if (monthly === undefined) monthly = draft.monthlyPlan;
-  if (monthly === undefined) monthly = getLoose(draft, 'monthly_plan');
-  if (typeof monthly === 'string') {
-    const parsed = parseJsonPossiblyDoubleEncoded(monthly) || extractJsonObjectFromText(monthly);
-    if (Array.isArray(parsed)) monthly = parsed;
+  // Try new key first, then fall back to old keys
+  let milestones = draft.milestones;
+  if (milestones === undefined) milestones = draft.monthly_plan;
+  if (milestones === undefined) milestones = draft.monthlyPlan;
+  if (milestones === undefined) milestones = getLoose(draft, 'milestones');
+  if (milestones === undefined) milestones = getLoose(draft, 'monthly_plan');
+  if (typeof milestones === 'string') {
+    const parsed = parseJsonPossiblyDoubleEncoded(milestones) || extractJsonObjectFromText(milestones);
+    if (Array.isArray(parsed)) milestones = parsed;
   }
-  if (Array.isArray(monthly)) draft.monthly_plan = monthly;
+  // Always use new key name in output
+  if (Array.isArray(milestones)) draft.milestones = milestones;
+  
+  // Also handle quarters/quarterly_summary
+  if (draft.quarterly_summary && !draft.quarters) {
+    draft.quarters = draft.quarterly_summary;
+  }
+  
   return draft;
 }
 
@@ -1358,7 +1378,11 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
       roadmapPlan = normalizeMonthlyPlanKeys(roadmapPlan);
       roadmapPlan = normalizePlanObjectLoose(roadmapPlan);
       
-      if (roadmapPlan && roadmapPlan.monthly_plan) {
+      if (roadmapPlan && (roadmapPlan.milestones || roadmapPlan.monthly_plan)) {
+        // Ensure we use the new key name
+        if (roadmapPlan.monthly_plan && !roadmapPlan.milestones) {
+          roadmapPlan.milestones = roadmapPlan.monthly_plan;
+        }
         planState = 'ready';
       } else {
         planState = 'none';
@@ -1406,7 +1430,7 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
 
     console.log('Milestone API: planState:', planState);
     console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
-    console.log('Milestone API: has monthly_plan array:', !!(roadmapPlan && Array.isArray(roadmapPlan.monthly_plan)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.monthly_plan) ? roadmapPlan.monthly_plan.length : 'n/a');
+    console.log('Milestone API: has milestones array:', !!(roadmapPlan && Array.isArray(roadmapPlan.milestones)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.milestones) ? roadmapPlan.milestones.length : 'n/a');
     
     res.json({
       userId,
@@ -1451,10 +1475,10 @@ app.get('/api/milestone-debug/:userId', async (req, res) => {
       rawPlanPreview: rawPlan ? String(rawPlan).slice(0, 220) : null,
       decodedPreview: decoded ? decoded.slice(0, 220) : null,
       keysBefore: planBefore ? Object.keys(planBefore) : [],
-      hasMonthlyPlanArrayBefore: !!(planBefore && Array.isArray(planBefore.monthly_plan)),
+      hasMonthlyPlanArrayBefore: !!(planBefore && (Array.isArray(planBefore.milestones) || Array.isArray(planBefore.monthly_plan))),
       keysAfter: planAfter ? Object.keys(planAfter) : [],
-      hasMonthlyPlanArrayAfter: !!(planAfter && Array.isArray(planAfter.monthly_plan)),
-      monthlyPlanLength: planAfter && Array.isArray(planAfter.monthly_plan) ? planAfter.monthly_plan.length : null,
+      hasMonthlyPlanArrayAfter: !!(planAfter && (Array.isArray(planAfter.milestones) || Array.isArray(planAfter.monthly_plan))),
+      monthlyPlanLength: planAfter && (Array.isArray(planAfter.milestones) ? planAfter.milestones.length : (Array.isArray(planAfter.monthly_plan) ? planAfter.monthly_plan.length : null)),
       hasProgress: !!rawProgress,
     };
     res.json(diagnostics);
@@ -2108,7 +2132,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             const data = await response.json();
             console.log('[Client] Response JSON keys:', Object.keys(data || {}));
             if (data && data.roadmapPlan) {
-              console.log('[Client] roadmapPlan present. monthly_plan length:', Array.isArray(data.roadmapPlan.monthly_plan) ? data.roadmapPlan.monthly_plan.length : 'n/a');
+              console.log('[Client] roadmapPlan present. milestones length:', Array.isArray(data.roadmapPlan.milestones) ? data.roadmapPlan.milestones.length : 'n/a');
             } else {
               console.log('[Client] No roadmapPlan in response');
             }
@@ -2130,11 +2154,23 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
         
         function renderRoadmap(data) {
-          const { roadmapPlan, roadmapProgress, planState } = data;
+          let { roadmapPlan, roadmapProgress, planState } = data;
           console.log('[Client] renderRoadmap called with planState:', planState);
           
+          // Handle backward compatibility: convert old keys to new keys
+          if (roadmapPlan) {
+            // Convert monthly_plan to milestones if needed
+            if (roadmapPlan.monthly_plan && !roadmapPlan.milestones) {
+              roadmapPlan.milestones = roadmapPlan.monthly_plan;
+            }
+            // Convert quarterly_summary to quarters if needed  
+            if (roadmapPlan.quarterly_summary && !roadmapPlan.quarters) {
+              roadmapPlan.quarters = roadmapPlan.quarterly_summary;
+            }
+          }
+          
           // Handle different plan states
-          if (planState === 'none' || !roadmapPlan || !roadmapPlan.monthly_plan) {
+          if (planState === 'none' || !roadmapPlan || !roadmapPlan.milestones) {
             document.getElementById('app').innerHTML = 
               '<div class="loading" style="text-align: center; padding: 60px 20px; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">' +
                 '<h3 style="color: #A373F8; margin-bottom: 20px; font-size: 24px;">No roadmap found!</h3>' +
@@ -2209,7 +2245,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>' +
               '</div>';
           } else {
-            const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
+            const currentMilestoneData = roadmapPlan.milestones[currentMilestone - 1];
             if (currentMilestoneData) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
               '<div id="current-view" class="current-milestone-detail">' +
@@ -2249,7 +2285,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="timeline-line"></div>';
           
           // Render timeline
-          console.log('[Client] About to render timeline. monthly_plan length:', roadmapPlan.monthly_plan ? roadmapPlan.monthly_plan.length : 'undefined');
+          console.log('[Client] About to render timeline. milestones length:', roadmapPlan.milestones ? roadmapPlan.milestones.length : 'undefined');
           
           // Add Milestone 0 (Overview) to timeline
           const isOverviewCurrent = currentMilestone === 0;
@@ -2264,8 +2300,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>' +
           '</div>';
           
-          if (roadmapPlan.monthly_plan && Array.isArray(roadmapPlan.monthly_plan)) {
-            roadmapPlan.monthly_plan.forEach((milestone, index) => {
+          if (roadmapPlan.milestones && Array.isArray(roadmapPlan.milestones)) {
+            roadmapPlan.milestones.forEach((milestone, index) => {
               const num = index + 1;
               const isCompleted = completed.includes(num);
               const isCurrent = num === currentMilestone;
@@ -2289,7 +2325,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
             });
           } else {
-            console.log('[Client] No monthly_plan found or not an array');
+            console.log('[Client] No milestones found or not an array');
             html += '<div style="color: #A373F8; text-align: center; padding: 50px;">No milestones found. Please complete your onboarding form.</div>';
           }
           
@@ -2298,7 +2334,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           document.getElementById('app').innerHTML = html;
           // Hydrate recommendation progress (if any) - only for regular milestones, not Overview
           if (currentMilestone > 0) {
-            const currentMilestoneData = roadmapPlan.monthly_plan[currentMilestone - 1];
+            const currentMilestoneData = roadmapPlan.milestones[currentMilestone - 1];
             if (currentMilestoneData && currentMilestoneData.course_rec) {
               hydrateRecommendationProgress(currentMilestoneData.course_rec);
             }
@@ -2313,7 +2349,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         function updateNavArrows() {
           try {
             const plan = window.ROADMAP_PLAN;
-            const total = Array.isArray(plan?.monthly_plan) ? plan.monthly_plan.length : 12;
+            const total = Array.isArray(plan?.milestones) ? plan.milestones.length : 12;
             const current = Number(window.DISPLAYED_MILESTONE || 0);
             const prevBtn = document.getElementById('nav-prev');
             const nextBtn = document.getElementById('nav-next');
@@ -2325,7 +2361,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         function navigateMilestone(direction) {
           const plan = window.ROADMAP_PLAN;
           if (!plan) return;
-          const total = Array.isArray(plan.monthly_plan) ? plan.monthly_plan.length : 12;
+          const total = Array.isArray(plan.milestones) ? plan.milestones.length : 12;
           const current = Number(window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 0);
           let next = current + Number(direction || 0);
           if (next < 0) next = 0;
@@ -2428,9 +2464,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
           
           // Handle regular milestones
-          if (!Array.isArray(plan.monthly_plan)) return;
+          if (!Array.isArray(plan.milestones)) return;
           const idx = Number(milestoneNumber) - 1;
-          const data = plan.monthly_plan[idx];
+          const data = plan.milestones[idx];
           if (!data) return;
 
           const isCurrent = Number(milestoneNumber) === Number(progress.currentMilestone);
@@ -2704,7 +2740,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (!plan) return;
           
           const currentMilestone = progress.currentMilestone || 0;
-          const totalMilestones = Array.isArray(plan.monthly_plan) ? plan.monthly_plan.length : 12;
+          const totalMilestones = Array.isArray(plan.milestones) ? plan.milestones.length : 12;
           
           if (currentMilestone < totalMilestones) {
             const nextMilestone = currentMilestone + 1;
