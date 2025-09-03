@@ -1289,13 +1289,6 @@ app.options('/api/milestone-roadmap/:userId', (req, res) => {
   res.sendStatus(200);
 });
 
-app.options('/api/milestone-roadmap/:userId/complete', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.sendStatus(200);
-});
-
 app.options('/api/milestone-roadmap/:userId/visit', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -1471,115 +1464,6 @@ app.get('/api/milestone-debug/:userId', async (req, res) => {
   }
 });
 
-/**
- * Update milestone progress (mark complete)
- */
-app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
-  // Set CORS headers explicitly for this endpoint
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  
-  try {
-    const { userId } = req.params;
-    const { milestoneNumber } = req.body;
-    const milestoneNumberNum = Number(milestoneNumber);
-
-    console.log(`Marking milestone ${milestoneNumberNum} complete for user ${userId}`);
-    
-    // First, get current data
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: MILESTONE_SPREADSHEET_ID,
-      range: 'sheet1!A:F',
-    });
-
-    const rows = response.data.values || [];
-    const userRowIndexInData = rows.slice(1).findIndex(row => (row[0] || '').trim() === (userId || '').trim());
-
-    if (userRowIndexInData === -1) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const absoluteRowIndex = userRowIndexInData + 1;
-    
-    // Get current progress or create new, with robust parsing
-    const rawProgress = rows[absoluteRowIndex] ? rows[absoluteRowIndex][5] : undefined;
-    let progress;
-    if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
-        try {
-            progress = JSON.parse(rawProgress);
-        } catch (e) {
-            progress = {}; // Start fresh if JSON is broken
-        }
-    } else {
-        progress = {};
-    }
-
-    // Initialize progress object if it's new or broken
-    progress = {
-      userId,
-      currentMilestone: progress.currentMilestone || 0,
-      milestonesCompleted: progress.milestonesCompleted || [],
-      milestonesVisited: progress.milestonesVisited || [0],
-      milestoneProgress: progress.milestoneProgress || {}
-    };
-
-    // Normalize arrays to numbers to prevent type errors
-    progress.milestonesVisited = progress.milestonesVisited.map(Number);
-    progress.milestonesCompleted = progress.milestonesCompleted.map(Number);
-    
-    // Update progress
-    if (!progress.milestonesCompleted.includes(milestoneNumberNum)) {
-      progress.milestonesCompleted.push(milestoneNumberNum);
-      progress.milestonesCompleted.sort((a, b) => a - b);
-    }
-    
-    // Update currentMilestone logic: show most advanced visited but not completed milestone
-    const completedMilestones = progress.milestonesCompleted;
-    const visitedMilestones = progress.milestonesVisited;
-    
-    // Compute lowest visited (>=1) not completed; else next after max completed
-    const visitedAsc_complete = [...new Set(visitedMilestones)].map(Number).sort((a,b)=>a-b);
-    const candidates_complete = visitedAsc_complete.filter(m => m >= 1 && !completedMilestones.includes(m));
-    let newCurrentMilestone = 0;
-    if (candidates_complete.length > 0) {
-      newCurrentMilestone = candidates_complete[0];
-    } else {
-      const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
-      const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
-      newCurrentMilestone = Math.min(maxCompleted + 1, 12);
-    }
-    
-    progress.currentMilestone = newCurrentMilestone;
-    
-    // Add completion timestamp
-    if (!progress.milestoneProgress[milestoneNumberNum]) {
-        progress.milestoneProgress[milestoneNumberNum] = {};
-    }
-    progress.milestoneProgress[milestoneNumberNum] = {
-      ...progress.milestoneProgress[milestoneNumberNum],
-      completed: true,
-      completedDate: new Date().toISOString()
-    };
-    
-    // Update the sheet (column F, which is index 5)
-    const updateRange = `sheet1!F${absoluteRowIndex + 1}`;
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: MILESTONE_SPREADSHEET_ID,
-      range: updateRange,
-      valueInputOption: 'RAW',
-      resource: {
-        values: [[JSON.stringify(progress)]]
-      }
-    });
-    
-    res.json({ success: true, progress });
-    
-  } catch (error) {
-    console.error('Error updating milestone progress:', error);
-    res.status(500).json({ error: 'Failed to update progress' });
-  }
-});
 
 /**
  * Track milestone visit (when user navigates to a milestone)
@@ -2160,27 +2044,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           100% { background-position: -200% 0; }
         }
         
-        .complete-button {
-          background: #A373F8;
-          color: #000;
-          border: none;
-          padding: 12px 30px;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 20px;
-        }
         
-        .complete-button:hover {
-          background: #8b5df6;
-          transform: translateY(-2px);
-        }
-        
-        .complete-button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
         
         .course-recommendation {
           background: rgba(163, 115, 248, 0.1);
@@ -2817,35 +2681,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           return html;
         }
         
-        async function markComplete(milestoneNumber) {
-          // Only allow completing the current milestone
-          try {
-            const progress = window.ROADMAP_PROGRESS || { currentMilestone: 1 };
-            if (Number(milestoneNumber) !== Number(progress.currentMilestone)) {
-              alert('You can only complete your current milestone.');
-              return;
-            }
-          } catch (_) {}
-          if (!confirm('Mark this milestone as complete?')) return;
-          
-          try {
-            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId + '/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ milestoneNumber })
-            });
-            
-            if (!response.ok) {
-              throw new Error('Failed to update progress');
-            }
-            
-            // Reload the roadmap to show updated progress
-            loadRoadmap();
-          } catch (error) {
-            console.error('Error marking complete:', error);
-            alert('Failed to update progress. Please try again.');
-          }
-        }
+        
 
         // Show the current milestone view
         function showCurrentMilestone(event) {
