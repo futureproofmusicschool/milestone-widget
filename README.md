@@ -11,6 +11,7 @@ A server-rendered widget suite (no separate React app) that displays learning pa
 
 ## How It Works
 
+
 ### Data Flow (Milestone Journey)
 - Plan JSON (the 12‑milestone roadmap) is stored in Google Sheets under `MILESTONE_SPREADSHEET_ID`, tab `sheet1`, column E.
 - Progress JSON (completion state) is stored in the same sheet, column F.
