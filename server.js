@@ -2331,11 +2331,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Handle Milestone 0 (Overview) differently
           if (currentMilestone === 0) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
-              '<div id="current-view" class="current-milestone-detail" style="cursor: pointer;" onclick="navigateMilestone(1)">' +
+              '<div id="current-view" class="current-milestone-detail" style="cursor: pointer;" onclick="showMilestoneDetail(1)">' +
               '<div class="milestone-nav">' +
-                '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)" disabled>‹</button>' +
                 '<h2 style="margin: 0;">OVERVIEW</h2>' +
-                '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>' +
               '<div class="overview-text">' + roadmapPlan.overview.replace(/[.] /g, '.<br><br>') + '</div>' +
               '<div class="milestone-section">' +
@@ -2352,9 +2350,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
               '<div id="current-view" class="current-milestone-detail">' +
               '<div class="milestone-nav">' +
-                '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
                 '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
-                '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>' +
               '';
             
@@ -2526,9 +2522,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             if (currentEl) {
               let inner = '' +
                 '<div class="milestone-nav">' +
-                  '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)" disabled>‹</button>' +
                   '<h2 style="margin: 0;">OVERVIEW</h2>' +
-                  '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
                 '</div>' +
                 '<div class="overview-text">' + plan.overview.replace(/[.] /g, '.<br><br>') + '</div>' +
                 '<div class="milestone-section">' +
@@ -2539,12 +2533,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</div>';
               currentEl.innerHTML = inner;
               currentEl.style.cursor = 'pointer';
-              currentEl.onclick = () => navigateMilestone(1);
+              currentEl.onclick = () => showMilestoneDetail(1);
             }
             
             // Track currently displayed milestone
             window.DISPLAYED_MILESTONE = 0;
-            updateNavArrows();
             
                       // Switch back to detail view
           const path = document.getElementById('path-view');
@@ -2581,9 +2574,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (currentEl) {
             let inner = '' +
               '<div class="milestone-nav">' +
-                '<button id="nav-prev" class="nav-arrow" onclick="navigateMilestone(-1)">‹</button>' +
                 '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
-                '<button id="nav-next" class="nav-arrow" onclick="navigateMilestone(1)">›</button>' +
               '</div>' +
               '';
             
@@ -2618,7 +2609,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
 
           // Track currently displayed milestone
           window.DISPLAYED_MILESTONE = Number(milestoneNumber);
-          updateNavArrows();
 
           // Switch back to detail view
           const path = document.getElementById('path-view');
