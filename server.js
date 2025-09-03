@@ -2272,11 +2272,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           // Handle different plan states
           if (planState === 'none' || !roadmapPlan || !roadmapPlan.monthly_plan) {
             document.getElementById('app').innerHTML = 
-              '<div class="loading" style="cursor: pointer; text-align: center; padding: 60px 20px; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="handleNoRoadmapClick()">' +
+              '<div class="loading" style="text-align: center; padding: 60px 20px; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">' +
                 '<h3 style="color: #A373F8; margin-bottom: 20px; font-size: 24px;">No roadmap found!</h3>' +
                 '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">If you\\\'ve just filled out our onboarding form, our system is hard at work making a personalized plan to help you reach your musical goals. This page will automatically reload in 5 minutes to check for your new plan.</p>' +
-                '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">If you never filled out the form, please take a minute to fill out the questions on our onboarding form and we\\\'ll generate a custom plan for you.</p>' +
-                '<p style="color: #A373F8; font-size: 14px; font-weight: 600;">Click to get started.</p>' +
+                '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">If you never filled out the form, <a href="https://learn.futureproofmusicschool.com/standalone-form?assessment-id=68b0a35a9f293e250a0cf3e4" target="_top" style="color: #A373F8; text-decoration: underline;">please take a minute to fill out the questions on our onboarding form</a> and we\\\'ll generate a custom plan for you.</p>' +
               '</div>';
             setupAutoReload();
             sendHeight();
