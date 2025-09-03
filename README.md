@@ -2,10 +2,10 @@
 
 A server-rendered widget suite (no separate React app) that displays learning pathways, a 12‑milestone self‑paced journey, and real‑time course progress. Served directly from an Express server.
 
-## What’s Included
+## What's Included
 
-- Course Roadmap widget: saves and displays a user’s selected courses with progress
-- Milestone Journey widget: shows a personalized, self‑paced 12‑milestone plan with current milestone focus and course recommendation
+- Course Roadmap widget: saves and displays a user's selected courses with progress
+- Milestone Journey widget: shows a personalized, self‑paced 12‑milestone journey with current milestone focus and course recommendation
 - LearnWorlds OAuth2 integration for live course progress
 - Google Sheets as the data store for plans and progress
 
@@ -76,8 +76,10 @@ The plan JSON (column E) expects this shape:
 ```
 
 Notes:
-- The app uses the term “Milestone” in the UI; the `monthly_plan` array is treated as Milestones 1..12.
-- The `goal` field is outcome‑based and must start with “Be able to …”. It’s a capability statement (not an instruction).
+- The `monthly_plan` array contains the 12 milestones (indexed as Milestones 1..12 in the UI).
+- The `month` field in each entry is kept for compatibility but represents milestone number.
+- The `goal` field is outcome‑based and must start with "Be able to …". It's a capability statement (not an instruction).
+- The `quarterly_summary` divides the journey into quarters (Q1: Milestones 1-3, Q2: Milestones 4-6, Q3: Milestones 7-9, Q4: Milestones 10-12).
 - The former `explanation` field is removed everywhere.
 
 ## Features
@@ -88,9 +90,9 @@ Notes:
 - Live progress from LearnWorlds
 
 ### Milestone Journey (`/milestone-roadmap/:userId`)
-- Self‑paced 12‑milestone timeline
+- Self‑paced 12‑milestone journey
 - Current milestone detail view with: focus, outcome goal, and course recommendation
-- Toggle between “Current” and “My Path” views
+- Toggle between "Current" and "My Path" views
 - Mark milestone complete (stored in Sheets)
 - Live progress for the recommended course (if provided)
 

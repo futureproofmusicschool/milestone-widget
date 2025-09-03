@@ -1,7 +1,7 @@
 {
   "northstar": "Create and release your first EP",
-  "welcome": "Hey Alex, let’s finish your first sketches in 30 days and build from there!",
-  "overview": "Over the next year you’ll move from rough sketches to polished tracks and a public release. Futureproof courses, monthly mentor check-ins, and our Discord community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
+  "welcome": "Hey Alex, let's finish your first sketches and build from there!",
+  "overview": "You'll move from rough sketches to polished tracks and a public release through this journey. Futureproof courses, regular mentor check-ins, and our Discord community keep you accountable. Expect quick wins, clear milestones, and steady feedback so your music and confidence grow together.",
   "monthly_plan": [
     {
       "month": 1,
@@ -10,7 +10,7 @@
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
         "url": "https://learn.futureproofmusicschool.com/course/ableton-live-basics",
-        "benefit": "This foundational course will transform you from someone who struggles with basic DAW operations into a confident producer who can quickly translate musical ideas into reality. You'll master essential Ableton Live workflows that directly support your goal of finishing polished tracks, learning to efficiently record, edit, and arrange audio and MIDI. The time you invest here will pay dividends throughout your entire year-long journey, as every future course builds on these core skills. By the end, you'll have the technical fluency needed to focus on creativity rather than fighting with your tools."
+        "benefit": "This foundational course will transform you from someone who struggles with basic DAW operations into a confident producer who can quickly translate musical ideas into reality. You'll master essential Ableton Live workflows that directly support your goal of finishing polished tracks, learning to efficiently record, edit, and arrange audio and MIDI. The time you invest here will pay dividends throughout your entire journey, as every future course builds on these core skills. By the end, you'll have the technical fluency needed to focus on creativity rather than fighting with your tools."
       }
     },
     {
@@ -128,7 +128,7 @@
     "Q1": "Foundations locked: you can build and arrange a complete track. Next quarter we’ll polish sound design and mixing.",
     "Q2": "Sound-design and mix skills boosted; two tracks ready for feedback. Time to craft your signature style.",
     "Q3": "Branding and release prep under way; three finished tracks and growing socials.",
-    "Q4": "EP released, first 1 000 streams, and a sustainable creation schedule for year 2."
+    "Q4": "EP released, first 1 000 streams, and a sustainable creation schedule for continued growth."
   },
   "kpi": [
     "4 finished tracks",
