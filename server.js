@@ -2361,7 +2361,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.course_rec.benefit + '</div>' +
-                    '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Start Course →</div>' +
+                    '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
                   '</a>' +
                 '</div>' +
                 '</div>';
@@ -2585,7 +2585,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.course_rec.benefit + '</div>' +
-                    '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Start Course →</div>' +
+                    '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
                   '</a>' +
                 '</div>' +
                 '</div>';
