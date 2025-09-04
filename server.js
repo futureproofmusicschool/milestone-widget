@@ -1924,7 +1924,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
               '<div style="margin-top: 15px;">' +
                 '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready for the next milestone?</div>' +
-                '<button onclick="advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
+                '<button onclick="event.stopPropagation(); event.preventDefault(); advanceToNextMilestone(); return false;" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
               '</div>' +
               '</div>';
           }
@@ -2034,15 +2034,15 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         // Advance to next milestone (called from course completion)
         function advanceToNextMilestone() {
-          const progress = window.ROADMAP_PROGRESS || { currentMilestone: 0 };
           const plan = window.ROADMAP_PLAN;
           if (!plan) return;
           
-          const currentMilestone = window.CURRENT_MILESTONE || progress.currentMilestone || 0;
+          // Use the currently displayed milestone, not the user's progress milestone
+          const displayedMilestone = window.DISPLAYED_MILESTONE || 0;
           const totalMilestones = Array.isArray(plan.milestones) ? plan.milestones.length : 10;
           
-          if (currentMilestone < totalMilestones) {
-            const nextMilestone = currentMilestone + 1;
+          if (displayedMilestone < totalMilestones) {
+            const nextMilestone = displayedMilestone + 1;
             showMilestoneDetail(nextMilestone);
           } else {
             // User has completed all milestones!
