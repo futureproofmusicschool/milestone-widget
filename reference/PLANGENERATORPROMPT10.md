@@ -24,9 +24,9 @@ You must output ONE JSON object whose top-level keys are:
        goal (a 1-2 sentence capability statement that restates what the student will be able to do after completing the course's final project; write as an outcome starting with "Be able to ...", not an instruction),
        course_rec {title, url, benefit} }
    - NOTE: The "benefit" field in course_rec should be a full paragraph (3-4 sentences) explaining specifically how this course connects to the student's personal goals, what skills they'll gain, and how it fits into their overall learning journey toward their northstar. Don't just list features - explain the personal value and progression.
-• halves – object with keys H1, H2; each value is one paragraph recapping progress and setting the next stage.
+• halves – object with keys H1, H2; each value is one paragraph recapping progress and setting the next stage. H1 should describe "the first half of this course sequence" and H2 should describe "the second half of this course sequence".
 • kpi – 3-4 measurable indicators of progress (tracks finished, followers gained, etc.).
-• support_channels – array of strings (e.g., "Discord", "mentor sessions", "online feedback hours").
+• support_channels – array of strings. Note: These are now hardcoded in the email template with links, so the exact text doesn't matter but should generally mention: Discord community, mentor sessions, and feedback/events.
 
 Logic rules for creation of the JSON object above:
 

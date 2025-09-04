@@ -105,8 +105,8 @@
     }
   ],
   "halves": {
-    "H1": "Foundations locked: you can build and arrange complete tracks with solid sound design and mixing skills. Ready to craft your signature style.",
-    "H2": "Branding and release prep mastered; EP released with first 1,000 streams and a sustainable creation schedule for continued growth."
+    "H1": "In the first half of this course sequence, you'll establish your foundation: building and arranging complete tracks with solid sound design and mixing skills. By milestone 5, you'll be ready to craft your signature style with the technical confidence to execute your creative vision.",
+    "H2": "The second half of this course sequence focuses on professional polish and release strategy. You'll master branding and release preparation, culminating in your EP launch with targeted growth strategies for reaching your first 1,000 streams and building a sustainable creation schedule."
   },
   "kpi": [
     "4 finished tracks",
@@ -114,5 +114,5 @@
     "1 000 Spotify streams",
     "500 engaged followers"
   ],
-  "support_channels": ["Discord"]
+  "support_channels": ["Discord community", "Weekly mentor sessions", "Live feedback sessions and events"]
 }
