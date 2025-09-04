@@ -1896,7 +1896,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             statusIcon = '📖';
           }
           
-          let html = '<div class="course-progress-section">';
+          // Get the course URL from the current milestone data
+          const currentMilestoneNum = window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 0;
+          let courseUrl = '#';
+          if (currentMilestoneNum > 0 && window.ROADMAP_PLAN && window.ROADMAP_PLAN.milestones) {
+            const currentMilestoneData = window.ROADMAP_PLAN.milestones[currentMilestoneNum - 1];
+            if (currentMilestoneData && currentMilestoneData.course_rec && currentMilestoneData.course_rec.url) {
+              courseUrl = currentMilestoneData.course_rec.url;
+            }
+          }
+          
+          let html = '<div class="course-progress-section clickable-progress" onclick="window.open(\'' + courseUrl + '\', \'_blank\')" style="cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(163, 115, 248, 0.2)\'" onmouseout="this.style.transform=\'translateY(0px)\'; this.style.boxShadow=\'none\'">';
           
           // Header
           html += '<div class="progress-header">' +
@@ -1911,7 +1921,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
               '<div style="margin-top: 15px;">' +
                 '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready for the next milestone?</div>' +
-                '<button onclick="advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
+                '<button onclick="event.stopPropagation(); advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
               '</div>' +
               '</div>';
           }

@@ -26,7 +26,6 @@ You must output ONE JSON object whose top-level keys are:
    - NOTE: The "benefit" field in course_rec should be a full paragraph (3-4 sentences) explaining specifically how this course connects to the student's personal goals, what skills they'll gain, and how it fits into their overall learning journey toward their northstar. Don't just list features - explain the personal value and progression.
 • halves – object with keys H1, H2; each value is one paragraph recapping progress and setting the next stage. H1 should describe "the first half of this course sequence" and H2 should describe "the second half of this course sequence".
 • kpi – 3-4 measurable indicators of progress (tracks finished, followers gained, etc.).
-• support_channels – array of strings. Note: These are now hardcoded in the email template with links, so the exact text doesn't matter but should generally mention: Discord community, mentor sessions, and feedback/events.
 
 Logic rules for creation of the JSON object above:
 
@@ -98,13 +97,12 @@ Strict schema (must match exactly):
     }, ... 10 objects total
   ],
   "halves": { "H1": string, "H2": string },
-  "kpi": [string, string, string, ... up to 4],
-  "support_channels": [string, ...]
+  "kpi": [string, string, string, ... up to 4]
 }
 
 Do NOT include overly specific technical advice or exact technical values (e.g., LUFS numbers, precise frequency cuts, plugin chains). Keep guidance tool-agnostic and broadly applicable.
 
-When outputting recommended courses, include only the actual course name, not the name of the school, as well as the URL, as shown in the Structured Output Parser. Don't recommend the same course more than once. 
+When outputting recommended courses, include only the actual course name, not the name of the school, as well as the URL, as shown in the Structured Output Parser. Don't recommend the same course more than once. Don't recommend a course that the student has already completed! 
 
 ----------
 

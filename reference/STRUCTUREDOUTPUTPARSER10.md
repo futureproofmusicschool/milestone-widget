@@ -113,6 +113,5 @@
     "1 EP release",
     "1 000 Spotify streams",
     "500 engaged followers"
-  ],
-  "support_channels": ["Discord community", "Weekly mentor sessions", "Live feedback sessions and events"]
+  ]
 }
