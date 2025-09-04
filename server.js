@@ -519,16 +519,15 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
         const completed = Array.isArray(roadmapProgress.milestonesCompleted) ? roadmapProgress.milestonesCompleted.map(Number) : [];
         roadmapProgress.milestonesVisited = visited;
         roadmapProgress.milestonesCompleted = completed;
-        // Compute lowest visited (>=1) but not completed milestone
-        const visitedAsc = [...new Set(visited)].map(Number).sort((a,b)=>a-b);
-        const candidates = visitedAsc.filter(m => m >= 1 && !completed.includes(m));
+        // Compute current milestone: should be the next milestone after the highest completed one
+        // If no milestones are completed, current should be 1
+        const nonZeroCompleted = completed.filter(m => m >= 1);
         let computedCurrent = 0;
-        if (candidates.length > 0) {
-          computedCurrent = candidates[0];
+        if (nonZeroCompleted.length > 0) {
+          const maxCompleted = Math.max(...nonZeroCompleted);
+          computedCurrent = Math.min(maxCompleted + 1, 10); // Next milestone after highest completed
         } else {
-          const nonZeroCompleted = completed.filter(m => m >= 1);
-          const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
-          computedCurrent = Math.min(maxCompleted + 1, 10);
+          computedCurrent = 1; // Start at milestone 1 if none completed
         }
         if (!Number.isFinite(roadmapProgress.currentMilestone) || roadmapProgress.currentMilestone !== computedCurrent) {
           roadmapProgress.currentMilestone = computedCurrent;
@@ -668,15 +667,14 @@ app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
     const visitedMilestones = progress.milestonesVisited;
     
     // Compute lowest visited (>=1) not completed; else next after max completed
-    const visitedAsc_visit = [...new Set(visitedMilestones)].map(Number).sort((a,b)=>a-b);
-    const candidates_visit = visitedAsc_visit.filter(m => m >= 1 && !completedMilestones.includes(m));
+    // Update current milestone to be the next milestone after the highest completed one
+    const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
     let newCurrentMilestone = 0;
-    if (candidates_visit.length > 0) {
-      newCurrentMilestone = candidates_visit[0];
-    } else {
-      const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
-      const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
+    if (nonZeroCompleted.length > 0) {
+      const maxCompleted = Math.max(...nonZeroCompleted);
       newCurrentMilestone = Math.min(maxCompleted + 1, 10);
+    } else {
+      newCurrentMilestone = 1; // Start at milestone 1 if none completed
     }
     
     progress.currentMilestone = newCurrentMilestone;
@@ -780,17 +778,14 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     const visitedMilestones = progress.milestonesVisited;
     const completedMilestones = progress.milestonesCompleted;
     
-    // Find the lowest visited but not completed milestone
-    const visitedAsc = [...new Set(visitedMilestones)].map(Number).sort((a,b)=>a-b);
-    const candidates = visitedAsc.filter(m => m >= 1 && !completedMilestones.includes(m));
+    // Update current milestone to be the next milestone after the highest completed one
+    const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
     let newCurrentMilestone = 0;
-    if (candidates.length > 0) {
-      newCurrentMilestone = candidates[0];
-    } else {
-      // All visited milestones are completed, advance to next
-      const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
-      const maxCompleted = nonZeroCompleted.length > 0 ? Math.max(...nonZeroCompleted) : 0;
+    if (nonZeroCompleted.length > 0) {
+      const maxCompleted = Math.max(...nonZeroCompleted);
       newCurrentMilestone = Math.min(maxCompleted + 1, 10);
+    } else {
+      newCurrentMilestone = 1; // Start at milestone 1 if none completed
     }
     
     progress.currentMilestone = newCurrentMilestone;
