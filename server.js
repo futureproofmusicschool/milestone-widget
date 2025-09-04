@@ -412,13 +412,6 @@ app.options('/api/milestone-roadmap/:userId', (req, res) => {
   res.sendStatus(200);
 });
 
-app.options('/api/milestone-roadmap/:userId/visit', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.sendStatus(200);
-});
-
 app.options('/api/milestone-roadmap/:userId/complete', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -597,113 +590,6 @@ app.get('/api/milestone-debug/:userId', async (req, res) => {
   }
 });
 
-
-/**
- * Track milestone visit (when user navigates to a milestone)
- */
-app.post('/api/milestone-roadmap/:userId/visit', async (req, res) => {
-  // Set CORS headers explicitly for this endpoint
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  
-  try {
-    const { userId } = req.params;
-    const { milestoneNumber } = req.body;
-    const milestoneNumberNum = Number(milestoneNumber);
-    
-    console.log(`Tracking visit to milestone ${milestoneNumberNum} for user ${userId}`);
-    
-    // First, get current data
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: MILESTONE_SPREADSHEET_ID,
-      range: 'sheet1!A:F',
-    });
-
-    const rows = response.data.values || [];
-    // Find user row, skipping header. This is safer.
-    const userRowIndexInData = rows.slice(1).findIndex(row => (row[0] || '').trim() === (userId || '').trim());
-    
-    if (userRowIndexInData === -1) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    const absoluteRowIndex = userRowIndexInData + 1;
-
-    // Get current progress or create new, with robust parsing
-    const rawProgress = rows[absoluteRowIndex] ? rows[absoluteRowIndex][5] : undefined;
-    let progress;
-    if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
-        try {
-            progress = JSON.parse(rawProgress);
-        } catch (e) {
-            progress = {}; // Start fresh if JSON is broken
-        }
-    } else {
-        progress = {};
-    }
-
-    // Initialize progress object if it's new or broken
-    progress = {
-      userId,
-      currentMilestone: progress.currentMilestone || 0,
-      milestonesCompleted: progress.milestonesCompleted || [],
-      milestonesVisited: progress.milestonesVisited || [0],
-      milestoneProgress: progress.milestoneProgress || {}
-    };
-
-    // Normalize arrays to numbers to prevent type errors
-    progress.milestonesVisited = progress.milestonesVisited.map(Number);
-    progress.milestonesCompleted = progress.milestonesCompleted.map(Number);
-    
-    // Add milestone to visited list if not already there
-    if (!progress.milestonesVisited.includes(milestoneNumberNum)) {
-      progress.milestonesVisited.push(milestoneNumberNum);
-      progress.milestonesVisited.sort((a, b) => a - b);
-    }
-    
-    // Update currentMilestone logic: show most advanced visited but not completed milestone
-    const completedMilestones = progress.milestonesCompleted;
-    const visitedMilestones = progress.milestonesVisited;
-    
-    // Compute lowest visited (>=1) not completed; else next after max completed
-    // Update current milestone to be the next milestone after the highest completed one
-    const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
-    let newCurrentMilestone = 0;
-    if (nonZeroCompleted.length > 0) {
-      const maxCompleted = Math.max(...nonZeroCompleted);
-      newCurrentMilestone = Math.min(maxCompleted + 1, 10);
-    } else {
-      newCurrentMilestone = 1; // Start at milestone 1 if none completed
-    }
-    
-    progress.currentMilestone = newCurrentMilestone;
-    
-    // Add visit timestamp
-    if (!progress.milestoneProgress[milestoneNumberNum]) {
-      progress.milestoneProgress[milestoneNumberNum] = {};
-    }
-    progress.milestoneProgress[milestoneNumberNum].visitedDate = new Date().toISOString();
-    
-    // Update the sheet (column F, which is index 5)
-    const updateRange = `sheet1!F${absoluteRowIndex + 1}`;
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: MILESTONE_SPREADSHEET_ID,
-      range: updateRange,
-      valueInputOption: 'RAW',
-      resource: {
-        values: [[JSON.stringify(progress)]]
-      }
-    });
-    
-    res.json({ success: true, progress });
-    
-  } catch (error) {
-    console.error('Error tracking milestone visit:', error);
-    res.status(500).json({ error: 'Failed to track visit' });
-  }
-});
-
 /**
  * Mark milestone as complete
  */
@@ -754,12 +640,10 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       userId,
       currentMilestone: progress.currentMilestone || 0,
       milestonesCompleted: progress.milestonesCompleted || [],
-      milestonesVisited: progress.milestonesVisited || [0],
       milestoneProgress: progress.milestoneProgress || {}
     };
 
     // Normalize arrays to numbers to prevent type errors
-    progress.milestonesVisited = progress.milestonesVisited.map(Number);
     progress.milestonesCompleted = progress.milestonesCompleted.map(Number);
     
     // Add milestone to completed list if not already there
@@ -768,14 +652,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       progress.milestonesCompleted.sort((a, b) => a - b);
     }
     
-    // Also ensure it's in visited list
-    if (!progress.milestonesVisited.includes(milestoneNumberNum)) {
-      progress.milestonesVisited.push(milestoneNumberNum);
-      progress.milestonesVisited.sort((a, b) => a - b);
-    }
-    
     // Update currentMilestone logic: advance to next uncompleted milestone
-    const visitedMilestones = progress.milestonesVisited;
     const completedMilestones = progress.milestonesCompleted;
     
     // Update current milestone to be the next milestone after the highest completed one
@@ -1425,14 +1302,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               const progress = roadmapProgress || {
       currentMilestone: 0,
       milestonesCompleted: [],
-      milestonesVisited: [0], // Start with Overview visited
       milestoneProgress: {}
     };
-    
-    // Ensure milestonesVisited exists (for existing users)
-    if (!progress.milestonesVisited) {
-      progress.milestonesVisited = [0];
-    }
           
           const currentMilestone = progress.currentMilestone || 0;
           const completed = progress.milestonesCompleted || [];
@@ -1594,29 +1465,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             showMilestoneDetail(next);
           }
         }
-
-        // Track milestone visit
-        async function trackMilestoneVisit(milestoneNumber) {
-          try {
-            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId + '/visit', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ milestoneNumber: Number(milestoneNumber) })
-            });
-            
-            if (response.ok) {
-              const result = await response.json();
-              // Update local progress data
-              window.ROADMAP_PROGRESS = result.progress;
-              window.CURRENT_MILESTONE = result.progress.currentMilestone;
-              
-              // Update button text to reflect new current milestone
-              updateCurrentMilestoneButton();
-            }
-          } catch (error) {
-            console.error('Error tracking milestone visit:', error);
-          }
-        }
         
         // Update the current milestone button text
         function updateCurrentMilestoneButton() {
@@ -1636,9 +1484,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const plan = window.ROADMAP_PLAN;
           const progress = window.ROADMAP_PROGRESS || { currentMilestone: 0 };
           if (!plan) return;
-          
-          // Track the visit
-          trackMilestoneVisit(milestoneNumber);
           
           // Handle Milestone 0 (Overview) separately
           if (Number(milestoneNumber) === 0) {
