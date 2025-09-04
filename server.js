@@ -1908,7 +1908,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Make the entire section clickable if we have a course URL
           let html = courseUrl 
-            ? '<a href="' + courseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(163, 115, 248, 0.2)\';" onmouseout="this.style.transform=\'\'; this.style.boxShadow=\'\';">'
+            ? '<a href="' + courseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
             : '<div class="course-progress-section">';
           
           // Header
