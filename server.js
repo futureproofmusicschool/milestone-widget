@@ -1800,6 +1800,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               if (!completedMilestones.includes(Number(milestoneNumber))) {
                 console.log('Course completed! Marking milestone', milestoneNumber, 'as complete');
                 await markMilestoneComplete(milestoneNumber);
+                
+                // If we just completed the currently displayed milestone, we might want to show a celebration
+                if (Number(milestoneNumber) === Number(window.DISPLAYED_MILESTONE)) {
+                  // The celebration banner is already shown in renderCourseProgress
+                  console.log('Current milestone completed!');
+                }
               }
             }
             
@@ -1840,13 +1846,16 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               updateCurrentMilestoneButton();
               
               // Refresh the timeline view to show the completed status
+              // Note: index 0 is Overview, so actual milestone N is at index N
               const milestoneElements = document.querySelectorAll('.milestone');
               milestoneElements.forEach((el, index) => {
+                // Milestone 0 is Overview, Milestone 1 is at index 1, etc.
                 if (index === Number(milestoneNumber)) {
                   el.classList.add('completed');
                   const title = el.querySelector('.milestone-title');
                   if (title && !title.innerHTML.includes('✅')) {
-                    title.innerHTML = title.innerHTML.replace(/^[^\\s]+/, '✅');
+                    // Replace the first emoji/icon with checkmark
+                    title.innerHTML = title.innerHTML.replace(/^[🎯🔒📖✅]/, '✅');
                   }
                 }
               });
@@ -1902,7 +1911,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
               '<div style="margin-top: 15px;">' +
                 '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready for the next milestone?</div>' +
-                '<button onclick="advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Click the arrow at top right to advance →</button>' +
+                '<button onclick="advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
               '</div>' +
               '</div>';
           }
@@ -2015,12 +2024,16 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const plan = window.ROADMAP_PLAN;
           if (!plan) return;
           
-          const currentMilestone = progress.currentMilestone || 0;
+          const currentMilestone = window.CURRENT_MILESTONE || progress.currentMilestone || 0;
           const totalMilestones = Array.isArray(plan.milestones) ? plan.milestones.length : 10;
           
           if (currentMilestone < totalMilestones) {
             const nextMilestone = currentMilestone + 1;
             showMilestoneDetail(nextMilestone);
+          } else {
+            // User has completed all milestones!
+            console.log('Congratulations! All milestones completed!');
+            // Could show a special completion message here
           }
         }
         
