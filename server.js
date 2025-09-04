@@ -1896,17 +1896,20 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             statusIcon = '📖';
           }
           
-          // Get the course URL from the current milestone data
-          const currentMilestoneNum = window.DISPLAYED_MILESTONE || window.CURRENT_MILESTONE || 0;
-          let courseUrl = '#';
-          if (currentMilestoneNum > 0 && window.ROADMAP_PLAN && window.ROADMAP_PLAN.milestones) {
-            const currentMilestoneData = window.ROADMAP_PLAN.milestones[currentMilestoneNum - 1];
-            if (currentMilestoneData && currentMilestoneData.course_rec && currentMilestoneData.course_rec.url) {
-              courseUrl = currentMilestoneData.course_rec.url;
+          // Get the course URL from the current displayed milestone
+          let courseUrl = '';
+          const displayedMilestone = window.DISPLAYED_MILESTONE;
+          if (displayedMilestone > 0 && window.ROADMAP_PLAN && window.ROADMAP_PLAN.milestones) {
+            const milestoneData = window.ROADMAP_PLAN.milestones[displayedMilestone - 1];
+            if (milestoneData && milestoneData.course_rec && milestoneData.course_rec.url) {
+              courseUrl = milestoneData.course_rec.url;
             }
           }
           
-          let html = '<div class="course-progress-section clickable-progress" onclick="window.open(\'' + courseUrl + '\', \'_blank\')" style="cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(163, 115, 248, 0.2)\'" onmouseout="this.style.transform=\'translateY(0px)\'; this.style.boxShadow=\'none\'">';
+          // Make the entire section clickable if we have a course URL
+          let html = courseUrl 
+            ? '<a href="' + courseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(163, 115, 248, 0.2)\';" onmouseout="this.style.transform=\'\'; this.style.boxShadow=\'\';">'
+            : '<div class="course-progress-section">';
           
           // Header
           html += '<div class="progress-header">' +
@@ -1921,7 +1924,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
               '<div style="margin-top: 15px;">' +
                 '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready for the next milestone?</div>' +
-                '<button onclick="event.stopPropagation(); advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
+                '<button onclick="advanceToNextMilestone()" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
               '</div>' +
               '</div>';
           }
@@ -2007,7 +2010,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             }
           }
           
-          html += '</div>';
+          // Close the wrapper (either just div or anchor + div)
+          html += courseUrl ? '</div></a>' : '</div>';
           
           return html;
         }
