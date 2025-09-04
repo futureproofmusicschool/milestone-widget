@@ -508,9 +508,7 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
 
     if (roadmapProgress && typeof roadmapProgress === 'object') {
       try {
-        const visited = Array.isArray(roadmapProgress.milestonesVisited) ? roadmapProgress.milestonesVisited.map(Number) : [0];
         const completed = Array.isArray(roadmapProgress.milestonesCompleted) ? roadmapProgress.milestonesCompleted.map(Number) : [];
-        roadmapProgress.milestonesVisited = visited;
         roadmapProgress.milestonesCompleted = completed;
         // Compute current milestone: should be the next milestone after the highest completed one
         // If no milestones are completed, current should be 1
@@ -1300,13 +1298,29 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
           
               const progress = roadmapProgress || {
-      currentMilestone: 0,
+      currentMilestone: 1,
       milestonesCompleted: [],
       milestoneProgress: {}
     };
           
-          const currentMilestone = progress.currentMilestone || 0;
+          // Recompute current milestone based on completed milestones to ensure consistency
           const completed = progress.milestonesCompleted || [];
+          let currentMilestone = progress.currentMilestone || 1;
+          
+          // If we have completed milestones, ensure current is set correctly
+          if (completed.length > 0) {
+            const maxCompleted = Math.max(...completed);
+            currentMilestone = Math.min(maxCompleted + 1, 10);
+          } else if (!progress.currentMilestone) {
+            // If no progress at all, start at 1
+            currentMilestone = 1;
+          }
+          
+          console.log('[Client] Progress loaded:', { 
+            currentMilestone, 
+            completed, 
+            originalCurrent: progress.currentMilestone 
+          });
 
           // Expose data for client-side interactions (e.g., clicking milestones)
           window.ROADMAP_PLAN = roadmapPlan;
