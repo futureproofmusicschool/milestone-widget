@@ -16,8 +16,9 @@ A server-rendered widget that displays a personalized, self‑paced 10‑milesto
 - The server renders the Milestone widget (`/milestone-roadmap/:userId`) which:
   - Loads the plan/progress via `/api/milestone-roadmap/:userId`
   - Renders a header, current milestone detail, and a vertical timeline
-  - Optionally shows a recommended course with live progress via `/api/course-progress/:userId/course/:courseId`
-  - Lets users mark a milestone complete via `/api/milestone-roadmap/:userId/complete`
+  - Shows a recommended course with live progress via `/api/course-progress/:userId/course/:courseId`
+  - Automatically marks milestones complete when their associated course is completed
+  - Tracks milestone visits via `/api/milestone-roadmap/:userId/visit`
 
 ## Progress JSON Schema
 
@@ -42,8 +43,9 @@ The progress tracking (column F) uses this enhanced structure:
 ### Progress Logic
 - **First Visit**: New users start with Overview (Milestone 0)
 - **Visit Tracking**: Each milestone navigation is saved to `milestonesVisited`
-- **Current Milestone**: Shows the most advanced visited but not completed milestone
-- **Auto-Advancement**: When all visited milestones are complete, advances to next milestone
+- **Current Milestone**: Automatically calculated as the lowest visited (but not completed) milestone
+- **Milestone Completion**: Automatically marked complete when the associated LearnWorlds course reaches 100% completion
+- **Automatic Advancement**: When a milestone is completed, the system advances to the next milestone
 
 ## Plan JSON Schema
 
@@ -81,7 +83,8 @@ Notes:
 - Self‑paced 10‑milestone journey
 - Current milestone detail view with: focus, outcome goal, and course recommendation
 - Toggle between "Current" and "My Path" views
-- Mark milestone complete (stored in Sheets)
+- Automatic milestone visit tracking (stored in Sheets)
+- Automatic milestone completion when associated course is completed
 - Live progress for the recommended course (if provided)
 
 ## API Endpoints
@@ -94,7 +97,7 @@ Notes:
 - `/milestone-roadmap/:userId` – HTML widget
 - `/api/milestone-roadmap/:userId` – Plan + progress (JSON)
 - `/api/milestone-roadmap/:userId/visit` – Track milestone visit (POST)
-- `/api/milestone-roadmap/:userId/complete` – Mark milestone complete (POST)
+- `/api/milestone-roadmap/:userId/complete` – Mark milestone as complete (POST)
 - `/api/course-progress/:userId/course/:courseId` – Per‑course progress (LearnWorlds)
 
 ### Debug
@@ -158,12 +161,12 @@ The widget shows the most advanced milestone that the user has visited but not y
 
 ### Progression Rules
 - **First Visit**: Shows Overview (Milestone 0)
-- **Visit Tracking**: Each milestone navigation is recorded
+- **Visit Tracking**: Each milestone navigation is recorded automatically
 - **Current Logic**: Most advanced visited but incomplete milestone
-- **Auto-Advancement**: When all visited milestones complete, advances to next
+- **Course Completion**: When a course reaches 100% completion in LearnWorlds, the associated milestone is automatically marked complete
+- **Auto-Advancement**: System automatically advances to the next milestone after completion
 - **Self‑paced**: No time limits
-- **Flexible completion**: Can mark complete at any time
-- **Course Integration**: Celebrates course completion and prompts advancement
+- **Course Integration**: Celebrates course completion and prompts advancement to next milestone
 
 ## Visual Style
 
