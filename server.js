@@ -361,8 +361,8 @@ app.get('/api/assignment-status/:userId/assignment/:assignmentId', async (req, r
       return res.status(500).json({ error: 'Missing LearnWorlds client credentials' });
     }
 
-    // The Milestones course ID - this should be configured in environment
-    const MILESTONES_COURSE_ID = process.env.MILESTONES_COURSE_ID || 'milestones_course';
+    // The Milestones course ID - using the actual course ID from LearnWorlds
+    const MILESTONES_COURSE_ID = 'milestones';
     
     // Get the user's progress in the Milestones course
     const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${encodeURIComponent(userId)}/courses/${encodeURIComponent(MILESTONES_COURSE_ID)}/progress`;
@@ -605,12 +605,96 @@ app.get('/api/milestone-roadmap/:userId', async (req, res) => {
     console.log('Milestone API: parsed roadmapPlan present:', !!roadmapPlan, 'keys:', roadmapPlan ? Object.keys(roadmapPlan) : []);
     console.log('Milestone API: has milestones array:', !!(roadmapPlan && Array.isArray(roadmapPlan.milestones)), 'len:', roadmapPlan && Array.isArray(roadmapPlan.milestones) ? roadmapPlan.milestones.length : 'n/a');
     
+    // Fetch Milestones course progress to check assignment completions
+    let milestonesCourseProg = null;
+    if (process.env.LEARNWORLDS_CLIENT_ID && process.env.LEARNWORLDS_CLIENT_SECRET) {
+      try {
+        // Use the actual course ID from the URL you provided
+        const MILESTONES_COURSE_ID = 'milestones';
+        const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${encodeURIComponent(userId)}/courses/${MILESTONES_COURSE_ID}/progress`;
+        console.log('[LW] Fetching Milestones course progress for roadmap', { userId, courseId: MILESTONES_COURSE_ID });
+        
+        const accessToken = await getLearnWorldsAccessToken();
+        const progressResponse = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
+          }
+        });
+        
+        if (progressResponse.ok) {
+          milestonesCourseProg = await progressResponse.json();
+          console.log('[LW] Milestones course progress fetched successfully');
+          
+          // Update roadmapProgress with assignment status from Milestones course
+          if (roadmapProgress && milestonesCourseProg && milestonesCourseProg.progress_per_section_unit) {
+            if (!roadmapProgress.milestoneProgress) {
+              roadmapProgress.milestoneProgress = {};
+            }
+            
+            // Check each unit in the Milestones course
+            milestonesCourseProg.progress_per_section_unit.forEach(section => {
+              if (section.units && section.units.length > 0) {
+                section.units.forEach(unit => {
+                  // Extract milestone number from unit name or ID
+                  // Assuming units are named like "Milestone 1 Assignment" or have IDs like "milestone_1_assignment"
+                  const unitName = (unit.unit_name || '').toLowerCase();
+                  const unitId = (unit.unit_id || '').toLowerCase();
+                  
+                  let milestoneNum = null;
+                  // Try to extract milestone number from name or ID
+                  const nameMatch = unitName.match(/milestone\s*(\d+)/);
+                  const idMatch = unitId.match(/milestone[_\s]*(\d+)/);
+                  
+                  if (nameMatch) {
+                    milestoneNum = parseInt(nameMatch[1]);
+                  } else if (idMatch) {
+                    milestoneNum = parseInt(idMatch[1]);
+                  }
+                  
+                  if (milestoneNum && milestoneNum >= 1 && milestoneNum <= 10) {
+                    if (!roadmapProgress.milestoneProgress[milestoneNum]) {
+                      roadmapProgress.milestoneProgress[milestoneNum] = {};
+                    }
+                    
+                    const mp = roadmapProgress.milestoneProgress[milestoneNum];
+                    mp.assignmentSubmitted = unit.unit_status === 'completed' || unit.unit_progress_rate > 0;
+                    mp.assignmentApproved = unit.unit_status === 'completed';
+                    mp.assignmentScore = unit.score_on_unit || null;
+                    
+                    // If assignment is approved but not marked in progress, update it
+                    if (mp.assignmentApproved && !mp.assignmentApprovedDate) {
+                      mp.assignmentApprovedDate = new Date().toISOString();
+                    }
+                    
+                    console.log(`[LW] Milestone ${milestoneNum} assignment status:`, {
+                      submitted: mp.assignmentSubmitted,
+                      approved: mp.assignmentApproved,
+                      score: mp.assignmentScore
+                    });
+                  }
+                });
+              }
+            });
+          }
+        } else {
+          console.log('[LW] Could not fetch Milestones course progress:', progressResponse.status);
+        }
+      } catch (error) {
+        console.error('[LW] Error fetching Milestones course progress:', error);
+        // Continue without assignment data - don't fail the whole request
+      }
+    }
+    
     res.json({
       userId,
       username: userRow[1] || 'Student',
       roadmapPlan,
       roadmapProgress,
-      planState
+      planState,
+      milestonesCourseProg // Include raw Milestones course data for debugging
     });
     
   } catch (error) {
@@ -1844,6 +1928,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               const isCompleted = completed.includes(num);
               const isCurrent = num === currentMilestone;
               
+              // Get dual-track progress
+              const mp = progress.milestoneProgress && progress.milestoneProgress[num];
+              const courseCompleted = mp && mp.courseCompleted;
+              const assignmentApproved = mp && mp.assignmentApproved;
+              const assignmentSubmitted = mp && mp.assignmentSubmitted;
+              
               console.log('[Client] Rendering milestone', num, 'focus:', milestone.focus);
               
               html += '<div class="milestone ' + (isCompleted ? 'completed' : '') + ' ' + (isCurrent ? 'current' : '') + '">' +
@@ -1853,11 +1943,27 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                     (isCompleted ? '✅' : (isCurrent ? '🎯' : '🔒')) + ' ' +
                     'Milestone ' + num + ': ' + (milestone.focus || 'No Focus') +
                   '</div>' +
+                  
+                  // Add dual-track progress indicators
+                  '<div class="milestone-meta" style="display: flex; gap: 10px; margin-top: 8px;">' +
+                    '<span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; background: ' + 
+                      (courseCompleted ? 'rgba(76, 175, 80, 0.2)' : 'rgba(158, 158, 158, 0.2)') + 
+                      '; border-radius: 4px; font-size: 11px;">' +
+                      (courseCompleted ? '✅' : '📚') + ' Course' +
+                    '</span>' +
+                    '<span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; background: ' + 
+                      (assignmentApproved ? 'rgba(76, 175, 80, 0.2)' : 
+                       assignmentSubmitted ? 'rgba(255, 193, 7, 0.2)' : 'rgba(158, 158, 158, 0.2)') + 
+                      '; border-radius: 4px; font-size: 11px;">' +
+                      (assignmentApproved ? '✅' : assignmentSubmitted ? '📝' : '✏️') + ' Assignment' +
+                    '</span>' +
+                  '</div>' +
+                  
                   (milestone && milestone.course_rec && milestone.course_rec.title
-                    ? '<div class="milestone-meta"><span class="label">Recommended:</span> ' + milestone.course_rec.title + '</div>'
+                    ? '<div class="milestone-meta"><span class="label">Course:</span> ' + milestone.course_rec.title + '</div>'
                     : '') +
-                  (milestone && (milestone.goal || milestone.milestone)
-                    ? '<div class="milestone-meta"><span class="label">Goal:</span> ' + (milestone.goal || milestone.milestone) + '</div>'
+                  (milestone && milestone.subgoal && milestone.subgoal.title
+                    ? '<div class="milestone-meta"><span class="label">Assignment:</span> ' + milestone.subgoal.title + '</div>'
                     : '') +
                 '</div>' +
               '</div>';
@@ -1967,8 +2073,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               // Northstar achievement
               (plan && plan.northstar ? 
                 '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(163, 115, 248, 0.3);">' +
-                  '<div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">You\\\'ve achieved your goal:</div>' +
-                  '<div style="font-size: 18px; color: #A373F8; font-weight: 600;">' + plan.northstar + '</div>' +
+                  '<div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">You\\\'ve achieved your northstar goal:</div>' +
+                  '<div style="font-size: 18px; color: #A373F8; font-weight: 600;">' + 
+                    (typeof plan.northstar === 'object' ? plan.northstar.achievable_goal : plan.northstar) + 
+                  '</div>' +
                 '</div>' : '') +
             '</div>' +
             
@@ -2118,6 +2226,19 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             // Add course progress section placeholder
             inner += '<div id="course-progress-container"></div>';
             
+            // Add assignment section if subgoal exists
+            if (data.subgoal) {
+              inner += '<div class="milestone-section">' +
+                '<h3>ASSIGNMENT</h3>' +
+                '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8;">' +
+                  '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + data.subgoal.title + '</div>' +
+                  '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.subgoal.description + '</div>' +
+                  '<div style="margin-bottom: 12px; font-size: 14px;"><strong>Deliverable:</strong> ' + data.subgoal.deliverable + '</div>' +
+                  '<div id="assignment-status-' + milestoneNumber + '"></div>' +
+                '</div>' +
+              '</div>';
+            }
+            
             inner += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>GOAL</h3>' +
@@ -2153,6 +2274,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (data && data.course_rec) {
             hydrateRecommendationProgress(data.course_rec, milestoneNumber);
           }
+          
+          // Show assignment status
+          hydrateAssignmentStatus(milestoneNumber);
           // Ask parent page to scroll the iframe into view
           requestParentScrollTop();
           setTimeout(requestParentScrollTop, 60);
@@ -2163,6 +2287,58 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           setTimeout(sendHeight, 800);
         }
 
+        function hydrateAssignmentStatus(milestoneNumber) {
+          const progress = window.ROADMAP_PROGRESS;
+          if (!progress || !progress.milestoneProgress) return;
+          
+          const mp = progress.milestoneProgress[milestoneNumber];
+          if (!mp) return;
+          
+          const statusEl = document.getElementById('assignment-status-' + milestoneNumber);
+          if (!statusEl) return;
+          
+          let statusHtml = '';
+          
+          // Check assignment status
+          if (mp.assignmentApproved) {
+            statusHtml = '<div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">' +
+              '<div style="color: #4CAF50; font-weight: 600;">✅ Assignment Approved</div>';
+            if (mp.assignmentScore) {
+              statusHtml += '<div style="font-size: 13px; margin-top: 5px;">Score: ' + mp.assignmentScore + '%</div>';
+            }
+            statusHtml += '</div>';
+          } else if (mp.assignmentSubmitted) {
+            statusHtml = '<div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">' +
+              '<div style="color: #FFC107; font-weight: 600;">📝 Assignment Submitted - Pending Review</div>' +
+              '<div style="font-size: 13px; margin-top: 5px;">Your mentor will review your submission soon.</div>' +
+              '</div>';
+          } else {
+            // Check if course is completed
+            if (mp.courseCompleted) {
+              statusHtml = '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">' +
+                '<div style="color: #A373F8; font-weight: 600;">⏳ Ready to Submit Assignment</div>' +
+                '<div style="font-size: 13px; margin-top: 5px;">You\'ve completed the course! Now submit your assignment in the Milestones course.</div>' +
+                '<a href="https://learn.futureproofmusicschool.com/course/milestones" target="_blank" style="display: inline-block; margin-top: 8px; padding: 6px 12px; background: #A373F8; color: #000; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 13px;">Submit Assignment →</a>' +
+                '</div>';
+            } else {
+              statusHtml = '<div style="background: rgba(158, 158, 158, 0.1); border: 1px solid rgba(158, 158, 158, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">' +
+                '<div style="color: #9E9E9E; font-weight: 600;">📚 Complete the course first</div>' +
+                '<div style="font-size: 13px; margin-top: 5px;">You\'ll be able to submit your assignment after completing the course.</div>' +
+                '</div>';
+            }
+          }
+          
+          // Add overall milestone completion status
+          if (mp.completed) {
+            statusHtml += '<div style="margin-top: 15px; padding: 12px; background: linear-gradient(135deg, rgba(163, 115, 248, 0.2) 0%, rgba(139, 93, 246, 0.2) 100%); border: 2px solid #A373F8; border-radius: 8px; text-align: center;">' +
+              '<div style="font-size: 16px; font-weight: 600; color: #FFFFFF;">🎉 Milestone Complete!</div>' +
+              '<div style="font-size: 13px; margin-top: 5px; opacity: 0.9;">Both course and assignment are complete. Great work!</div>' +
+              '</div>';
+          }
+          
+          statusEl.innerHTML = statusHtml;
+        }
+        
         async function hydrateRecommendationProgress(courseRec, milestoneNumber) {
           try {
             if (!courseRec || !courseRec.url) return;
@@ -2186,20 +2362,23 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               return;
             }
             
-            // Check if course is completed and milestone is not yet marked as complete
+            // Check if course is completed
             if (data.status === 'completed' && milestoneNumber) {
               const progress = window.ROADMAP_PROGRESS || {};
-              const completedMilestones = progress.milestonesCompleted || [];
+              const mp = progress.milestoneProgress && progress.milestoneProgress[milestoneNumber];
               
-              // If this milestone isn't already marked as complete, mark it now
-              if (!completedMilestones.includes(Number(milestoneNumber))) {
-                console.log('Course completed! Marking milestone', milestoneNumber, 'as complete');
-                await markMilestoneComplete(milestoneNumber);
-                
-                // If we just completed the currently displayed milestone, we might want to show a celebration
-                if (Number(milestoneNumber) === Number(window.DISPLAYED_MILESTONE)) {
-                  // The celebration banner is already shown in renderCourseProgress
-                  console.log('Current milestone completed!');
+              // Update course completion status if not already marked
+              if (!mp || !mp.courseCompleted) {
+                console.log('Course completed! Updating milestone', milestoneNumber, 'course status');
+                await updateCourseCompletion(milestoneNumber);
+              }
+              
+              // Check if both course and assignment are complete for full milestone completion
+              if (mp && mp.courseCompleted && mp.assignmentApproved) {
+                const completedMilestones = progress.milestonesCompleted || [];
+                if (!completedMilestones.includes(Number(milestoneNumber))) {
+                  console.log('Both course and assignment complete! Marking milestone', milestoneNumber, 'as fully complete');
+                  await markMilestoneComplete(milestoneNumber);
                 }
               }
             }
@@ -2219,6 +2398,30 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             console.error('Error loading course progress:', e);
             const progressContainer = document.getElementById('course-progress-container');
             if (progressContainer) progressContainer.innerHTML = '';
+          }
+        }
+        
+        // Update course completion status only
+        async function updateCourseCompletion(milestoneNumber) {
+          try {
+            const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId + '/course-complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ milestoneNumber: Number(milestoneNumber) })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              // Update local progress data
+              window.ROADMAP_PROGRESS = result.progress;
+              
+              // Refresh assignment status display
+              hydrateAssignmentStatus(milestoneNumber);
+              
+              console.log('Course completion updated for milestone', milestoneNumber);
+            }
+          } catch (error) {
+            console.error('Error updating course completion:', error);
           }
         }
         
