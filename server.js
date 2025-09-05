@@ -1377,7 +1377,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               html += '<div class="milestone-section">' +
                 '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
-                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
+                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
@@ -1579,7 +1579,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               inner += '<div class="milestone-section">' +
                 '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
-                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
+                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
@@ -1783,7 +1783,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Make the entire section clickable if we have a course URL
           let html = courseUrl 
-            ? '<a href="' + courseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
+            ? '<a href="' + courseUrl + '" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
             : '<div class="course-progress-section">';
           
           // Header
