@@ -1893,7 +1893,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               html += '<div class="milestone-section">' +
                 '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
-                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link">' +
+                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_top">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
@@ -1918,7 +1918,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               const milestonesCourseUrl = 'https://learn.futureproofmusicschool.com/course/milestones';
               html += '<div class="milestone-section">' +
                 '<h3>Milestone Project ' + currentMilestone + '</h3>' +
-                '<a href="' + milestonesCourseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;">' +
+                '<a href="' + milestonesCourseUrl + '" target="_top" style="text-decoration: none; color: inherit; display: block;">' +
                   '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8; cursor: pointer;">' +
                     '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + currentMilestoneData.subgoal.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.subgoal.description + '</div>' +
@@ -2246,7 +2246,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               inner += '<div class="milestone-section">' +
                 '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
-                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link">' +
+                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_top">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
@@ -2529,7 +2529,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Make the entire section clickable if we have a course URL
           let html = courseUrl 
-            ? '<a href="' + courseUrl + '" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
+            ? '<a href="' + courseUrl + '" target="_top" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
             : '<div class="course-progress-section">';
           
           // Header
@@ -2798,4 +2798,4 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`
