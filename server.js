@@ -1902,16 +1902,34 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</div>';
             }
             
-            // Add course progress section placeholder
-            html += '<div id="course-progress-container"></div>';
-            
             html += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
                   '<h3>GOAL</h3>' +
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
               '</div>' +
-              '</div>' +
+              '';
+            
+            // Add course progress section placeholder
+            html += '<div id="course-progress-container"></div>';
+            
+            // Add assignment section if subgoal exists
+            if (currentMilestoneData.subgoal) {
+              const milestonesCourseUrl = 'https://learn.futureproofmusicschool.com/course/milestones';
+              html += '<div class="milestone-section">' +
+                '<h3>Milestone Project ' + currentMilestone + '</h3>' +
+                '<a href="' + milestonesCourseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;">' +
+                  '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8; cursor: pointer;">' +
+                    '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + currentMilestoneData.subgoal.title + '</div>' +
+                    '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.subgoal.description + '</div>' +
+                    '<div style="margin-bottom: 12px; font-size: 14px;"><strong>Deliverable:</strong> ' + currentMilestoneData.subgoal.deliverable + '</div>' +
+                    '<div id="assignment-status-' + currentMilestone + '"></div>' +
+                  '</div>' +
+                '</a>' +
+              '</div>';
+            }
+              
+            html +=   '</div>' +
               '</div>';
             }
           }
@@ -2235,22 +2253,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   '</a>' +
                 '</div>' +
                 '</div>';
-            }
-            
-            // Add course progress section placeholder
-            inner += '<div id="course-progress-container"></div>';
-            
-            // Add assignment section if subgoal exists
-            if (data.subgoal) {
-              inner += '<div class="milestone-section">' +
-                '<h3>ASSIGNMENT</h3>' +
-                '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8;">' +
-                  '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + data.subgoal.title + '</div>' +
-                  '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.subgoal.description + '</div>' +
-                  '<div style="margin-bottom: 12px; font-size: 14px;"><strong>Deliverable:</strong> ' + data.subgoal.deliverable + '</div>' +
-                  '<div id="assignment-status-' + milestoneNumber + '"></div>' +
-                '</div>' +
-              '</div>';
             }
             
             inner += '<div class="milestone-section">' +
