@@ -2317,13 +2317,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             if (mp.courseCompleted) {
               statusHtml = '<div style="background: rgba(163, 115, 248, 0.1); border: 1px solid rgba(163, 115, 248, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">' +
                 '<div style="color: #A373F8; font-weight: 600;">⏳ Ready to Submit Assignment</div>' +
-                '<div style="font-size: 13px; margin-top: 5px;">You\'ve completed the course! Now submit your assignment in the Milestones course.</div>' +
+                '<div style="font-size: 13px; margin-top: 5px;">You\\\'ve completed the course! Now submit your assignment in the Milestones course.</div>' +
                 '<a href="https://learn.futureproofmusicschool.com/course/milestones" target="_blank" style="display: inline-block; margin-top: 8px; padding: 6px 12px; background: #A373F8; color: #000; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 13px;">Submit Assignment →</a>' +
                 '</div>';
             } else {
               statusHtml = '<div style="background: rgba(158, 158, 158, 0.1); border: 1px solid rgba(158, 158, 158, 0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">' +
                 '<div style="color: #9E9E9E; font-weight: 600;">📚 Complete the course first</div>' +
-                '<div style="font-size: 13px; margin-top: 5px;">You\'ll be able to submit your assignment after completing the course.</div>' +
+                '<div style="font-size: 13px; margin-top: 5px;">You\\\'ll be able to submit your assignment after completing the course.</div>' +
                 '</div>';
             }
           }
