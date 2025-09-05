@@ -1417,13 +1417,18 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const completed = progress.milestonesCompleted || [];
           let currentMilestone = progress.currentMilestone || 1;
           
-          // If we have completed milestones, ensure current is set correctly
-          if (completed.length > 0) {
-            const maxCompleted = Math.max(...completed);
-            currentMilestone = Math.min(maxCompleted + 1, 10);
-          } else if (!progress.currentMilestone) {
-            // If no progress at all, start at 1
-            currentMilestone = 1;
+          // Handle completed journey state
+          if (progress.currentMilestone === 'completed' || progress.journeyCompleted) {
+            currentMilestone = 11; // Set to a number higher than 10 to indicate completion
+          } else {
+            // If we have completed milestones, ensure current is set correctly
+            if (completed.length > 0) {
+              const maxCompleted = Math.max(...completed);
+              currentMilestone = Math.min(maxCompleted + 1, 10);
+            } else if (!progress.currentMilestone) {
+              // If no progress at all, start at 1
+              currentMilestone = 1;
+            }
           }
           
           console.log('[Client] Progress loaded:', { 
@@ -1453,7 +1458,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }
           
           // Check if journey is completed for navigation text
-          const isJourneyComplete = progress.journeyCompleted || progress.currentMilestone === 'completed';
+          const isJourneyComplete = progress.journeyCompleted || progress.currentMilestone === 'completed' || currentMilestone > 10;
           const currentMilestoneText = isJourneyComplete 
             ? '🎉 Journey Complete!' 
             : (currentMilestone === 0 ? '🎯 Overview' : '🎯 Current Milestone: ' + currentMilestone + ' of 10');
