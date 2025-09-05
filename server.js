@@ -673,7 +673,34 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       }
     }
     
-    progress.currentMilestone = newCurrentMilestone;
+    // Check if this completes the entire journey (Milestone 10)
+    if (milestoneNumberNum === 10) {
+      console.log('Milestone 10 completed - marking journey as complete!');
+      progress.journeyCompleted = true;
+      progress.completionDate = new Date().toISOString();
+      // Set current milestone to special completed state
+      progress.currentMilestone = 'completed';
+      
+      // Calculate journey statistics
+      const startDates = Object.entries(progress.milestoneProgress)
+        .filter(([_, data]) => data.completedDate)
+        .map(([_, data]) => new Date(data.completedDate));
+      if (startDates.length > 0) {
+        const earliestDate = new Date(Math.min(...startDates));
+        const latestDate = new Date(Math.max(...startDates));
+        const durationMs = latestDate - earliestDate;
+        const durationDays = Math.floor(durationMs / (1000 * 60 * 60 * 24));
+        
+        progress.journeyStats = {
+          startDate: earliestDate.toISOString(),
+          endDate: latestDate.toISOString(),
+          totalDuration: durationDays + ' days',
+          milestonesCompleted: progress.milestonesCompleted.length
+        };
+      }
+    } else {
+      progress.currentMilestone = newCurrentMilestone;
+    }
     
     // Add completion timestamp
     if (!progress.milestoneProgress[milestoneNumberNum]) {
@@ -1268,9 +1295,20 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             // Set current milestone based on completed ones
             if (numCompleted >= 10) {
               // All milestones completed - this is what we want to test!
-              data.roadmapProgress.currentMilestone = 10; // Or could be 11 or "completed"
+              data.roadmapProgress.currentMilestone = 'completed';
               data.roadmapProgress.journeyCompleted = true;
               data.roadmapProgress.completionDate = new Date().toISOString();
+              
+              // Add journey stats for testing
+              const startDate = new Date(Date.now() - 300 * 24 * 60 * 60 * 1000); // 300 days ago
+              const endDate = new Date();
+              data.roadmapProgress.journeyStats = {
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                totalDuration: '300 days',
+                milestonesCompleted: 11 // Including overview
+              };
+              
               console.log('[DEBUG MODE] Journey marked as COMPLETED!');
             } else {
               data.roadmapProgress.currentMilestone = Math.min(numCompleted + 1, 10);
@@ -1399,6 +1437,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           window.ROADMAP_PROGRESS = progress;
           window.CURRENT_MILESTONE = currentMilestone;
           
+          // Check if journey is completed
+          if (progress.journeyCompleted || progress.currentMilestone === 'completed' || progress.currentMilestone > 10) {
+            console.log('[Journey Complete] Showing completion view');
+            showCompletionView();
+            return;
+          }
+          
           // Add debug banner if in debug mode
           let debugBanner = '';
           if (debugMode || simulateCompleted) {
@@ -1407,11 +1452,17 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '</div>';
           }
           
+          // Check if journey is completed for navigation text
+          const isJourneyComplete = progress.journeyCompleted || progress.currentMilestone === 'completed';
+          const currentMilestoneText = isJourneyComplete 
+            ? '🎉 Journey Complete!' 
+            : (currentMilestone === 0 ? '🎯 Overview' : '🎯 Current Milestone: ' + currentMilestone + ' of 10');
+          
           let html = debugBanner + '<div class="header">' +
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
-              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">🎯 ' + (currentMilestone === 0 ? 'Overview' : 'Current Milestone: ' + currentMilestone + ' of 10') + '</a>' +
+              '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">' + currentMilestoneText + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
             '</div>' +
             '</div>';
@@ -1559,6 +1610,115 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (next !== current) {
             showMilestoneDetail(next);
           }
+        }
+        
+        // Show journey completion celebration view
+        function showCompletionView() {
+          const progress = window.ROADMAP_PROGRESS;
+          const plan = window.ROADMAP_PLAN;
+          
+          // Calculate journey duration
+          let journeyDuration = 'your learning journey';
+          if (progress.journeyStats) {
+            journeyDuration = progress.journeyStats.totalDuration;
+          }
+          
+          // Build list of completed milestone goals
+          let skillsAcquired = '';
+          if (plan && plan.milestones) {
+            const completedGoals = plan.milestones
+              .slice(0, 10)
+              .map((m, i) => {
+                if (m.goal || m.milestone) {
+                  return '<li style="margin: 8px 0; list-style: none;">✅ ' + (m.goal || m.milestone) + '</li>';
+                }
+                return '';
+              })
+              .filter(g => g)
+              .join('');
+            
+            if (completedGoals) {
+              skillsAcquired = '<div style="margin-top: 30px;">' +
+                '<h3 style="color: #A373F8; margin-bottom: 15px;">Skills You\'ve Mastered:</h3>' +
+                '<ul style="text-align: left; max-width: 600px; margin: 0 auto; padding: 0;">' + 
+                completedGoals + 
+                '</ul>' +
+                '</div>';
+            }
+          }
+          
+          let html = '<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center;">' +
+            
+            // Celebration header
+            '<div style="font-size: 80px; margin-bottom: 20px; animation: bounce 2s infinite;">🎉</div>' +
+            '<h1 style="font-size: 36px; color: #A373F8; margin-bottom: 10px;">Congratulations, ' + username + '!</h1>' +
+            '<h2 style="font-size: 24px; color: #FFF; margin-bottom: 30px; font-weight: 400;">You\'ve Completed Your Darkwave Journey!</h2>' +
+            
+            // Achievement summary
+            '<div style="background: rgba(163, 115, 248, 0.1); border: 2px solid #A373F8; border-radius: 12px; padding: 30px; margin: 20px auto; max-width: 600px;">' +
+              '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 20px;">' +
+                '<div>' +
+                  '<div style="font-size: 32px; color: #A373F8; font-weight: bold;">10/10</div>' +
+                  '<div style="font-size: 14px; opacity: 0.8;">Milestones Completed</div>' +
+                '</div>' +
+                '<div>' +
+                  '<div style="font-size: 32px; color: #A373F8; font-weight: bold;">' + journeyDuration + '</div>' +
+                  '<div style="font-size: 14px; opacity: 0.8;">Journey Duration</div>' +
+                '</div>' +
+              '</div>' +
+              
+              // Northstar achievement
+              (plan && plan.northstar ? 
+                '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(163, 115, 248, 0.3);">' +
+                  '<div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">You\'ve achieved your goal:</div>' +
+                  '<div style="font-size: 18px; color: #A373F8; font-weight: 600;">' + plan.northstar + '</div>' +
+                '</div>' : '') +
+            '</div>' +
+            
+            // Skills acquired
+            skillsAcquired +
+            
+            // Next steps
+            '<div style="margin-top: 40px; padding: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; max-width: 800px;">' +
+              '<h3 style="color: #A373F8; margin-bottom: 20px;">What\'s Next?</h3>' +
+              '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: left;">' +
+                
+                '<div style="padding: 20px; background: rgba(163, 115, 248, 0.1); border-radius: 8px;">' +
+                  '<h4 style="color: #A373F8; margin-bottom: 10px;">🚀 Advanced Learning</h4>' +
+                  '<p style="font-size: 14px; line-height: 1.5;">Explore masterclasses and specialized workshops to deepen your expertise.</p>' +
+                '</div>' +
+                
+                '<div style="padding: 20px; background: rgba(163, 115, 248, 0.1); border-radius: 8px;">' +
+                  '<h4 style="color: #A373F8; margin-bottom: 10px;">👥 Join the Community</h4>' +
+                  '<p style="font-size: 14px; line-height: 1.5;">Connect with fellow artists, share your work, and collaborate on projects.</p>' +
+                '</div>' +
+                
+                '<div style="padding: 20px; background: rgba(163, 115, 248, 0.1); border-radius: 8px;">' +
+                  '<h4 style="color: #A373F8; margin-bottom: 10px;">🎵 Release Your Music</h4>' +
+                  '<p style="font-size: 14px; line-height: 1.5;">It\'s time to share your darkwave creations with the world!</p>' +
+                '</div>' +
+                
+              '</div>' +
+            '</div>' +
+            
+            // View path button
+            '<div style="margin-top: 40px;">' +
+              '<button onclick="showPathView()" style="background: #A373F8; color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px;">View Your Complete Journey</button>' +
+            '</div>' +
+            
+          '</div>' +
+          
+          // Add animation styles
+          '<style>' +
+            '@keyframes bounce {' +
+              '0%, 20%, 50%, 80%, 100% { transform: translateY(0); }' +
+              '40% { transform: translateY(-20px); }' +
+              '60% { transform: translateY(-10px); }' +
+            '}' +
+          '</style>';
+          
+          document.getElementById('app').innerHTML = html;
+          sendHeight();
         }
         
         // Update the current milestone button text
@@ -1864,14 +2024,24 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Achievement banner for completed courses
           if (status === 'completed') {
+            const progress = window.ROADMAP_PROGRESS || {};
+            const isJourneyComplete = progress.journeyCompleted || progress.currentMilestone === 'completed' || progress.currentMilestone > 10;
+            
             html += '<div class="achievement-banner">' +
               '<div class="achievement-icon">🎉</div>' +
-              '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>' +
-              '<div style="margin-top: 15px;">' +
+              '<div class="achievement-text">Congratulations! You\\\'ve completed this course!</div>';
+            
+            // Only show Continue button if journey is not complete
+            if (!isJourneyComplete) {
+              html += '<div style="margin-top: 15px;">' +
                 '<div style="color: #A373F8; font-weight: 600; margin-bottom: 10px;">Ready for the next milestone?</div>' +
                 '<button onclick="event.stopPropagation(); event.preventDefault(); advanceToNextMilestone(); return false;" style="background: #A373F8; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Continue to Next Milestone →</button>' +
-              '</div>' +
               '</div>';
+            } else {
+              html += '<div style="margin-top: 15px; color: #A373F8; font-weight: 600;">🎉 You\\\'ve completed your entire journey! 🎉</div>';
+            }
+            
+            html += '</div>';
           }
           
           // Main progress bar
