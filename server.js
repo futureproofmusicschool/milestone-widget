@@ -1839,9 +1839,23 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             ? '🎉 Journey Complete!' 
             : (currentMilestone === 0 ? '🎯 Overview' : '🎯 Current Milestone: ' + currentMilestone + ' of 10');
           
+          // Extract northstar goal text properly
+          let northstarGoalText = '';
+          if (roadmapPlan.northstar) {
+            if (typeof roadmapPlan.northstar === 'object') {
+              // New structure: northstar is an object with achievable_goal property
+              northstarGoalText = roadmapPlan.northstar.achievable_goal || roadmapPlan.northstar.original_dream || 'Your personalized learning journey';
+            } else if (typeof roadmapPlan.northstar === 'string') {
+              // Old structure: northstar was a simple string
+              northstarGoalText = roadmapPlan.northstar;
+            }
+          } else {
+            northstarGoalText = 'Your personalized learning journey';
+          }
+          
           let html = debugBanner + '<div class="header">' +
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
-            '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
+            '<div class="north-star">Goal: ' + northstarGoalText + '</div>' +
             '<div class="progress-stats">' +
               '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">' + currentMilestoneText + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +

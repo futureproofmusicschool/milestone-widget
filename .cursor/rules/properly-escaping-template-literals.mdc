@@ -1,5 +1,6 @@
 ---
-description:
+description: "When embedding strings within JavaScript that is itself inside a template literal (like in server.js), always escape single quotes. For example, change 'You've' to 'You\\'ve' to prevent syntax errors."
 globs:
+  - "server.js"
 alwaysApply: true
 ---
