@@ -654,13 +654,23 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
     const completedMilestones = progress.milestonesCompleted;
     
     // Update current milestone to be the next milestone after the highest completed one
-    const nonZeroCompleted = completedMilestones.filter(m => m >= 1);
-    let newCurrentMilestone = 0;
-    if (nonZeroCompleted.length > 0) {
-      const maxCompleted = Math.max(...nonZeroCompleted);
-      newCurrentMilestone = Math.min(maxCompleted + 1, 10);
-    } else {
-      newCurrentMilestone = 1; // Start at milestone 1 if none completed
+    // Include milestone 0 (Overview) in the logic
+    let newCurrentMilestone = 1; // Default to milestone 1
+    
+    if (completedMilestones.length > 0) {
+      // Get all completed milestones including 0
+      const allCompleted = completedMilestones.filter(m => m >= 0);
+      if (allCompleted.length > 0) {
+        // Get the highest completed milestone that's not just the Overview
+        const nonZeroCompleted = allCompleted.filter(m => m >= 1);
+        if (nonZeroCompleted.length > 0) {
+          const maxCompleted = Math.max(...nonZeroCompleted);
+          newCurrentMilestone = Math.min(maxCompleted + 1, 10);
+        } else {
+          // Only Overview (0) is completed, move to milestone 1
+          newCurrentMilestone = 1;
+        }
+      }
     }
     
     progress.currentMilestone = newCurrentMilestone;
@@ -1397,12 +1407,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           console.log('[Client] About to render timeline. milestones length:', roadmapPlan.milestones ? roadmapPlan.milestones.length : 'undefined');
           
           // Add Milestone 0 (Overview) to timeline
+          const isOverviewCompleted = completed.includes(0);
           const isOverviewCurrent = currentMilestone === 0;
-          html += '<div class="milestone ' + (isOverviewCurrent ? 'current' : '') + '">' +
+          html += '<div class="milestone ' + (isOverviewCompleted ? 'completed' : '') + ' ' + (isOverviewCurrent ? 'current' : '') + '">' +
             '<div class="milestone-dot"></div>' +
             '<div class="milestone-content clickable" onclick="showMilestoneDetail(0)">' +
               '<div class="milestone-title">' +
-                (isOverviewCurrent ? '🎯' : '📖') + ' ' +
+                (isOverviewCompleted ? '✅' : (isOverviewCurrent ? '🎯' : '📖')) + ' ' +
                 'Overview: Getting Started' +
               '</div>' +
               '<div class="milestone-meta" style="margin-top: 8px; font-size: 13px; line-height: 1.4;">' + roadmapPlan.overview + '</div>' +
@@ -1521,6 +1532,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             // Track currently displayed milestone
             window.DISPLAYED_MILESTONE = 0;
+            
+            // Auto-complete Overview on first view
+            markMilestoneComplete(0);
             
                       // Switch back to detail view
           const path = document.getElementById('path-view');
@@ -1684,6 +1698,13 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // New function to mark milestone as complete
         async function markMilestoneComplete(milestoneNumber) {
           try {
+            // Check if milestone is already completed
+            const progress = window.ROADMAP_PROGRESS || { milestonesCompleted: [] };
+            if (progress.milestonesCompleted && progress.milestonesCompleted.includes(Number(milestoneNumber))) {
+              console.log('Milestone', milestoneNumber, 'already completed');
+              return; // Already completed, no need to mark again
+            }
+            
             const response = await fetch(apiBaseUrl + '/api/milestone-roadmap/' + userId + '/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
