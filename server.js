@@ -1639,7 +1639,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             if (completedGoals) {
               skillsAcquired = '<div style="margin-top: 30px;">' +
-                '<h3 style="color: #A373F8; margin-bottom: 15px;">Skills You\'ve Mastered:</h3>' +
+                '<h3 style="color: #A373F8; margin-bottom: 15px;">Skills You\\\'ve Mastered:</h3>' +
                 '<ul style="text-align: left; max-width: 600px; margin: 0 auto; padding: 0;">' + 
                 completedGoals + 
                 '</ul>' +
@@ -1652,7 +1652,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             // Celebration header
             '<div style="font-size: 80px; margin-bottom: 20px; animation: bounce 2s infinite;">🎉</div>' +
             '<h1 style="font-size: 36px; color: #A373F8; margin-bottom: 10px;">Congratulations, ' + username + '!</h1>' +
-            '<h2 style="font-size: 24px; color: #FFF; margin-bottom: 30px; font-weight: 400;">You\'ve Completed Your Darkwave Journey!</h2>' +
+            '<h2 style="font-size: 24px; color: #FFF; margin-bottom: 30px; font-weight: 400;">You\\\'ve Completed Your Darkwave Journey!</h2>' +
             
             // Achievement summary
             '<div style="background: rgba(163, 115, 248, 0.1); border: 2px solid #A373F8; border-radius: 12px; padding: 30px; margin: 20px auto; max-width: 600px;">' +
@@ -1670,7 +1670,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               // Northstar achievement
               (plan && plan.northstar ? 
                 '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(163, 115, 248, 0.3);">' +
-                  '<div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">You\'ve achieved your goal:</div>' +
+                  '<div style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">You\\\'ve achieved your goal:</div>' +
                   '<div style="font-size: 18px; color: #A373F8; font-weight: 600;">' + plan.northstar + '</div>' +
                 '</div>' : '') +
             '</div>' +
@@ -1680,7 +1680,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             // Next steps
             '<div style="margin-top: 40px; padding: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; max-width: 800px;">' +
-              '<h3 style="color: #A373F8; margin-bottom: 20px;">What\'s Next?</h3>' +
+              '<h3 style="color: #A373F8; margin-bottom: 20px;">What\\\'s Next?</h3>' +
               '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: left;">' +
                 
                 '<div style="padding: 20px; background: rgba(163, 115, 248, 0.1); border-radius: 8px;">' +
@@ -1695,7 +1695,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 
                 '<div style="padding: 20px; background: rgba(163, 115, 248, 0.1); border-radius: 8px;">' +
                   '<h4 style="color: #A373F8; margin-bottom: 10px;">🎵 Release Your Music</h4>' +
-                  '<p style="font-size: 14px; line-height: 1.5;">It\'s time to share your darkwave creations with the world!</p>' +
+                  '<p style="font-size: 14px; line-height: 1.5;">It\\\'s time to share your darkwave creations with the world!</p>' +
                 '</div>' +
                 
               '</div>' +
