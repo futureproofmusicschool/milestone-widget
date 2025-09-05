@@ -1228,6 +1228,63 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         const username = '${username.replace(/'/g, "\\'")}';
         const apiBaseUrl = window.location.origin;
         
+        // Check for debug parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugMode = urlParams.get('debug');
+        const simulateCompleted = urlParams.get('completed'); // e.g., ?completed=10 to simulate all 10 completed
+        
+        // Debug mode function to simulate different completion states
+        function applyDebugMode(data) {
+          console.log('[DEBUG MODE] Applying debug settings...');
+          
+          // Initialize progress if it doesn't exist
+          if (!data.roadmapProgress) {
+            data.roadmapProgress = {
+              userId: userId,
+              currentMilestone: 1,
+              milestonesCompleted: [],
+              milestoneProgress: {}
+            };
+          }
+          
+          // Parse how many milestones to simulate as completed
+          const numCompleted = parseInt(simulateCompleted) || 0;
+          
+          if (numCompleted > 0) {
+            console.log('[DEBUG MODE] Simulating', numCompleted, 'completed milestones');
+            
+            // Create array of completed milestones (0 through numCompleted)
+            data.roadmapProgress.milestonesCompleted = [];
+            for (let i = 0; i <= Math.min(numCompleted, 10); i++) {
+              data.roadmapProgress.milestonesCompleted.push(i);
+              
+              // Add completion data for each milestone
+              data.roadmapProgress.milestoneProgress[i] = {
+                completed: true,
+                completedDate: new Date(Date.now() - (10 - i) * 24 * 60 * 60 * 1000).toISOString() // Stagger dates
+              };
+            }
+            
+            // Set current milestone based on completed ones
+            if (numCompleted >= 10) {
+              // All milestones completed - this is what we want to test!
+              data.roadmapProgress.currentMilestone = 10; // Or could be 11 or "completed"
+              data.roadmapProgress.journeyCompleted = true;
+              data.roadmapProgress.completionDate = new Date().toISOString();
+              console.log('[DEBUG MODE] Journey marked as COMPLETED!');
+            } else {
+              data.roadmapProgress.currentMilestone = Math.min(numCompleted + 1, 10);
+            }
+          }
+          
+          // Show debug banner
+          if (debugMode === 'true' || simulateCompleted) {
+            console.log('[DEBUG MODE] Progress state:', data.roadmapProgress);
+          }
+          
+          return data;
+        }
+        
         async function loadRoadmap() {
           try {
             const url = apiBaseUrl + '/api/milestone-roadmap/' + userId;
@@ -1244,6 +1301,11 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             if (!response.ok) {
               throw new Error(data.error || 'Failed to load roadmap');
+            }
+            
+            // Apply debug mode if requested
+            if (debugMode || simulateCompleted) {
+              data = applyDebugMode(data);
             }
             
             renderRoadmap(data);
@@ -1337,7 +1399,15 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           window.ROADMAP_PROGRESS = progress;
           window.CURRENT_MILESTONE = currentMilestone;
           
-          let html = '<div class="header">' +
+          // Add debug banner if in debug mode
+          let debugBanner = '';
+          if (debugMode || simulateCompleted) {
+            debugBanner = '<div style="background: #FF6B6B; color: white; padding: 8px; text-align: center; font-size: 12px; position: sticky; top: 0; z-index: 1000;">' +
+              '🔧 DEBUG MODE - Simulating ' + (simulateCompleted || '0') + ' completed milestones' +
+              '</div>';
+          }
+          
+          let html = debugBanner + '<div class="header">' +
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + roadmapPlan.northstar + '</div>' +
             '<div class="progress-stats">' +
