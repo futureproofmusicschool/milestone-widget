@@ -1329,7 +1329,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             console.log('[Client] Fetching milestone data from:', url);
             const response = await fetch(url);
             console.log('[Client] Response status:', response.status);
-            const data = await response.json();
+            let data = await response.json();
             console.log('[Client] Response JSON keys:', Object.keys(data || {}));
             if (data && data.roadmapPlan) {
               console.log('[Client] roadmapPlan present. milestones length:', Array.isArray(data.roadmapPlan.milestones) ? data.roadmapPlan.milestones.length : 'n/a');
