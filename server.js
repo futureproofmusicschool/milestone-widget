@@ -352,6 +352,79 @@ app.get('/api/debug/oauth', async (req, res) => {
   res.json(results);
 });
 
+// Get assignment status for a user in the Milestones course
+app.get('/api/assignment-status/:userId/assignment/:assignmentId', async (req, res) => {
+  try {
+    const { userId, assignmentId } = req.params;
+    if (!process.env.LEARNWORLDS_CLIENT_ID || !process.env.LEARNWORLDS_CLIENT_SECRET) {
+      console.error('LW assignment-status: Missing client credentials');
+      return res.status(500).json({ error: 'Missing LearnWorlds client credentials' });
+    }
+
+    // The Milestones course ID - this should be configured in environment
+    const MILESTONES_COURSE_ID = process.env.MILESTONES_COURSE_ID || 'milestones_course';
+    
+    // Get the user's progress in the Milestones course
+    const apiUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/users/${encodeURIComponent(userId)}/courses/${encodeURIComponent(MILESTONES_COURSE_ID)}/progress`;
+    console.log('[LW] GET assignment status', { userId, assignmentId, apiUrl });
+
+    const accessToken = await getLearnWorldsAccessToken();
+
+    const progressResponse = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
+      }
+    });
+
+    if (!progressResponse.ok) {
+      const status = progressResponse.status;
+      const body = await progressResponse.text();
+      console.error('[LW] assignment status error', { status, body: body?.slice(0, 500) });
+      return res.status(500).json({ error: 'LearnWorlds upstream error', status });
+    }
+
+    const data = await progressResponse.json();
+    
+    // Find the specific assignment unit in the course progress
+    let assignmentStatus = {
+      submitted: false,
+      approved: false,
+      score: null,
+      feedback: null
+    };
+    
+    if (data.progress_per_section_unit && data.progress_per_section_unit.length > 0) {
+      data.progress_per_section_unit.forEach(section => {
+        if (section.units && section.units.length > 0) {
+          section.units.forEach(unit => {
+            // Match by assignment ID or unit name containing the assignment ID
+            if (unit.unit_id === assignmentId || 
+                (unit.unit_name && unit.unit_name.includes(assignmentId))) {
+              assignmentStatus.submitted = unit.unit_status === 'completed' || unit.unit_progress_rate > 0;
+              assignmentStatus.approved = unit.unit_status === 'completed';
+              assignmentStatus.score = unit.score_on_unit || null;
+              // Note: Feedback would need to come from a different API endpoint
+            }
+          });
+        }
+      });
+    }
+    
+    return res.json({ 
+      userId, 
+      assignmentId,
+      courseId: MILESTONES_COURSE_ID,
+      ...assignmentStatus
+    });
+  } catch (error) {
+    console.error('Error fetching assignment status:', error);
+    return res.status(500).json({ error: 'Failed to fetch assignment status' });
+  }
+});
+
 // Lightweight endpoint to get a single course's progress for a user
 app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
   try {
@@ -589,7 +662,206 @@ app.get('/api/milestone-debug/:userId', async (req, res) => {
 });
 
 /**
- * Mark milestone as complete
+ * Update course completion status for a milestone
+ */
+app.post('/api/milestone-roadmap/:userId/course-complete', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const { userId } = req.params;
+    const { milestoneNumber } = req.body;
+    const milestoneNumberNum = Number(milestoneNumber);
+    
+    console.log(`Marking course for milestone ${milestoneNumberNum} as complete for user ${userId}`);
+    
+    // Get current data
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
+      range: 'sheet1!A:F',
+    });
+
+    const rows = response.data.values || [];
+    const userRowIndexInData = rows.slice(1).findIndex(row => (row[0] || '').trim() === (userId || '').trim());
+    
+    if (userRowIndexInData === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const absoluteRowIndex = userRowIndexInData + 1;
+    const rawProgress = rows[absoluteRowIndex] ? rows[absoluteRowIndex][5] : undefined;
+    
+    let progress;
+    if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
+      try {
+        progress = JSON.parse(rawProgress);
+      } catch (e) {
+        progress = {};
+      }
+    } else {
+      progress = {};
+    }
+
+    // Initialize progress
+    progress = {
+      userId,
+      currentMilestone: progress.currentMilestone || 0,
+      milestonesCompleted: progress.milestonesCompleted || [],
+      milestoneProgress: progress.milestoneProgress || {}
+    };
+
+    // Update course completion
+    if (!progress.milestoneProgress[milestoneNumberNum]) {
+      progress.milestoneProgress[milestoneNumberNum] = {};
+    }
+    
+    progress.milestoneProgress[milestoneNumberNum].courseCompleted = true;
+    progress.milestoneProgress[milestoneNumberNum].courseCompletedDate = new Date().toISOString();
+    
+    // Check if milestone is fully complete (both tracks)
+    const mp = progress.milestoneProgress[milestoneNumberNum];
+    if (mp.courseCompleted && mp.assignmentApproved) {
+      mp.completed = true;
+      mp.completedDate = new Date().toISOString();
+      
+      // Add to completed list if not already there
+      if (!progress.milestonesCompleted.includes(milestoneNumberNum)) {
+        progress.milestonesCompleted.push(milestoneNumberNum);
+        progress.milestonesCompleted.sort((a, b) => a - b);
+      }
+      
+      // Update current milestone
+      const maxCompleted = Math.max(...progress.milestonesCompleted.filter(m => m >= 1));
+      progress.currentMilestone = Math.min(maxCompleted + 1, 10);
+    }
+    
+    // Update the sheet
+    const updateRange = `sheet1!F${absoluteRowIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
+      range: updateRange,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[JSON.stringify(progress)]]
+      }
+    });
+    
+    res.json({ success: true, progress });
+    
+  } catch (error) {
+    console.error('Error marking course complete:', error);
+    res.status(500).json({ error: 'Failed to mark course complete' });
+  }
+});
+
+/**
+ * Update assignment approval status for a milestone
+ */
+app.post('/api/milestone-roadmap/:userId/assignment-complete', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const { userId } = req.params;
+    const { milestoneNumber, approved } = req.body;
+    const milestoneNumberNum = Number(milestoneNumber);
+    
+    console.log(`Marking assignment for milestone ${milestoneNumberNum} as ${approved ? 'approved' : 'submitted'} for user ${userId}`);
+    
+    // Get current data
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
+      range: 'sheet1!A:F',
+    });
+
+    const rows = response.data.values || [];
+    const userRowIndexInData = rows.slice(1).findIndex(row => (row[0] || '').trim() === (userId || '').trim());
+    
+    if (userRowIndexInData === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const absoluteRowIndex = userRowIndexInData + 1;
+    const rawProgress = rows[absoluteRowIndex] ? rows[absoluteRowIndex][5] : undefined;
+    
+    let progress;
+    if (rawProgress && typeof rawProgress === 'string' && rawProgress.trim().startsWith('{')) {
+      try {
+        progress = JSON.parse(rawProgress);
+      } catch (e) {
+        progress = {};
+      }
+    } else {
+      progress = {};
+    }
+
+    // Initialize progress
+    progress = {
+      userId,
+      currentMilestone: progress.currentMilestone || 0,
+      milestonesCompleted: progress.milestonesCompleted || [],
+      milestoneProgress: progress.milestoneProgress || {}
+    };
+
+    // Update assignment status
+    if (!progress.milestoneProgress[milestoneNumberNum]) {
+      progress.milestoneProgress[milestoneNumberNum] = {};
+    }
+    
+    progress.milestoneProgress[milestoneNumberNum].assignmentSubmitted = true;
+    if (approved) {
+      progress.milestoneProgress[milestoneNumberNum].assignmentApproved = true;
+      progress.milestoneProgress[milestoneNumberNum].assignmentApprovedDate = new Date().toISOString();
+    }
+    
+    // Check if milestone is fully complete (both tracks)
+    const mp = progress.milestoneProgress[milestoneNumberNum];
+    if (mp.courseCompleted && mp.assignmentApproved) {
+      mp.completed = true;
+      mp.completedDate = new Date().toISOString();
+      
+      // Add to completed list if not already there
+      if (!progress.milestonesCompleted.includes(milestoneNumberNum)) {
+        progress.milestonesCompleted.push(milestoneNumberNum);
+        progress.milestonesCompleted.sort((a, b) => a - b);
+      }
+      
+      // Update current milestone
+      const maxCompleted = Math.max(...progress.milestonesCompleted.filter(m => m >= 1));
+      progress.currentMilestone = Math.min(maxCompleted + 1, 10);
+      
+      // Check for journey completion
+      if (milestoneNumberNum === 10) {
+        progress.journeyCompleted = true;
+        progress.northstarAchieved = true;
+        progress.completionDate = new Date().toISOString();
+        progress.currentMilestone = 'completed';
+      }
+    }
+    
+    // Update the sheet
+    const updateRange = `sheet1!F${absoluteRowIndex + 1}`;
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: MILESTONE_SPREADSHEET_ID,
+      range: updateRange,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[JSON.stringify(progress)]]
+      }
+    });
+    
+    res.json({ success: true, progress });
+    
+  } catch (error) {
+    console.error('Error marking assignment complete:', error);
+    res.status(500).json({ error: 'Failed to mark assignment complete' });
+  }
+});
+
+/**
+ * Mark milestone as complete (now requires both course and assignment completion)
  */
 app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
   // Set CORS headers explicitly for this endpoint
@@ -599,7 +871,7 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
   
   try {
     const { userId } = req.params;
-    const { milestoneNumber } = req.body;
+    const { milestoneNumber, forceComplete } = req.body; // forceComplete for manual override
     const milestoneNumberNum = Number(milestoneNumber);
     
     console.log(`Marking milestone ${milestoneNumberNum} as complete for user ${userId}`);
@@ -702,12 +974,32 @@ app.post('/api/milestone-roadmap/:userId/complete', async (req, res) => {
       progress.currentMilestone = newCurrentMilestone;
     }
     
-    // Add completion timestamp
+    // Add completion timestamp and track both course and assignment status
     if (!progress.milestoneProgress[milestoneNumberNum]) {
       progress.milestoneProgress[milestoneNumberNum] = {};
     }
-    progress.milestoneProgress[milestoneNumberNum].completed = true;
-    progress.milestoneProgress[milestoneNumberNum].completedDate = new Date().toISOString();
+    
+    // For dual-track system, track both completions separately
+    // This endpoint can be called when either course OR assignment is complete
+    // Full milestone completion requires both
+    const currentProgress = progress.milestoneProgress[milestoneNumberNum];
+    
+    // If forceComplete is true, mark both as complete (manual override)
+    if (forceComplete) {
+      currentProgress.courseCompleted = true;
+      currentProgress.courseCompletedDate = currentProgress.courseCompletedDate || new Date().toISOString();
+      currentProgress.assignmentSubmitted = true;
+      currentProgress.assignmentApproved = true;
+      currentProgress.assignmentApprovedDate = currentProgress.assignmentApprovedDate || new Date().toISOString();
+    }
+    
+    // Check if both tracks are complete
+    if (currentProgress.courseCompleted && currentProgress.assignmentApproved) {
+      currentProgress.completed = true;
+      currentProgress.completedDate = new Date().toISOString();
+    } else {
+      currentProgress.completed = false;
+    }
     
     // Update the sheet (column F, which is index 5)
     const updateRange = `sheet1!F${absoluteRowIndex + 1}`;

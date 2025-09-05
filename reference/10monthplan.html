@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Your Futureproof Producer Roadmap</title>
+  <title>Your Futureproof Producer Journey</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* Typography resets */
@@ -36,14 +36,19 @@
       <!-- HERO -->
       <tr>
         <td align="center" style="background-color:#000000; padding:0;">
-          <img src="https://dl.dropboxusercontent.com/scl/fi/vj3hka9ygtfu9wr4268qw/futureproofproducerplanbanner.jpg?rlkey=19tvwclna2coczn6n2ibzbxl2" alt="Futureproof Producer Plan Banner" width="600" height="260" style="display:block; width:100%; max-width:600px; height:auto; border:0;">
+          <img src="https://dl.dropboxusercontent.com/scl/fi/vj3hka9ygtfu9wr4268qw/futureproofproducerplanbanner.jpg?rlkey=19tvwclna2coczn6n2ibzbxl2" alt="Futureproof Producer Journey Banner" width="600" height="260" style="display:block; width:100%; max-width:600px; height:auto; border:0;">
         </td>
       </tr>
       
-      <!-- QUICK WIN -->
+      <!-- WELCOME & NORTHSTAR -->
       <tr>
         <td style="background-color:#000000; padding:28px 32px;">
           <h1>{{ $json.roadmap_plan.welcome }}</h1>
+          <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, rgba(163, 115, 248, 0.1) 0%, rgba(139, 93, 246, 0.1) 100%); border: 1px solid rgba(163, 115, 248, 0.3); border-radius: 8px;">
+            <h2 style="color: #7b61ff; font-size: 18px; margin-bottom: 10px;">Your Northstar Goal (3-12 months)</h2>
+            <p style="font-size: 16px; line-height: 1.5; margin-bottom: 15px;">{{ $json.roadmap_plan.northstar.achievable_goal }}</p>
+            <p style="font-size: 14px; opacity: 0.9;">This journey will help you progress from your current level to achieving this tangible goal through 10 progressive milestones, each combining course learning with practical application.</p>
+          </div>
         </td>
       </tr>
       
@@ -66,6 +71,7 @@
       <tr>
         <td style="background-color:#000000; padding:28px 32px;">
           <h2>Your First Milestone: {{ $json.roadmap_plan.milestones[0].focus }}</h2>
+          <p style="font-size: 14px; color: #7b61ff; margin-bottom: 20px;">Each milestone combines a recommended course with a personalized assignment that applies your learning toward your northstar goal.</p>
 
           <h3 style="color:#7b61ff; margin:14px 0 6px;">Milestone 1</h3>
           <p>{{ $json.roadmap_plan.milestones[0].goal }}</p>
@@ -76,6 +82,14 @@
             <p style="margin:8px 0;"><strong>{{ $json.roadmap_plan.milestones[0].course_rec.title }}</strong></p>
             <p style="margin:8px 0;">{{ $json.roadmap_plan.milestones[0].course_rec.benefit }}</p>
             <a href="{{ $json.roadmap_plan.milestones[0].course_rec.url }}" target="_blank" style="color:#7b61ff; text-decoration:none; font-weight:bold;">Start Course →</a>
+          </div>
+          
+          <!-- PERSONALIZED ASSIGNMENT -->
+          <div style="background-color:#1a1a1a; padding:16px; margin:20px 0; border-radius:6px; border-left: 3px solid #7b61ff;">
+            <h4 style="color:#7b61ff; margin:0 0 8px;">Your Assignment</h4>
+            <p style="margin:8px 0;"><strong>{{ $json.roadmap_plan.milestones[0].subgoal.title }}</strong></p>
+            <p style="margin:8px 0; font-size: 14px;">{{ $json.roadmap_plan.milestones[0].subgoal.description }}</p>
+            <p style="margin:8px 0; font-size: 14px; opacity: 0.9;"><strong>Deliverable:</strong> {{ $json.roadmap_plan.milestones[0].subgoal.deliverable }}</p>
           </div>
 
           <!-- MORNING SESSION IMAGE -->
@@ -119,12 +133,13 @@
           <!-- PROGRESS METRICS -->
           <tr>
             <td style="background-color:#000000; padding:28px 32px;">
-              <h2>Your Journey Goals</h2>
-              <ul>
-                <li>{{ $json.roadmap_plan.kpi[0] }}</li>
-                <li>{{ $json.roadmap_plan.kpi[1] }}</li>
-                <li>{{ $json.roadmap_plan.kpi[2] }}</li>
-                <li>{{ $json.roadmap_plan.kpi[3] }}</li>
+                        <h2>Success Metrics for Your Journey</h2>
+          <p style="margin-bottom: 15px;">By completing these 10 milestones in 3-12 months (based on your pace), you'll achieve:</p>
+          <ul>
+                            <li>{{ $json.roadmap_plan.northstar.success_metrics[0] || $json.roadmap_plan.kpi[0] }}</li>
+            <li>{{ $json.roadmap_plan.northstar.success_metrics[1] || $json.roadmap_plan.kpi[1] }}</li>
+            <li>{{ $json.roadmap_plan.northstar.success_metrics[2] || $json.roadmap_plan.kpi[2] }}</li>
+            <li>{{ $json.roadmap_plan.northstar.success_metrics[3] || $json.roadmap_plan.kpi[3] }}</li>
               </ul>
             </td>
           </tr>
@@ -133,11 +148,12 @@
       <tr>
         <td style="background-color:#000000; padding:28px 32px;">
           <h2>Your Support Network</h2>
-          <p>You're not alone on this journey.</p>
+          <p>You're not alone on this journey. Each milestone includes both course learning and practical assignments that your mentor will review.</p>
           <ul>
             <li><a href="https://discord.gg/WhW9Ae4TZV" target="_blank" style="color:#7b61ff; text-decoration:none;">Join our Discord community</a> for peer support and collaboration</li>
-            <li>1-on-1 mentor sessions each month (or more) for personalized guidance</li>
+            <li>1-on-1 mentor sessions for personalized guidance and assignment feedback</li>
             <li><a href="https://learn.futureproofmusicschool.com/events" target="_blank" style="color:#7b61ff; text-decoration:none;">Live feedback sessions and online workshops 5x a week or more</a></li>
+            <li>Mentor review and approval for each milestone assignment to ensure you're on track</li>
           </ul>
         </td>
       </tr>
