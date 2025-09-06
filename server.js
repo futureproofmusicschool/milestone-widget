@@ -1195,6 +1195,51 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           gap: 20px;
           font-size: 14px;
           color: #A373F8;
+          align-items: center;
+        }
+        
+        .refresh-button {
+          margin-left: auto;
+          background: rgba(163, 115, 248, 0.15);
+          border: 1px solid rgba(163, 115, 248, 0.4);
+          border-radius: 6px;
+          padding: 6px 10px;
+          color: #A373F8;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 13px;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .refresh-button:hover {
+          background: rgba(163, 115, 248, 0.25);
+          border-color: rgba(163, 115, 248, 0.6);
+        }
+        
+        .refresh-button:active {
+          transform: scale(0.95);
+        }
+        
+        .refresh-button.refreshing {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        
+        .refresh-icon {
+          display: inline-block;
+          transition: transform 0.3s ease;
+        }
+        
+        .refresh-button.refreshing .refresh-icon {
+          animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
 
         .view-toggle {
@@ -1886,6 +1931,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<div class="progress-stats">' +
               '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">' + currentMilestoneText + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
+              '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress">' +
+                '<span class="refresh-icon">↻</span> Refresh' +
+              '</button>' +
             '</div>' +
             '</div>';
 
@@ -2109,7 +2157,12 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             }
           }
           
-          let html = '<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center;">' +
+          let html = '<div style="position: relative; min-height: 100vh; padding: 40px 20px;">' +
+            // Add refresh button at the top right
+            '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress" style="position: absolute; top: 20px; right: 20px;">' +
+              '<span class="refresh-icon">↻</span> Refresh' +
+            '</button>' +
+            '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">' +
             
             // Celebration header
             '<div style="font-size: 80px; margin-bottom: 20px; animation: bounce 2s infinite;">🎉</div>' +
@@ -2170,6 +2223,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<button onclick="showPathView()" style="background: #A373F8; color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px;">View Your Complete Journey</button>' +
             '</div>' +
             
+          '</div>' +
           '</div>' +
           
           // Add animation styles
@@ -2810,6 +2864,72 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           }, 300000); // 5 minutes
         }
 
+        // Refresh progress function
+        async function refreshProgress() {
+          const refreshBtn = document.getElementById('refresh-btn');
+          if (!refreshBtn) return;
+          
+          // Prevent multiple simultaneous refreshes
+          if (refreshBtn.classList.contains('refreshing')) return;
+          
+          // Add refreshing state
+          refreshBtn.classList.add('refreshing');
+          refreshBtn.disabled = true;
+          
+          try {
+            console.log('[Client] Refreshing milestone data...');
+            
+            // Clear cached data to force fresh API calls
+            window.CURRENT_COURSE_ID = null;
+            window.CURRENT_COURSE_CONTENTS = null;
+            
+            // Reload the roadmap data
+            await loadRoadmap();
+            
+            // If we're on a specific milestone detail view, refresh that too
+            const displayedMilestone = window.DISPLAYED_MILESTONE;
+            if (displayedMilestone !== undefined && displayedMilestone !== null) {
+              // Re-hydrate the current milestone's course progress
+              const plan = window.ROADMAP_PLAN;
+              if (plan && plan.milestones && displayedMilestone > 0) {
+                const milestoneData = plan.milestones[displayedMilestone - 1];
+                if (milestoneData && milestoneData.course_rec) {
+                  await hydrateRecommendationProgress(milestoneData.course_rec, displayedMilestone);
+                }
+              }
+            }
+            
+            console.log('[Client] Refresh complete');
+            
+            // Show success feedback (optional - brief color change)
+            refreshBtn.style.color = '#4CAF50';
+            setTimeout(() => {
+              refreshBtn.style.color = '';
+            }, 1000);
+            
+          } catch (error) {
+            console.error('[Client] Error refreshing progress:', error);
+            
+            // Show error feedback
+            refreshBtn.style.color = '#FF6B6B';
+            setTimeout(() => {
+              refreshBtn.style.color = '';
+            }, 2000);
+            
+          } finally {
+            // Remove refreshing state after a brief delay to show the animation
+            setTimeout(() => {
+              if (refreshBtn) {
+                refreshBtn.classList.remove('refreshing');
+                refreshBtn.disabled = false;
+              }
+            }, 500);
+          }
+        }
+        
+        // Make refreshProgress available globally
+        window.refreshProgress = refreshProgress;
+        
         // Load roadmap on page load
         loadRoadmap();
 
