@@ -461,10 +461,37 @@ app.get('/api/course-progress/:userId/course/:courseId', async (req, res) => {
     const data = await progressResponse.json();
     console.log('[LW] single-course progress full data:', JSON.stringify(data, null, 2));
     
+    // Also fetch course contents to get unit IDs for direct links
+    let courseContents = null;
+    try {
+      const contentsUrl = `https://learn.futureproofmusicschool.com/admin/api/v2/courses/${encodeURIComponent(courseId)}/contents`;
+      console.log('[LW] Fetching course contents for unit IDs', { courseId, contentsUrl });
+      
+      const contentsResponse = await fetch(contentsUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'Lw-Client': process.env.LEARNWORLDS_CLIENT_ID
+        }
+      });
+      
+      if (contentsResponse.ok) {
+        courseContents = await contentsResponse.json();
+        console.log('[LW] Course contents fetched, sections:', courseContents.sections?.length);
+      } else {
+        console.log('[LW] Could not fetch course contents:', contentsResponse.status);
+      }
+    } catch (contentsError) {
+      console.error('[LW] Error fetching course contents:', contentsError);
+      // Continue without contents - links won't be available but progress will still show
+    }
+    
     // Return the full data object for detailed progress display
     return res.json({ 
       userId, 
       courseId, 
+      courseContents, // Include course contents for unit links
       ...data // Include all fields: status, progress_rate, average_score_rate, time_on_course, etc.
     });
   } catch (error) {
@@ -2397,6 +2424,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               return;
             }
             
+            // Store course ID and contents for use in renderCourseProgress
+            window.CURRENT_COURSE_ID = courseId;
+            window.CURRENT_COURSE_CONTENTS = data.courseContents;
+            
             // Check if course is completed
             if (data.status === 'completed' && milestoneNumber) {
               const progress = window.ROADMAP_PROGRESS || {};
@@ -2604,7 +2635,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                   const looksLikeAssessment = nameLc.includes('quiz') || nameLc.includes('assessment') || nameLc.includes('project') || nameLc.includes('exam') || nameLc.includes('test');
                   if (isAssessmentType || looksLikeAssessment) {
                     // Minimal debug for visibility during integration
-                    try { console.log('[Progress] Unit candidate:', { name: unit.unit_name, type: unit.unit_type, status: unit.unit_status, score: unit.score_on_unit }); } catch(_) {}
+                    try { console.log('[Progress] Unit candidate:', { name: unit.unit_name, type: unit.unit_type, status: unit.unit_status, score: unit.score_on_unit, id: unit.unit_id }); } catch(_) {}
                     assessmentUnits.push(unit);
                   }
                 });
@@ -2643,8 +2674,39 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 const unitMinutes = Math.floor(unitTime / 60);
                 const durationMinutes = Math.floor(unitDuration / 60);
                 
-                html += '<div class="unit-item">' +
-                  '<div class="unit-name">' + (unit.unit_name || 'Untitled Assessment') + '</div>' +
+                // Try to find the unit ID from course contents to create direct link
+                let unitLink = null;
+                const courseId = window.CURRENT_COURSE_ID;
+                const courseContents = window.CURRENT_COURSE_CONTENTS;
+                
+                if (unit.unit_id && courseId) {
+                  // Direct link format: https://learn.futureproofmusicschool.com/path-player?courseid=intro-to-synthesis&unit=670fc8a95ea689f3fd02859dUnit
+                  unitLink = 'https://learn.futureproofmusicschool.com/path-player?courseid=' + courseId + '&unit=' + unit.unit_id + 'Unit';
+                } else if (courseContents && courseContents.sections) {
+                  // Try to find unit ID by matching name in course contents
+                  courseContents.sections.forEach(function(section) {
+                    if (section.learningUnits) {
+                      section.learningUnits.forEach(function(learningUnit) {
+                        // Match by name (case-insensitive, trimmed)
+                        const learningUnitName = (learningUnit.title || '').trim().toLowerCase();
+                        const unitName = (unit.unit_name || '').trim().toLowerCase();
+                        if (learningUnitName === unitName) {
+                          unitLink = 'https://learn.futureproofmusicschool.com/path-player?courseid=' + courseId + '&unit=' + learningUnit.id + 'Unit';
+                        }
+                      });
+                    }
+                  });
+                }
+                
+                // Render unit item with or without link
+                if (unitLink) {
+                  html += '<a href="' + unitLink + '" target="_top" style="text-decoration: none; color: inherit; display: block;">' +
+                    '<div class="unit-item" style="cursor: pointer;" onmouseover="this.style.borderColor=\\'rgba(163, 115, 248, 0.5)\\';" onmouseout="this.style.borderColor=\\'rgba(163, 115, 248, 0.15)\\';">';
+                } else {
+                  html += '<div class="unit-item">';
+                }
+                
+                html += '<div class="unit-name">' + (unit.unit_name || 'Untitled Assessment') + '</div>' +
                   '<div style="display: flex; align-items: center; gap: 10px;">' +
                   '<div class="unit-status ' + statusClass + '">' + statusText + '</div>';
                 
@@ -2654,6 +2716,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 
                 html += '</div>' +
                   '</div>';
+                
+                if (unitLink) {
+                  html += '</a>';
+                }
               });
               
               html += '</div>';

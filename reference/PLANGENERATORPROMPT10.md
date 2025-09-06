@@ -81,11 +81,25 @@ Logic rules for creation of the JSON object above:
 • ALWAYS follow the DAW guidelines when recommending courses. Never recommend courses marked 'Ableton users only' to FL Studio users, and never recommend courses marked 'FL Studio users only' to Ableton users. 
 • Make milestone 1 a "quick-win" deliverable to build momentum, but don't mention the term "quick-win".
 • Match workload to weekly_hours (allocate ~4–6 hrs per goal).
-• Each milestone's goal should be based on the actual course final project or main assignment, personalized to the student's genre and musical preferences, and phrased as an outcome (e.g., "Be able to produce a 60-second techno demo using Ableton's core workflow"). Research the actual course content and assignments to ensure accuracy.
-• SUBGOAL DIFFERENTIATION EXAMPLES:
-  - If course project: "Create a trap beat" → Student subgoal (for future bass producer): "Create a future bass drop using trap-inspired drum patterns"
-  - If course project: "Mix a provided rock song" → Student subgoal (for lo-fi producer): "Mix your own lo-fi track using parallel compression techniques from the course"
-  - If course project: "Design a lead synth patch" → Student subgoal (for ambient producer): "Design 3 evolving pad sounds for your ambient track using the synthesis methods taught"
+• Each milestone's goal should be based on the actual course final project or main assignment, personalized to the student's genre and musical preferences, and phrased as an outcome (e.g., "Be able to produce a 3 minute techno track using Ableton's core workflow"). Research the actual course content and assignments to ensure accuracy.
+• PROJECT SCOPE REQUIREMENTS: 
+  - MOST milestones (at least 7 out of 10) should result in creating a COMPLETE track, sketch, or substantial work - not just exercises, loops, or demos
+  - Each project should build on skills from previous milestones, creating a progressive learning journey
+  - Avoid asking for "60-second demos", "30-second sketches", or "loops" unless the course specifically focuses on loop-based production
+  - Default to full track creation that applies the course skills comprehensively
+  - Exceptions: Sample pack creation, specific sound design tasks, or when the course explicitly focuses on a particular element (like mixing stems)
+• TRACK LENGTH REQUIREMENTS: When subgoals involve creating tracks/songs/compositions, specify the expected length as typical for the student's genre with a minimum of 2 minutes. Examples:
+  - EDM/Electronic genres: 3-5 minutes (full track)
+  - Lo-fi/Chill: 2-3 minutes (complete track)
+  - Ambient: 3+ minutes (full composition)
+  - Pop/Commercial: 3-4 minutes (complete song)
+  - Hip-hop/Trap: 2-3 minutes (full beat with arrangement)
+  - Always specify "minimum 2 minutes" for any complete track deliverable
+• SUBGOAL DIFFERENTIATION EXAMPLES (emphasizing full tracks):
+  - If course project: "Create a trap beat" → Student subgoal (for future bass producer): "Produce a complete 3-minute future bass track using trap-inspired drum patterns (minimum 2 minutes)"
+  - If course project: "Mix a provided rock song" → Student subgoal (for lo-fi producer): "Mix your own complete 2-3 minute lo-fi track using parallel compression techniques from the course"
+  - If course project: "Design a lead synth patch" → Student subgoal (for ambient producer): "Create a 4-minute ambient composition featuring your custom evolving pad sounds"
+  - AVOID: "Create a 60-second demo", "Make a 30-second loop", "Design a 1-minute sketch" (unless specifically appropriate for the course content)
 • Recommend each Futureproof course only once, using the Futureproof Active Courses1 tool's course title as the canonical label. Verify URLs from the tool first; if absent, use Course Database or futureproof_site_search.
 • CRITICAL: Maintain the exact course order from the Futureproof Active Courses1 tool. The sequence in which courses appear in the tool data MUST be preserved in your recommendations (you can skip courses, but cannot reorder them).
 • No references to other schools.
