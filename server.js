@@ -1787,7 +1787,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               '<div class="loading" style="text-align: center; padding: 60px 20px; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">' +
                 '<h3 style="color: #A373F8; margin-bottom: 20px; font-size: 24px;">No roadmap found!</h3>' +
                 '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">If you\\\'ve just filled out our onboarding form, our system is hard at work making a personalized plan to help you reach your musical goals. This page will automatically reload in 5 minutes to check for your new plan.</p>' +
-                '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">If you never filled out the form, <a href="https://learn.futureproofmusicschool.com/standalone-form?assessment-id=68b0a35a9f293e250a0cf3e4" target="_top" style="color: #A373F8; text-decoration: underline;">please take a minute to fill out the questions on our onboarding form</a> and we\\\'ll generate a custom plan for you.</p>' +
+                '<p style="color: #FFFFFF; line-height: 1.6; margin-bottom: 20px; max-width: 500px;">If you never filled out the form, <a href="https://learn.futureproofmusicschool.com/standalone-form?assessment-id=68b0a35a9f293e250a0cf3e4" target="_blank" style="color: #A373F8; text-decoration: underline;">please take a minute to fill out the questions on our onboarding form</a> and we\\\'ll generate a custom plan for you.</p>' +
               '</div>';
             setupAutoReload();
             sendHeight();
@@ -1920,7 +1920,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               html += '<div class="milestone-section">' +
                 '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
-                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_top">' +
+                  '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
@@ -1945,7 +1945,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               const milestonesCourseUrl = 'https://learn.futureproofmusicschool.com/course/milestones';
               html += '<div class="milestone-section">' +
                 '<h3>Milestone Project ' + currentMilestone + '</h3>' +
-                '<a href="' + milestonesCourseUrl + '" target="_top" style="text-decoration: none; color: inherit; display: block;">' +
+                '<a href="' + milestonesCourseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;">' +
                   '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8; cursor: pointer;">' +
                     '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + currentMilestoneData.subgoal.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.subgoal.description + '</div>' +
@@ -2273,7 +2273,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               inner += '<div class="milestone-section">' +
                 '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
-                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_top">' +
+                  '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.course_rec.benefit + '</div>' +
                     '<div id="rec-cta" class="rec-cta" style="color:#A373F8; font-weight:700;">Go to Course →</div>' +
@@ -2298,7 +2298,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
               const milestonesCourseUrl = 'https://learn.futureproofmusicschool.com/course/milestones';
               inner += '<div class="milestone-section">' +
                 '<h3>Milestone Project ' + milestoneNumber + '</h3>' +
-                '<a href="' + milestonesCourseUrl + '" target="_top" style="text-decoration: none; color: inherit; display: block;">' +
+                '<a href="' + milestonesCourseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;">' +
                   '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8; cursor: pointer;">' +
                     '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + data.subgoal.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.subgoal.description + '</div>' +
@@ -2579,7 +2579,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           // Make the entire section clickable if we have a course URL
           let html = courseUrl 
-            ? '<a href="' + courseUrl + '" target="_top" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
+            ? '<a href="' + courseUrl + '" target="_blank" style="text-decoration: none; color: inherit; display: block;"><div class="course-progress-section" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\\'translateY(-2px)\\'; this.style.boxShadow=\\'0 4px 12px rgba(163, 115, 248, 0.2)\\';" onmouseout="this.style.transform=\\'\\'; this.style.boxShadow=\\'\\';">'
             : '<div class="course-progress-section">';
           
           // Header
@@ -2700,7 +2700,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 
                 // Render unit item with or without link
                 if (unitLink) {
-                  html += '<a href="' + unitLink + '" target="_top" style="text-decoration: none; color: inherit; display: block;">' +
+                  html += '<a href="' + unitLink + '" target="_blank" style="text-decoration: none; color: inherit; display: block;">' +
                     '<div class="unit-item" style="cursor: pointer;" onmouseover="this.style.borderColor=\\'rgba(163, 115, 248, 0.5)\\';" onmouseout="this.style.borderColor=\\'rgba(163, 115, 248, 0.15)\\';">';
                 } else {
                   html += '<div class="unit-item">';
