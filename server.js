@@ -1199,11 +1199,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
         
         .refresh-button {
-          margin-left: auto;
           background: rgba(163, 115, 248, 0.15);
           border: 1px solid rgba(163, 115, 248, 0.4);
           border-radius: 6px;
-          padding: 6px 10px;
+          padding: 8px 12px;
           color: #A373F8;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -1212,6 +1211,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           display: inline-flex;
           align-items: center;
           gap: 6px;
+          position: absolute;
+          top: 20px;
+          right: 20px;
         }
         
         .refresh-button:hover {
@@ -1931,9 +1933,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '<div class="progress-stats">' +
               '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">' + currentMilestoneText + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
-              '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress">' +
-                '<span class="refresh-icon">↻</span> Refresh' +
-              '</button>' +
             '</div>' +
             '</div>';
 
@@ -1942,6 +1941,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           if (currentMilestone === 0) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
               '<div id="current-view" class="current-milestone-detail" style="cursor: pointer;" onclick="showMilestoneDetail(1)">' +
+              '<button id="refresh-btn" class="refresh-button" onclick="event.stopPropagation(); refreshProgress();" title="Refresh progress">' +
+                '<span class="refresh-icon">↻</span> Refresh Progress' +
+              '</button>' +
               '<div class="milestone-nav">' +
                 '<h2 style="margin: 0;">OVERVIEW</h2>' +
               '</div>' +
@@ -1959,6 +1961,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             if (currentMilestoneData) {
             html += '<div id="current-view-wrap" class="current-view-wrap">' +
               '<div id="current-view" class="current-milestone-detail">' +
+              '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress">' +
+                '<span class="refresh-icon">↻</span> Refresh Progress' +
+              '</button>' +
               '<div class="milestone-nav">' +
                 '<h2 style="margin: 0;">MILESTONE ' + currentMilestone + ': ' + currentMilestoneData.focus + '</h2>' +
               '</div>' +
@@ -2157,12 +2162,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             }
           }
           
-          let html = '<div style="position: relative; min-height: 100vh; padding: 40px 20px;">' +
-            // Add refresh button at the top right
-            '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress" style="position: absolute; top: 20px; right: 20px;">' +
-              '<span class="refresh-icon">↻</span> Refresh' +
-            '</button>' +
-            '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">' +
+          let html = '<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center;">' +
             
             // Celebration header
             '<div style="font-size: 80px; margin-bottom: 20px; animation: bounce 2s infinite;">🎉</div>' +
@@ -2224,7 +2224,6 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             '</div>' +
             
           '</div>' +
-          '</div>' +
           
           // Add animation styles
           '<style>' +
@@ -2263,6 +2262,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             const currentEl = document.getElementById('current-view');
             if (currentEl) {
               let inner = '' +
+                '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress">' +
+                  '<span class="refresh-icon">↻</span> Refresh Progress' +
+                '</button>' +
                 '<div class="milestone-nav">' +
                   '<h2 style="margin: 0;">OVERVIEW</h2>' +
                 '</div>' +
@@ -2318,6 +2320,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           const currentEl = document.getElementById('current-view');
           if (currentEl) {
             let inner = '' +
+              '<button id="refresh-btn" class="refresh-button" onclick="refreshProgress()" title="Refresh progress">' +
+                '<span class="refresh-icon">↻</span> Refresh Progress' +
+              '</button>' +
               '<div class="milestone-nav">' +
                 '<h2 style="margin: 0;">MILESTONE ' + milestoneNumber + ': ' + data.focus + '</h2>' +
               '</div>' +
