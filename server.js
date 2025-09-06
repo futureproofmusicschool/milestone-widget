@@ -2262,6 +2262,25 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
                 '</div>' +
               '</div>' +
               '';
+            
+            // Add course progress container placeholder
+            inner += '<div id="course-progress-container"></div>';
+            
+            // Add assignment section if subgoal exists
+            if (data.subgoal) {
+              const milestonesCourseUrl = 'https://learn.futureproofmusicschool.com/course/milestones';
+              inner += '<div class="milestone-section">' +
+                '<h3>Milestone Project ' + milestoneNumber + '</h3>' +
+                '<a href="' + milestonesCourseUrl + '" target="_top" style="text-decoration: none; color: inherit; display: block;">' +
+                  '<div class="course-recommendation" style="background: rgba(163, 115, 248, 0.05); border-left: 3px solid #A373F8; cursor: pointer;">' +
+                    '<div style="font-weight: 600; margin-bottom: 8px; color: #A373F8;">' + data.subgoal.title + '</div>' +
+                    '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.subgoal.description + '</div>' +
+                    '<div style="margin-bottom: 12px; font-size: 14px;"><strong>Deliverable:</strong> ' + data.subgoal.deliverable + '</div>' +
+                    '<div id="assignment-status-' + milestoneNumber + '"></div>' +
+                  '</div>' +
+                '</a>' +
+              '</div>';
+            }
 
             currentEl.innerHTML = inner;
             currentEl.style.cursor = 'default';
