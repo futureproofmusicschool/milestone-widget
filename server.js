@@ -1254,9 +1254,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         }
 
         .view-toggle {
-          color: #A373F8;
-          background: rgba(163, 115, 248, 0.15);
-          border: 1px solid rgba(163, 115, 248, 0.4);
+          color: rgba(255, 255, 255, 0.7);
+          background: rgba(163, 115, 248, 0.1);
+          border: 1px solid rgba(163, 115, 248, 0.3);
           border-radius: 6px 6px 0 0;
           padding: 8px 16px;
           text-decoration: none;
@@ -1272,19 +1272,21 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           position: relative;
         }
         .view-toggle:hover { 
-          background: rgba(163, 115, 248, 0.25);
-          border-color: rgba(163, 115, 248, 0.6);
+          color: #A373F8;
+          background: rgba(163, 115, 248, 0.2);
+          border-color: rgba(163, 115, 248, 0.5);
           text-decoration: none;
         }
         .view-toggle.active {
           background: rgba(163, 115, 248, 0.25);
-          color: #FFFFFF;
+          color: #A373F8;
           border-color: rgba(163, 115, 248, 0.6);
           z-index: 11;
         }
         .view-toggle.active:hover {
           background: rgba(163, 115, 248, 0.3);
           border-color: rgba(163, 115, 248, 0.7);
+          color: #A373F8;
         }
         .view-toggle.active::after {
           content: '';
