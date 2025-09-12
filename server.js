@@ -2486,23 +2486,37 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         async function hydrateRecommendationProgress(courseRec, milestoneNumber) {
           try {
-            if (!courseRec || !courseRec.url) return;
+            console.log('[Course Progress] hydrateRecommendationProgress called', { courseRec, milestoneNumber });
+            if (!courseRec || !courseRec.url) {
+              console.log('[Course Progress] No courseRec or URL provided');
+              return;
+            }
             // Extract course ID exactly as used in SAMPLEPLAN and roadmap links
             // Format: https://learn.futureproofmusicschool.com/path-player?courseid=XYZ
             const match = courseRec.url.match(/courseid=([^&#]+)/);
             const courseId = match ? match[1] : null;
-            if (!courseId) return;
+            console.log('[Course Progress] Extracted courseId:', courseId);
+            if (!courseId) {
+              console.log('[Course Progress] Could not extract courseId from URL:', courseRec.url);
+              return;
+            }
 
             // Show loading skeleton
             const progressContainer = document.getElementById('course-progress-container');
+            console.log('[Course Progress] Found progressContainer:', !!progressContainer);
             if (progressContainer) {
               progressContainer.innerHTML = '<div class="loading-skeleton"></div><div class="loading-skeleton"></div>';
+              console.log('[Course Progress] Set loading skeleton');
             }
 
             // Call our single-course progress endpoint that proxies LearnWorlds per-course API
+            console.log('[Course Progress] Fetching course progress for:', courseId);
             const resp = await fetch(apiBaseUrl + '/api/course-progress/' + userId + '/course/' + courseId);
+            console.log('[Course Progress] API response status:', resp.status);
             const data = await resp.json();
+            console.log('[Course Progress] API response data:', data);
             if (!resp.ok || !data) {
+              console.log('[Course Progress] API call failed or no data');
               if (progressContainer) progressContainer.innerHTML = '';
               return;
             }
@@ -2533,8 +2547,18 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             }
             
             // Render detailed progress section
+            console.log('[Course Progress] About to render progress section');
             if (progressContainer && data.progress_rate !== undefined) {
-              progressContainer.innerHTML = renderCourseProgress(data);
+              const renderedHtml = renderCourseProgress(data);
+              console.log('[Course Progress] Rendered HTML length:', renderedHtml.length);
+              progressContainer.innerHTML = renderedHtml;
+              console.log('[Course Progress] Progress section populated');
+            } else {
+              console.log('[Course Progress] Cannot render - missing container or progress_rate', {
+                hasContainer: !!progressContainer,
+                hasProgressRate: data.progress_rate !== undefined,
+                progressRate: data.progress_rate
+              });
             }
             
             // Call sendHeight multiple times with increasing delays to ensure
