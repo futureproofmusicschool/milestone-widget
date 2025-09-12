@@ -8,7 +8,7 @@ A server-rendered widget that displays a personalized, self‑paced 10‑milesto
 - Dual-track progress system: tracks both course completion and assignment submissions
 - LearnWorlds OAuth2 integration for live course progress and assignment tracking
 - Google Sheets as the data store for plans and progress
-- Personalized northstar goal calibration for achievable outcomes in 3-12 months
+- Personalized northstar goal calibration for achievable outcomes in 6-12 months
 
 ## How It Works
 
@@ -83,7 +83,7 @@ The plan JSON (column E) expects this enhanced shape with personalized northstar
   "northstar": {
     "original_dream": "Become a world-famous darkwave artist",
     "achievable_goal": "Release a 5-track darkwave EP and build a community of 500 engaged fans",
-    "timeframe": "3-12 months",
+    "timeframe": "6-12 months",
     "success_metrics": [
       "5 professionally produced tracks",
       "500 genuine fans across platforms",
@@ -121,8 +121,8 @@ The plan JSON (column E) expects this enhanced shape with personalized northstar
 
 ### Northstar Goal Calibration
 - **original_dream**: The student's ultimate vision (may take years to fully achieve)
-- **achievable_goal**: A realistic goal achievable in 3-12 months depending on time commitment
-- **timeframe**: Expected completion timeframe ("3-12 months")
+- **achievable_goal**: A realistic goal achievable in 6-12 months depending on time commitment
+- **timeframe**: Expected completion timeframe ("6-12 months")
 - **success_metrics**: Measurable outcomes that define success
 
 ### Milestone Structure
@@ -396,7 +396,7 @@ if (progress.northstarAchieved) {
   "journeyStats": {
     "startDate": "2024-01-15T10:00:00Z",
     "endDate": "2024-12-15T10:00:00Z",
-    "totalDuration": "7 months",  // varies per student (3-12 months)
+    "totalDuration": "7 months",  // varies per student (6-12 months)
     "coursesCompleted": 10,
     "assignmentsApproved": 10,
     "northstarMetricsAchieved": ["5 tracks produced", "523 fans gained", "4 performances"]
@@ -426,7 +426,7 @@ if (progress.northstarAchieved) {
 
 ### Success Criteria
 - ✅ Students achieve real, tangible outcomes (not just course completion)
-- ✅ Clear northstar goal that's achievable in 3-12 months based on their time commitment
+- ✅ Clear northstar goal that's achievable in 6-12 months based on their time commitment
 - ✅ Progressive subgoals that build toward the main goal
 - ✅ Dual-track progress clearly visible at all times
 - ✅ Meaningful celebration when northstar is achieved
@@ -440,7 +440,7 @@ if (progress.northstarAchieved) {
 
 ### Northstar Goal
 - **Original Dream**: "Become a world-famous darkwave artist"
-- **Achievable Goal (3-12 months)**: "Release a 5-track darkwave EP and build 500 engaged fans"
+- **Achievable Goal (6-12 months)**: "Release a 5-track darkwave EP and build 500 engaged fans"
 
 ### Progressive Subgoals
 1. **Music Theory**: Create darkwave chord progression

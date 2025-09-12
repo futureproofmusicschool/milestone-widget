@@ -2,7 +2,7 @@
   "northstar": {
     "original_dream": "Become a successful electronic music producer and tour the world",
     "achievable_goal": "Create and release a 5-track EP with 500+ engaged fans",
-    "timeframe": "3-12 months",
+    "timeframe": "6-12 months",
     "success_metrics": [
       "5 professionally produced tracks",
       "500+ followers across platforms",
@@ -20,7 +20,7 @@
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
         "courseId": "ableton_basics_101",
-        "url": "https://learn.futureproofmusicschool.com/course/ableton-live-basics",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=ableton_basics_101",
         "benefit": "This foundational course will transform you from someone who struggles with basic DAW operations into a confident producer who can quickly translate musical ideas into reality. You'll master essential Ableton Live workflows that directly support your goal of finishing polished tracks, learning to efficiently record, edit, and arrange audio and MIDI. The time you invest here will pay dividends throughout your entire journey, as every future course builds on these core skills. By the end, you'll have the technical fluency needed to focus on creativity rather than fighting with your tools."
       },
       "subgoal": {
@@ -38,7 +38,7 @@
       "course_rec": {
         "title": "How to Make Your Own Sample Pack",
         "courseId": "sample_pack_creation",
-        "url": "https://learn.futureproofmusicschool.com/course/how-to-make-your-own-sample-pack",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=sample_pack_creation",
         "benefit": "Creating your own samples is crucial for developing a signature sound that will set your EP apart from countless other releases using the same preset packs. This course teaches you advanced sampling techniques, creative processing methods, and how to build cohesive sound libraries that reflect your artistic vision. You'll learn to transform everyday sounds into musical elements, giving you an endless source of unique material for your tracks. This skill becomes increasingly valuable as you progress toward your EP release, ensuring your music has the originality that catches listeners' attention."
       },
       "subgoal": {
@@ -56,7 +56,7 @@
       "course_rec": {
         "title": "Creative Strategies 2",
         "courseId": "creative_strategies_2",
-        "url": "https://learn.futureproofmusicschool.com/course/creative-strategies-2",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=creative_strategies_2",
         "benefit": "Arrangement is where good loops become great songs, and this course provides the advanced creative strategies that will elevate your tracks from bedroom demos to professional-quality compositions. You'll learn how to build tension and release, create compelling song structures, and use automation and effects to guide listeners through an emotional journey. These skills are essential for your EP goal because streaming platforms and audiences demand songs that hold attention from start to finish. The arrangement techniques you master here will become the foundation for every track you create, ensuring your music tells a story rather than just looping endlessly."
       },
       "subgoal": {
@@ -74,7 +74,7 @@
       "course_rec": {
         "title": "How to Make Drum and Bass",
         "courseId": "drum_and_bass_production",
-        "url": "https://learn.futureproofmusicschool.com/course/how-to-make-drum-and-bass",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=drum_and_bass_production",
         "benefit": "Studying Drum & Bass will sharpen your rhythmic precision and teach you advanced bass design techniques that translate across all electronic music genres. This course pushes you to think in complex polyrhythms and intricate basslines, skills that will make your original tracks more sophisticated and dynamic. Even if D&B isn't your primary genre, the technical challenges you'll overcome here—programming tight breaks, crafting sub-heavy basslines, and balancing aggressive frequencies—will significantly improve your overall production abilities. The remix approach lets you apply these new skills to your existing work, showing immediate improvement in your sound."
       },
       "subgoal": {
@@ -92,7 +92,7 @@
       "course_rec": {
         "title": "Mixing 2",
         "courseId": "mixing_intermediate",
-        "url": "https://learn.futureproofmusicschool.com/course/mixing-2",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=mixing_intermediate",
         "benefit": "Professional mixing skills are what separate bedroom producers from artists who get playlist placements and radio play. This intermediate mixing course builds on fundamentals to teach you advanced EQ strategies, compression techniques, and spatial effects that make tracks sound polished and competitive. You'll learn to create width, depth, and clarity in your mixes, ensuring each element sits perfectly in the frequency spectrum. These skills are critical for your EP success because streaming platforms favor well-mixed tracks, and listeners immediately notice the difference between amateur and professional-sounding productions."
       },
       "subgoal": {
@@ -110,7 +110,7 @@
       "course_rec": {
         "title": "Fast Collaboration Tactics",
         "courseId": "collaboration_tactics",
-        "url": "https://learn.futureproofmusicschool.com/course/fast-collaboration",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=collaboration_tactics",
         "benefit": "Collaboration accelerates your growth by exposing you to new techniques and perspectives. This course teaches you efficient workflows for remote collaboration, stem exchange, and feedback integration. You'll learn how to maintain your artistic vision while incorporating others' ideas, a crucial skill for building your network and fanbase."
       },
       "subgoal": {
@@ -128,7 +128,7 @@
       "course_rec": {
         "title": "Branding 123",
         "courseId": "branding_fundamentals",
-        "url": "https://learn.futureproofmusicschool.com/course/branding123",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=branding_fundamentals",
         "benefit": "Your music is only as successful as your ability to connect with an audience, and this branding course provides the visual and messaging foundation that turns casual listeners into dedicated fans. You'll develop a cohesive artistic identity that makes your music instantly recognizable across all platforms, learning to craft compelling bios, choose impactful imagery, and maintain consistent aesthetics. Strong branding is essential for your EP launch because it builds anticipation and trust with potential listeners before they even hear your music. The professional presentation skills you develop here will support every aspect of your music career, from social media growth to securing label interest."
       },
       "subgoal": {
@@ -146,7 +146,7 @@
       "course_rec": {
         "title": "Advanced Sound-Design",
         "courseId": "advanced_sound_design",
-        "url": "https://learn.futureproofmusicschool.com/course/advanced-sound-design",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=advanced_sound_design",
         "benefit": "Developing signature sounds is what makes your music instantly recognizable in a crowded market. This advanced course teaches synthesis, sampling, and processing techniques to create unique textures that become your sonic fingerprint. These custom sounds will tie your entire EP together cohesively."
       },
       "subgoal": {
@@ -164,7 +164,7 @@
       "course_rec": {
         "title": "Workflow Mastery",
         "courseId": "workflow_mastery",
-        "url": "https://learn.futureproofmusicschool.com/course/workflow-mastery",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=workflow_mastery",
         "benefit": "Efficient workflow is the key to consistent output and meeting release deadlines. This course teaches rapid ideation, iteration techniques, and project management strategies that professional producers use. You'll learn to overcome creative blocks and maintain momentum through your entire EP production."
       },
       "subgoal": {
@@ -182,7 +182,7 @@
       "course_rec": {
         "title": "Pre-Master Toolkit",
         "courseId": "premaster_toolkit",
-        "url": "https://learn.futureproofmusicschool.com/course/pre-master-toolkit",
+        "url": "https://learn.futureproofmusicschool.com/path-player?courseid=premaster_toolkit",
         "benefit": "Professional mastering preparation ensures your EP sounds cohesive and competitive on all playback systems. This course teaches loudness optimization, frequency balance, and quality control processes that prepare your tracks for distribution. Your EP will meet industry standards for streaming platforms and radio."
       },
       "subgoal": {

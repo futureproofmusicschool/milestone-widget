@@ -1198,6 +1198,15 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           align-items: center;
         }
         
+        .tab-navigation {
+          display: flex;
+          gap: 0;
+          margin-top: 20px;
+          margin-bottom: -1px;
+          position: relative;
+          z-index: 10;
+        }
+        
         .refresh-button {
           background: rgba(163, 115, 248, 0.15);
           border: 1px solid rgba(163, 115, 248, 0.4);
@@ -1248,8 +1257,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           color: #A373F8;
           background: rgba(163, 115, 248, 0.15);
           border: 1px solid rgba(163, 115, 248, 0.4);
-          border-radius: 6px;
-          padding: 6px 12px;
+          border-radius: 6px 6px 0 0;
+          padding: 8px 16px;
           text-decoration: none;
           font-weight: 700;
           display: inline-flex;
@@ -1259,6 +1268,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           transition: all 0.2s ease;
           white-space: nowrap;
           font-size: 13px;
+          border-bottom: none;
+          position: relative;
         }
         .view-toggle:hover { 
           background: rgba(163, 115, 248, 0.25);
@@ -1266,13 +1277,24 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           text-decoration: none;
         }
         .view-toggle.active {
-          background: rgba(163, 115, 248, 0.15);
+          background: rgba(163, 115, 248, 0.25);
           color: #FFFFFF;
-          border-color: rgba(163, 115, 248, 0.5);
+          border-color: rgba(163, 115, 248, 0.6);
+          z-index: 11;
         }
         .view-toggle.active:hover {
-          background: rgba(163, 115, 248, 0.2);
-          border-color: rgba(163, 115, 248, 0.6);
+          background: rgba(163, 115, 248, 0.3);
+          border-color: rgba(163, 115, 248, 0.7);
+        }
+        .view-toggle.active::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: rgba(163, 115, 248, 0.25);
+          z-index: 12;
         }
         
         .timeline {
@@ -1377,9 +1399,9 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         .current-milestone-detail {
           background: rgba(163, 115, 248, 0.15);
           border: 2px solid #A373F8;
-          border-radius: 12px;
+          border-radius: 0 12px 12px 12px;
           padding: 20px;
-          margin: 20px auto;
+          margin: 0 auto 20px auto;
           width: 800px;
           max-width: 100%;
           position: relative;
@@ -1930,10 +1952,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           let html = debugBanner + '<div class="header">' +
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
             '<div class="north-star">Goal: ' + northstarGoalText + '</div>' +
-            '<div class="progress-stats">' +
+            '</div>' +
+            '<div class="tab-navigation">' +
               '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">' + currentMilestoneText + '</a>' +
               '<a id="path-link" class="view-toggle" href="#" onclick="showPathView(event)">🧭 My Path</a>' +
-            '</div>' +
             '</div>';
 
           // Move the current milestone detail ABOVE the timeline
