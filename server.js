@@ -2008,7 +2008,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             html += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
-                  '<h3>SKILLS YOU\'LL LEARN</h3>' +
+                  '<h3>SKILLS YOU\\'LL LEARN</h3>' +
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
               '</div>' +
@@ -2367,7 +2367,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             inner += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
-                  '<h3>SKILLS YOU\'LL LEARN</h3>' +
+                  '<h3>SKILLS YOU\\'LL LEARN</h3>' +
                   (data.goal || data.milestone || '') +
                 '</div>' +
               '</div>' +
