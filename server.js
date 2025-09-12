@@ -2965,42 +2965,48 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         // Send height to parent so the iframe expands to fit content
         function sendHeight() {
           try {
-            // Use a more precise calculation that ensures all content is visible
+            // Use a more comprehensive calculation that ensures all content is visible
             const appEl = document.getElementById('app');
             const currentViewEl = document.getElementById('current-view-wrap');
             const pathViewEl = document.getElementById('path-view');
+            const headerEl = document.querySelector('.header');
+            const tabNavEl = document.querySelector('.tab-navigation');
             
             let contentHeight = 0;
             
+            // Always include header and tab navigation
+            const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+            const tabNavHeight = tabNavEl ? tabNavEl.offsetHeight : 0;
+            
             // Calculate based on which view is currently displayed
             if (currentViewEl && currentViewEl.style.display !== 'none') {
-              // Include both the header and the current view content
-              const headerEl = document.querySelector('.header');
-              const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+              // Include the current milestone detail content
+              const currentDetailEl = document.getElementById('current-view');
+              const currentDetailHeight = currentDetailEl ? currentDetailEl.scrollHeight : 0;
               
               // Also check for dynamic progress container that might have loaded
               const progressContainer = document.getElementById('course-progress-container');
               const progressHeight = progressContainer ? progressContainer.scrollHeight : 0;
               
-              contentHeight = headerHeight + currentViewEl.scrollHeight + progressHeight;
+              contentHeight = headerHeight + tabNavHeight + currentDetailHeight + progressHeight;
             } else if (pathViewEl && pathViewEl.style.display !== 'none') {
-              // For path view, include header + path content
-              const headerEl = document.querySelector('.header');
-              const headerHeight = headerEl ? headerEl.offsetHeight : 0;
-              contentHeight = headerHeight + pathViewEl.scrollHeight;
+              // For path view, include header + tab nav + path content
+              contentHeight = headerHeight + tabNavHeight + pathViewEl.scrollHeight;
             } else if (appEl) {
               // Fallback to full app height
               contentHeight = appEl.scrollHeight;
             }
             
             // Add generous padding and use higher minimum to ensure content isn't cut off
-            const totalHeight = Math.max(contentHeight + 80, 400);
+            const totalHeight = Math.max(contentHeight + 120, 500);
             
             console.log('Milestone widget sending height:', totalHeight, {
+              headerHeight,
+              tabNavHeight,
               currentViewHeight: currentViewEl ? currentViewEl.scrollHeight : 0,
+              currentDetailHeight: document.getElementById('current-view') ? document.getElementById('current-view').scrollHeight : 0,
               pathViewHeight: pathViewEl ? pathViewEl.scrollHeight : 0,
               appHeight: appEl ? appEl.scrollHeight : 0,
-              headerHeight: document.querySelector('.header') ? document.querySelector('.header').offsetHeight : 0,
               progressContainerHeight: document.getElementById('course-progress-container') ? document.getElementById('course-progress-container').scrollHeight : 0,
               currentViewVisible: currentViewEl ? currentViewEl.style.display !== 'none' : false,
               pathViewVisible: pathViewEl ? pathViewEl.style.display !== 'none' : false,
