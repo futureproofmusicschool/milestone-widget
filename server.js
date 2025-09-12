@@ -1256,7 +1256,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         .view-toggle {
           color: rgba(255, 255, 255, 0.7);
           background: rgba(163, 115, 248, 0.1);
-          border: 1px solid rgba(163, 115, 248, 0.3);
+          border: 2px solid #A373F8;
           border-radius: 6px 6px 0 0;
           padding: 8px 16px;
           text-decoration: none;
@@ -1274,18 +1274,18 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         .view-toggle:hover { 
           color: #A373F8;
           background: rgba(163, 115, 248, 0.2);
-          border-color: rgba(163, 115, 248, 0.5);
+          border-color: #A373F8;
           text-decoration: none;
         }
         .view-toggle.active {
           background: rgba(163, 115, 248, 0.25);
           color: #A373F8;
-          border-color: rgba(163, 115, 248, 0.6);
+          border-color: #A373F8;
           z-index: 11;
         }
         .view-toggle.active:hover {
           background: rgba(163, 115, 248, 0.3);
-          border-color: rgba(163, 115, 248, 0.7);
+          border-color: #A373F8;
           color: #A373F8;
         }
         .view-toggle.active::after {
@@ -1995,8 +1995,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             if (currentMilestoneData.course_rec) {
               html += '<div class="milestone-section">' +
-                '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
+                  '<h3>COURSE</h3>' +
                   '<a href="' + currentMilestoneData.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + currentMilestoneData.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + currentMilestoneData.course_rec.benefit + '</div>' +
@@ -2008,7 +2008,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             html += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
-                  '<h3>GOAL</h3>' +
+                  '<h3>SKILLS YOU\'LL LEARN</h3>' +
                   (currentMilestoneData.goal || currentMilestoneData.milestone) +
                 '</div>' +
               '</div>' +
@@ -2354,8 +2354,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             if (data.course_rec) {
               inner += '<div class="milestone-section">' +
-                '<h3>COURSE</h3>' +
                 '<div class="course-recommendation">' +
+                  '<h3>COURSE</h3>' +
                   '<a href="' + data.course_rec.url + '" class="course-recommendation-link" target="_blank">' +
                     '<div style="font-weight: 600; margin-bottom: 8px;">' + data.course_rec.title + '</div>' +
                     '<div style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">' + data.course_rec.benefit + '</div>' +
@@ -2367,7 +2367,7 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
             
             inner += '<div class="milestone-section">' +
                 '<div class="milestone-goal">' +
-                  '<h3>GOAL</h3>' +
+                  '<h3>SKILLS YOU\'LL LEARN</h3>' +
                   (data.goal || data.milestone || '') +
                 '</div>' +
               '</div>' +
