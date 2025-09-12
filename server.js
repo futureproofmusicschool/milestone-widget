@@ -2417,7 +2417,10 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
 
           // Hydrate recommendation progress for the selected milestone
           if (data && data.course_rec) {
+            console.log('[Course Debug] Milestone', milestoneNumber, 'course_rec:', data.course_rec);
             hydrateRecommendationProgress(data.course_rec, milestoneNumber);
+          } else {
+            console.log('[Course Debug] No course_rec found for milestone', milestoneNumber, 'data:', data);
           }
           
           // Show assignment status
