@@ -21,7 +21,7 @@ You must output ONE JSON object whose top-level keys are:
 • milestones – array of 10 objects where each object has
         { number (1-10),
        focus (primary skill/theme),
-       goal (a 1-2 sentence capability statement that restates what the student will be able to do after completing the course's final project; write as an outcome starting with "Be able to ...", not an instruction),
+       goal (a 1-2 sentence capability statement that restates what the student will be able to do after completing the course's final project; write as an outcome starting with "How to ...", not an instruction),
        course_rec {title, courseId, url (format: https://learn.futureproofmusicschool.com/path-player?courseid=[courseId]), benefit},
        subgoal {title, description, deliverable, alignment, learnworlds_assignment_id} }
    - NOTE: The "benefit" field in course_rec should be a full paragraph (3-4 sentences) explaining specifically how this course connects to the student's personal goals.
@@ -43,10 +43,11 @@ Logic rules for creation of the JSON object above:
   - UNIQUE DELIVERABLES: Never copy course projects directly; instead create new applications that use the same skills for the student's specific needs 
 • Your primary goal is to build a coherent curriculum structure in this way that builds up to the student's final goal. 
 • Always make sure that your formulation of the North Star Goal aligns with the student's genre preferences. 
-• Never use any numbering in the 'focus' field, only words. 
+• Never use any numbering in the 'focus' field, only words.
+• MILESTONE TITLE FORMAT: The 'focus' field must be a verb-based phrase that describes the action the student will take, not just a topic. Examples: "Learn Basic Workflow", "Improve Your Mixing", "Master Sound Design", "Develop Creative Strategies", "Build Your Brand". Avoid single words or noun phrases like "Workflow", "Mixing", or "Sound Design". 
 • Formulate a version of the goal that the student can plausibly reach through completing these 10 milestones, given their current level and available practice time.
 • Each milestone must include:
-  - A personalized "goal" written as an outcome/capability statement based on the course's actual final project (1–2 sentences beginning with "Be able to ...")
+  - A personalized "goal" written as an outcome/capability statement based on the course's actual final project (1–2 sentences beginning with "How to ...")
   - A personalized "subgoal" assignment that applies course knowledge toward the northstar goal:
     * title: What the student will accomplish (action-oriented)
     * description: Why this matters for their northstar journey
@@ -81,7 +82,7 @@ Logic rules for creation of the JSON object above:
 • ALWAYS follow the DAW guidelines when recommending courses. Never recommend courses marked 'Ableton users only' to FL Studio users, and never recommend courses marked 'FL Studio users only' to Ableton users. 
 • Make milestone 1 a "quick-win" deliverable to build momentum, but don't mention the term "quick-win".
 • Match workload to weekly_hours (allocate ~4–6 hrs per goal).
-• Each milestone's goal should be based on the actual course final project or main assignment, personalized to the student's genre and musical preferences, and phrased as an outcome (e.g., "Be able to produce a 3 minute techno track using Ableton's core workflow"). Research the actual course content and assignments to ensure accuracy.
+• Each milestone's goal should be based on the actual course final project or main assignment, personalized to the student's genre and musical preferences, and phrased as an outcome (e.g., "How to produce a 3 minute techno track using Ableton's core workflow"). Research the actual course content and assignments to ensure accuracy.
 • PROJECT SCOPE REQUIREMENTS: 
   - MOST milestones (at least 7 out of 10) should result in creating a COMPLETE track, sketch, or substantial work - not just exercises, loops, or demos
   - Each project should build on skills from previous milestones, creating a progressive learning journey

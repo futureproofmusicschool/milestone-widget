@@ -15,8 +15,8 @@
   "milestones": [
     {
       "number": 1,
-      "focus": "DAW fluency & first full loop",
-      "goal": "Be able to produce a 60-second electronic demo using Ableton's core workflow, recording audio and MIDI, arranging in Session/Arrangement views, and translating musical ideas into a complete loop.",
+      "focus": "Learn DAW Fundamentals",
+      "goal": "How to produce a 60-second electronic demo using Ableton's core workflow, recording audio and MIDI, arranging in Session/Arrangement views, and translating musical ideas into a complete loop.",
       "course_rec": {
         "title": "Learn Ableton Live: Basics",
         "courseId": "ableton-live-basics",
@@ -33,8 +33,8 @@
     },
     {
       "number": 2,
-      "focus": "Sound design fundamentals",
-      "goal": "Be able to design and organize original wavetable patches using oscillation, filtering, and modulation techniques to create signature bass and lead sounds.",
+      "focus": "Master Sound Design",
+      "goal": "How to design and organize original wavetable patches using oscillation, filtering, and modulation techniques to create signature bass and lead sounds.",
       "course_rec": {
         "title": "Sound Design & Wavetable Synthesis: Vital",
         "courseId": "sound-design-wavetable-synthesis-vital",
@@ -51,8 +51,8 @@
     },
     {
       "number": 3,
-      "focus": "Creative ideation & inspiration",
-      "goal": "Be able to generate and develop original musical ideas using constraint-based creative strategies and artistic inspiration techniques.",
+      "focus": "Develop Creative Strategies",
+      "goal": "How to generate and develop original musical ideas using constraint-based creative strategies and artistic inspiration techniques.",
       "course_rec": {
         "title": "Creative Strategies 1",
         "courseId": "creative-strategies",
@@ -69,8 +69,8 @@
     },
     {
       "number": 4,
-      "focus": "Mixing fundamentals",
-      "goal": "Be able to balance tracks with proper monitoring, compression, and basic effects to achieve clear, professional-sounding mixes.",
+      "focus": "Learn Mixing Fundamentals",
+      "goal": "How to balance tracks with proper monitoring, compression, and basic effects to achieve clear, professional-sounding mixes.",
       "course_rec": {
         "title": "Mixing 1",
         "courseId": "mixing-1",
@@ -87,8 +87,8 @@
     },
     {
       "number": 5,
-      "focus": "Advanced mixing techniques",
-      "goal": "Be able to deliver polished mixes with advanced EQ, compression, and spatial processing suitable for commercial release.",
+      "focus": "Apply Advanced Mixing",
+      "goal": "How to deliver polished mixes with advanced EQ, compression, and spatial processing suitable for commercial release.",
       "course_rec": {
         "title": "Mixing 2",
         "courseId": "mixing-2",
@@ -105,8 +105,8 @@
     },
     {
       "number": 6,
-      "focus": "Professional mixing mastery",
-      "goal": "Be able to prepare tracks for mastering with advanced mix bus processing, automation, and quality control techniques.",
+      "focus": "Master Professional Mixing",
+      "goal": "How to prepare tracks for mastering with advanced mix bus processing, automation, and quality control techniques.",
       "course_rec": {
         "title": "Mixing 3",
         "courseId": "mixing-3",
@@ -123,8 +123,8 @@
     },
     {
       "number": 7,
-      "focus": "Harmonic sophistication",
-      "goal": "Be able to construct compelling chord progressions using extensions, voicings, and modal techniques for electronic music.",
+      "focus": "Enhance Harmonic Knowledge",
+      "goal": "How to construct compelling chord progressions using extensions, voicings, and modal techniques for electronic music.",
       "course_rec": {
         "title": "Chords in Electronic Music",
         "courseId": "chords-in-electronic-music",
@@ -141,8 +141,8 @@
     },
     {
       "number": 8,
-      "focus": "Advanced arrangement strategies",
-      "goal": "Be able to create dynamic song structures using advanced creative strategies, transitions, and automation techniques.",
+      "focus": "Perfect Arrangement Skills",
+      "goal": "How to create dynamic song structures using advanced creative strategies, transitions, and automation techniques.",
       "course_rec": {
         "title": "Creative Strategies 2",
         "courseId": "creative-strategies-2",
@@ -159,8 +159,8 @@
     },
     {
       "number": 9,
-      "focus": "Building a sample library",
-      "goal": "Be able to create and organize a cohesive sample pack tailored to your genre using recording, processing, and cataloging techniques.",
+      "focus": "Build Your Sample Library",
+      "goal": "How to create and organize a cohesive sample pack tailored to your genre using recording, processing, and cataloging techniques.",
       "course_rec": {
         "title": "How to Make Your Own Sample Pack",
         "courseId": "how-to-make-your-own-sample-pack",
@@ -177,8 +177,8 @@
     },
     {
       "number": 10,
-      "focus": "Music promotion & marketing",
-      "goal": "Be able to create and execute a comprehensive marketing campaign using social media ads and promotion strategies to build your fanbase.",
+      "focus": "Launch Your Music Career",
+      "goal": "How to create and execute a comprehensive marketing campaign using social media ads and promotion strategies to build your fanbase.",
       "course_rec": {
         "title": "How to Promote Your Music in 2025: Facebook Ads",
         "courseId": "how-to-promote-your-music",

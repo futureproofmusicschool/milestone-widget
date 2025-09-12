@@ -1172,10 +1172,29 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         .header {
           margin-bottom: 30px;
-          padding: 20px;
+          padding: 25px;
           background: linear-gradient(135deg, #000 0%, #0a0a0a 100%);
-          border-radius: 12px;
-          border: 1px solid rgba(163, 115, 248, 0.2);
+          border-radius: 16px;
+          border: 2px solid rgba(163, 115, 248, 0.4);
+          box-shadow: 0 8px 32px rgba(163, 115, 248, 0.15);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #A373F8 0%, #8b5df6 50%, #A373F8 100%);
+          animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
         }
         
         .header h1 {
@@ -1185,8 +1204,21 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
         
         .north-star {
           color: #F6F8FF;
-          font-size: 24px;
-          margin-bottom: 15px;
+          font-size: 28px;
+          font-weight: 700;
+          margin-bottom: 20px;
+          opacity: 1;
+          line-height: 1.3;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .north-star-label {
+          color: #A373F8;
+          font-size: 14px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-bottom: 12px;
           opacity: 0.9;
         }
         
@@ -1953,7 +1985,8 @@ app.get('/milestone-roadmap/:userId', async (req, res) => {
           
           let html = debugBanner + '<div class="header">' +
             '<h1 style="font-weight: 400;">Welcome back, ' + username + '!</h1>' +
-            '<div class="north-star">Goal: ' + northstarGoalText + '</div>' +
+            '<div class="north-star-label">✨ YOUR NORTHSTAR GOAL ✨</div>' +
+            '<div class="north-star">' + northstarGoalText + '</div>' +
             '</div>' +
             '<div class="tab-navigation">' +
               '<a href="#" onclick="showCurrentMilestone(event)" id="current-link" class="view-toggle active">' + currentMilestoneText + '</a>' +
